@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Biodata — Enrollment System</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body class="biodata-page">
+
+    <div class="page">
+        <!-- New Header -->
+        <div class="biodata-header">
+            <a href="index.html" class="biodata-back-link">
+                <svg viewBox="0 0 24 24"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg>
+                Back to Home
+            </a>
+            <div class="biodata-logo" style="display:flex;align-items:center;justify-content:center;font-size:32px;background:#fff;">🏫</div>
+            <h1>ENROLLMENT FORM</h1>
+            <p>Nursery to Grade 6</p>
+        </div>
+
+        <!-- Info Banner -->
+        <div class="biodata-banner">
+            <div class="biodata-banner-icon" style="background:#fff;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:30px;position:relative;">
+                📄
+                <div style="position:absolute;bottom:-5px;right:-5px;background:#22c55e;border-radius:50%;width:20px;height:20px;display:flex;align-items:center;justify-content:center;color:white;font-size:12px;border:2px solid var(--maroon-dark);font-weight:bold;">✓</div>
+            </div>
+            <div class="biodata-banner-content">
+                <h2>Required Documents</h2>
+                <p>Please prepare the following information before filling out the form:</p>
+                <ul>
+                    <li>Student's complete personal information (birth certificate)</li>
+                    <li>Parent/Guardian contact information</li>
+                    <li>Previous school attended (if transferee)</li>
+                    <li>Valid contact number for application tracking</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Form Card -->
+        <div class="biodata-card">
+            <div id="alert" class="alert"></div>
+
+            <form id="enrollmentForm">
+                <!-- ===== SECTION 1: Student Information ===== -->
+                <div class="form-section">
+                    <h3>Student Information</h3>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="last_name">Last Name *</label>
+                            <input type="text" id="last_name" name="last_name" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="first_name">First Name *</label>
+                            <input type="text" id="first_name" name="first_name" required>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="birth_date">Date of Birth *</label>
+                            <input type="date" id="birth_date" name="birth_date" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="gender">Gender *</label>
+                            <select id="gender" name="gender" required>
+                                <option value="">-- Select --</option>
+                                <option value="Male">Male</option>
+                                <option value="Female">Female</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="grade_level_id">Grade Level to Enroll *</label>
+                            <select id="grade_level_id" name="grade_level_id" required>
+                                <option value="">-- Loading... --</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="session_preference">Class Schedule / Session *</label>
+                            <select id="session_preference" name="session_preference" required disabled>
+                                <option value="">-- Select Grade Level First --</option>
+                            </select>
+                            <small id="schedule_note" style="color: var(--maroon-dark); display: none; margin-top: 4px; font-size: 12px; font-weight: 500;"></small>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="address">Complete Address *</label>
+                        <input type="text" id="address" name="address" placeholder="House No., Street, Barangay, City, Province" required>
+                    </div>
+                </div>
+
+                <!-- ===== SECTION 2: Parent Information ===== -->
+                <div class="form-section">
+                    <h3>Parent Information</h3>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="parent_name">Parent's Name *</label>
+                            <input type="text" id="parent_name" name="parent_name" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="relation_id">Relationship *</label>
+                            <select id="relation_id" name="relation_id" required>
+                                <option value="">-- Loading... --</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="occupation">Occupation</label>
+                            <input type="text" id="occupation" name="occupation">
+                        </div>
+                        <div class="form-group">
+                            <label for="monthly_income">Estimated Monthly Income</label>
+                            <select id="monthly_income" name="monthly_income">
+                                <option value="">-- Select --</option>
+                                <option value="Below 10,000">Below ₱10,000</option>
+                                <option value="10,000 - 30,000">₱10,000 - ₱30,000</option>
+                                <option value="30,000 - 50,000">₱30,000 - ₱50,000</option>
+                                <option value="Above 50,000">Above ₱50,000</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="parent_contact">Contact Number *</label>
+                        <input type="tel" id="parent_contact" name="parent_contact" placeholder="09XXXXXXXXX" required>
+                    </div>
+                </div>
+
+                <!-- ===== SECTION 3: Additional Information ===== -->
+                <div class="form-section">
+                    <h3>Additional Information</h3>
+
+                    <div class="form-group">
+                        <label for="previous_school">Previous School Attended (If transferee)</label>
+                        <input type="text" id="previous_school" name="previous_school" placeholder="School Name (if transferee)">
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="psa_birth_cert">PSA Birth Certificate</label>
+                            <input type="file" id="psa_birth_cert" name="psa_birth_cert" accept="image/*,.pdf">
+                            <small style="color: #666; font-size: 12px; margin-top: 4px;">Optional (To follow)</small>
+                        </div>
+                        <div class="form-group">
+                            <label for="sf10_document">SF10 (For Transferees)</label>
+                            <input type="file" id="sf10_document" name="sf10_document" accept="image/*,.pdf">
+                            <small style="color: #666; font-size: 12px; margin-top: 4px;">Optional (To follow)</small>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ===== SECTION 4: Account Credentials ===== -->
+                <div class="form-section">
+                    <h3>Account Credentials</h3>
+                    
+                    <div class="form-group">
+                        <label for="email">Email Address *</label>
+                        <input type="email" id="email" name="email" required>
+                        <small style="color: var(--maroon-dark); font-weight: 600; font-size: 12px; margin-top: 4px; display: block;">Make sure it's correct because this is the email that we will contact.</small>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="password">Password *</label>
+                            <input type="password" id="password" name="password" minlength="6" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="confirm_password">Confirm Password *</label>
+                            <input type="password" id="confirm_password" name="confirm_password" required>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Footer Actions -->
+                <div class="biodata-actions">
+                    <button type="button" class="btn btn-cancel" onclick="window.location.href='index.html'">Cancel</button>
+                    <button type="submit" id="submitBtn" class="btn btn-submit-maroon">Submit</button>
+                </div>
+
+            </form>
+        </div>
+        
+        <div class="biodata-footer-note">
+            Need help? Contact us at the school office or visit our <a href="#">Facebook page</a>.
+        </div>
+    </div>
+
+    <script src="main.js"></script>
+    <script>
+        // ===== LOAD DROPDOWN OPTIONS FROM NORMALIZED LOOKUP TABLES =====
+        // These options come from the database via the API.
+        // If the API fails, we fall back to hardcoded defaults so
+        // the form is never broken.
+
+        // Hardcoded fallbacks (mirrors what is seeded in schema.sql)
+        const GRADE_FALLBACK = [{ id: 1, name: 'Kinder' }, { id: 2, name: 'Grade 1' }, { id: 3, name: 'Grade 2' }, { id: 4, name: 'Grade 3' }, { id: 5, name: 'Grade 4' }, { id: 6, name: 'Grade 5' }, { id: 7, name: 'Grade 6' }];
+        const RELATION_FALLBACK = [{ id: 1, name: 'Mother' }, { id: 2, name: 'Father' }, { id: 3, name: 'Guardian' }, { id: 4, name: 'Grandparent' }, { id: 5, name: 'Other' }];
+
+        function fillSelect(selectId, items) {
+            const sel = document.getElementById(selectId);
+            sel.innerHTML = `<option value="">-- Select --</option>`;
+            items.forEach(item => {
+                sel.innerHTML += `<option value="${item.id}">${item.name}</option>`;
+            });
+        }
+
+        async function loadDropdowns() {
+            // --- Grade Levels (from grade_levels table) ---
+            try {
+                const grades = await apiGet('api/lookups.php?action=grade-levels');
+                const gradeSelect = document.getElementById('grade_level_id');
+                gradeSelect.innerHTML = '<option value="">-- Select Grade Level --</option>';
+                grades.forEach(g => {
+                    gradeSelect.innerHTML += `<option value="${g.id}">${g.name}</option>`;
+                });
+            } catch (err) {
+                // API failed — use hardcoded fallback so form still works
+                console.warn('Grade levels API failed, using fallback:', err.message);
+                fillSelect('grade_level_id', GRADE_FALLBACK);
+            }
+
+            // --- Parent Relations (from relations table) ---
+            try {
+                const relations = await apiGet('api/lookups.php?action=relations');
+                const relSelect = document.getElementById('relation_id');
+                relSelect.innerHTML = '<option value="">-- Select --</option>';
+                relations.forEach(r => {
+                    relSelect.innerHTML += `<option value="${r.id}">${r.name}</option>`;
+                });
+            } catch (err) {
+                // API failed — use hardcoded fallback so form still works
+                console.warn('Relations API failed, using fallback:', err.message);
+                fillSelect('relation_id', RELATION_FALLBACK);
+            }
+        }
+
+        // Call on page load
+        loadDropdowns();
+
+        // ===== DYNAMIC SCHEDULE UPDATES =====
+        document.getElementById('grade_level_id').addEventListener('change', function(e) {
+            const sel = e.target;
+            const gradeName = sel.options[sel.selectedIndex].text;
+            const schedSelect = document.getElementById('session_preference');
+            const note = document.getElementById('schedule_note');
+
+            schedSelect.innerHTML = '';
+            schedSelect.disabled = false;
+            note.style.display = 'none';
+
+            if (gradeName.includes('Kinder')) {
+                schedSelect.innerHTML += `<option value="">-- Select Session --</option>`;
+                schedSelect.innerHTML += `<option value="Kinder 1 (2.5 hrs)">Kinder 1 (2.5 hrs)</option>`;
+                schedSelect.innerHTML += `<option value="Kinder 2 - Session 1 (2.5 hrs)">Kinder 2 - Session 1 (2.5 hrs)</option>`;
+                schedSelect.innerHTML += `<option value="Kinder 2 - Session 2 (2.5 hrs)">Kinder 2 - Session 2 (2.5 hrs)</option>`;
+            } 
+            else if (gradeName.includes('Grade 1')) {
+                schedSelect.innerHTML += `<option value="">-- Select Session --</option>`;
+                schedSelect.innerHTML += `<option value="Grade 1 - AM Session">AM Session</option>`;
+                schedSelect.innerHTML += `<option value="Grade 1 - PM Session">PM Session</option>`;
+            } 
+            else if (gradeName.includes('Grade 2') || gradeName.includes('Grade 3') || gradeName.includes('Grade 4')) {
+                schedSelect.innerHTML += `<option value="Morning Session">Morning Session</option>`;
+                note.textContent = "Note: Grades 2, 3, and 4 are morning sessions.";
+                note.style.display = 'block';
+            } 
+            else if (gradeName.includes('Grade 5') || gradeName.includes('Grade 6')) {
+                schedSelect.innerHTML += `<option value="Afternoon Session">Afternoon Session</option>`;
+                note.textContent = "Note: Grades 5 and 6 are afternoon sessions.";
+                note.style.display = 'block';
+            } 
+            else {
+                schedSelect.innerHTML = `<option value="">-- Select Grade Level First --</option>`;
+                schedSelect.disabled = true;
+            }
+        });
+
+        // ===== FORM SUBMISSION =====
+        document.getElementById('enrollmentForm').addEventListener('submit', async function (e) {
+            e.preventDefault();
+            hideAlert('alert');
+
+            // --- Check that passwords match ---
+            const password = document.getElementById('password').value;
+            const confirmPassword = document.getElementById('confirm_password').value;
+            if (password !== confirmPassword) {
+                showAlert('alert', '❌ Passwords do not match. Please try again.');
+                return;
+            }
+
+            // --- Gather form values using FormData ---
+            const formObj = document.getElementById('enrollmentForm');
+            const formData = new FormData(formObj);
+
+            setLoading('submitBtn', true, 'Submit Enrollment Application');
+
+            try {
+                // apiPostForm handles FormData (multipart) seamlessly
+                const result = await apiPostForm('api/register.php', formData);
+                // Redirect to success page, pass student name and student_no in URL
+                const url = `success.html?name=${encodeURIComponent(result.name)}&id=${encodeURIComponent(result.student_no)}`;
+                window.location.href = url;
+            } catch (err) {
+                showAlert('alert', '❌ ' + err.message);
+                setLoading('submitBtn', false, 'Submit Enrollment Application');
+            }
+        });
+    </script>
+</body>
+
+</html>

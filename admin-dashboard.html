@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard — Enrollment System</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+    <nav class="navbar">
+        <span class="logo-icon">🏫</span>
+        <div>
+            <h1>Admin Dashboard</h1>
+            <p id="adminUserLabel">Enrollment Management</p>
+        </div>
+        <!-- Logout button on the right side -->
+        <button onclick="logout()" style="margin-left:auto; background:#fff2; border:none; color:white;
+                       padding:8px 16px; border-radius:8px; cursor:pointer; font-size:13px;">
+            🚪 Logout
+        </button>
+    </nav>
+
+    <div class="page-wide">
+
+        <!-- Stats Summary Row -->
+        <div
+            style="display:grid; grid-template-columns: repeat(auto-fit, minmax(180px,1fr)); gap:16px; margin-bottom:28px;">
+            <div class="card" style="text-align:center; padding:20px;">
+                <div style="font-size:32px; font-weight:700; color:var(--blue-dark);" id="totalCount">0</div>
+                <div style="font-size:13px; color:var(--gray-500);">Total Applications</div>
+            </div>
+            <div class="card" style="text-align:center; padding:20px;">
+                <div style="font-size:32px; font-weight:700; color:var(--orange);" id="pendingCount">0</div>
+                <div style="font-size:13px; color:var(--gray-500);">Pending</div>
+            </div>
+            <div class="card" style="text-align:center; padding:20px;">
+                <div style="font-size:32px; font-weight:700; color:var(--green);" id="approvedCount">0</div>
+                <div style="font-size:13px; color:var(--gray-500);">Approved</div>
+            </div>
+            <div class="card" style="text-align:center; padding:20px;">
+                <div style="font-size:32px; font-weight:700; color:var(--red);" id="rejectedCount">0</div>
+                <div style="font-size:13px; color:var(--gray-500);">Rejected</div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div
+                style="display:flex; align-items:center; justify-content:space-between; margin-bottom:20px; flex-wrap:wrap; gap:12px;">
+                <div>
+                    <div class="card-title">📋 Student Enrollment Applications</div>
+                    <div class="card-subtitle" style="margin-bottom:0;">
+                        Review and approve or reject each enrollment application.
+                    </div>
+                </div>
+                <!-- Filter by status -->
+                <select id="filterStatus" onchange="filterTable()"
+                    style="padding:8px 14px; border:1.5px solid var(--gray-300); border-radius:8px; font-size:14px;">
+                    <option value="All">All Statuses</option>
+                    <option value="Pending">Pending</option>
+                    <option value="Approved">Approved</option>
+                    <option value="Rejected">Rejected</option>
+                </select>
+            </div>
+
+            <div id="alert" class="alert"></div>
+
+            <!-- Students Table -->
+            <div class="table-wrapper">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Student ID</th>
+                            <th>Name</th>
+                            <th>Grade Level</th>
+                            <th>Parent</th>
+                            <th>Contact</th>
+                            <th>Date Applied</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="studentsTableBody">
+                        <!-- Rows are added here by JavaScript -->
+                        <tr>
+                            <td colspan="8" style="text-align:center; color:var(--gray-500); padding:40px;">
+                                ⏳ Loading...
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== MODAL: View Full Student Details ===== -->
+    <div class="modal-overlay" id="modalOverlay">
+        <div class="modal">
+            <button class="modal-close" onclick="closeModal()">✕</button>
+            <h3>🧒 Student Full Details</h3>
+            <div id="modalContent" class="info-grid">
+                <!-- Filled by JS when admin clicks "View" -->
+            </div>
+            <div style="margin-top:24px; text-align:right;">
+                <button class="btn btn-outline" onclick="closeModal()">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="main.js"></script>
+    <script>
+        // All students loaded from the server
+        let allStudents = [];
+
+        // ===== GUARD: redirect to login if not logged in =====
+        if (!sessionStorage.getItem('adminLoggedIn')) {
+            window.location.href = 'admin-login.html';
+        }
+
+        // Show which admin is logged in
+        const adminUser = sessionStorage.getItem('adminUser') || 'Admin';
+        document.getElementById('adminUserLabel').textContent = `Logged in as: ${adminUser}`;
+
+        // ===== LOAD STUDENTS on page load =====
+        async function loadStudents() {
+            try {
+                allStudents = await apiGet('api/admin.php?action=students');
+                updateStats(allStudents);
+                renderTable(allStudents);
+            } catch (err) {
+                showAlert('alert', '❌ Failed to load students: ' + err.message);
+            }
+        }
+
+        // ===== UPDATE STAT COUNTS =====
+        function updateStats(students) {
+            document.getElementById('totalCount').textContent = students.length;
+            document.getElementById('pendingCount').textContent = students.filter(s => s.status === 'Pending').length;
+            document.getElementById('approvedCount').textContent = students.filter(s => s.status === 'Approved').length;
+            document.getElementById('rejectedCount').textContent = students.filter(s => s.status === 'Rejected').length;
+        }
+
+        // ===== RENDER TABLE =====
+        function renderTable(students) {
+            const tbody = document.getElementById('studentsTableBody');
+
+            if (students.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="8" style="text-align:center;color:var(--gray-500);padding:40px;">
+                    No students found.</td></tr>`;
+                return;
+            }
+
+            // Build one row per student
+            tbody.innerHTML = students.map(s => `
+                <tr>
+                    <td><strong>${s.student_no}</strong></td>
+                    <td>${s.last_name}, ${s.first_name}</td>
+                    <td>${s.grade_level}</td>
+                    <td>${s.parent_name}</td>
+                    <td>${s.parent_contact}</td>
+                    <td>${formatDate(s.applied_at)}</td>
+                    <td><span class="badge badge-${s.status.toLowerCase()}">${s.status}</span></td>
+                    <td>
+                        <div class="action-btns">
+                            <!-- View full details -->
+                            <button class="btn" style="padding:6px 12px;font-size:12px;background:var(--gray-100);color:var(--gray-700);"
+                                    onclick="viewStudent(${s.enrollment_id})">
+                                👁 View
+                            </button>
+                            <!-- Approve (only shown if not already Approved) -->
+                            ${s.status !== 'Approved' ? `
+                            <button class="btn btn-success"
+                                    onclick="setStatus(${s.enrollment_id}, 'Approved')">
+                                ✓ Approve
+                            </button>` : ''}
+                            <!-- Reject (only shown if not already Rejected) -->
+                            ${s.status !== 'Rejected' ? `
+                            <button class="btn btn-danger"
+                                    onclick="setStatus(${s.enrollment_id}, 'Rejected')">
+                                ✗ Reject
+                            </button>` : ''}
+                        </div>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        // ===== FILTER TABLE =====
+        function filterTable() {
+            const filter = document.getElementById('filterStatus').value;
+            const filtered = filter === 'All'
+                ? allStudents
+                : allStudents.filter(s => s.status === filter);
+            renderTable(filtered);
+        }
+
+        // ===== APPROVE / REJECT =====
+        async function setStatus(id, action) {
+            const confirm = window.confirm(`Are you sure you want to ${action} this student?`);
+            if (!confirm) return;
+
+            try {
+                await apiPost(`api/admin.php?action=validate&id=${id}`, { action });
+                // Reload the list to reflect changes
+                loadStudents();
+            } catch (err) {
+                showAlert('alert', '❌ ' + err.message);
+            }
+        }
+
+        // ===== VIEW FULL DETAILS MODAL =====
+        async function viewStudent(id) {
+            try {
+                const s = await apiGet(`api/admin.php?action=detail&id=${id}`);
+                document.getElementById('modalContent').innerHTML = `
+                    <div class="info-item"><label>Student ID</label><span>${s.student_no}</span></div>
+                    <div class="info-item"><label>Full Name</label><span>${s.first_name} ${s.last_name}</span></div>
+                    <div class="info-item"><label>Date of Birth</label><span>${s.birth_date}</span></div>
+                    <div class="info-item"><label>Gender</label><span>${s.gender}</span></div>
+                    <div class="info-item"><label>Grade Level</label><span>${s.grade_level}</span></div>
+                    <div class="info-item"><label>Address</label><span>${s.address}</span></div>
+                    <div class="info-item"><label>Parent / Guardian</label><span>${s.parent_name} (${s.parent_relation})</span></div>
+                    <div class="info-item"><label>Contact Number</label><span>${s.parent_contact}</span></div>
+                    <div class="info-item"><label>Email</label><span>${s.email}</span></div>
+                    <div class="info-item"><label>Status</label><span class="badge badge-${s.status.toLowerCase()}">${s.status}</span></div>
+                    <div class="info-item"><label>Date Applied</label><span>${formatDate(s.applied_at)}</span></div>
+                `;
+                document.getElementById('modalOverlay').classList.add('active');
+            } catch (err) {
+                showAlert('alert', '❌ Could not load student details.');
+            }
+        }
+
+        function closeModal() {
+            document.getElementById('modalOverlay').classList.remove('active');
+        }
+
+        // ===== LOGOUT =====
+        function logout() {
+            sessionStorage.removeItem('adminLoggedIn');
+            sessionStorage.removeItem('adminUser');
+            window.location.href = 'admin-login.html';
+        }
+
+        // ===== FORMAT DATE helper =====
+        function formatDate(dateStr) {
+            if (!dateStr) return '—';
+            const d = new Date(dateStr);
+            return d.toLocaleDateString('en-PH', { year: 'numeric', month: 'short', day: 'numeric' });
+        }
+
+        // Load when page opens
+        loadStudents();
+    </script>
+</body>
+
+</html>

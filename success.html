@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registration Successful — Enrollment System</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+    <nav class="navbar">
+        <span class="logo-icon">🏫</span>
+        <div>
+            <h1>School Enrollment System</h1>
+            <p>Kinder to Grade 6 Enrollment Portal</p>
+        </div>
+    </nav>
+
+    <div class="page">
+        <div class="card success-page">
+
+            <div class="check-icon">🎉</div>
+            <h2>Registration Submitted!</h2>
+            <p id="studentNameText">Your enrollment application has been received.</p>
+            <p>Please wait for the school admin to review and approve your application.</p>
+
+            <!-- Show the auto-generated Student ID -->
+            <div class="student-id-box">
+                <p>Your Student Reference ID</p>
+                <strong id="studentIdText">----</strong>
+            </div>
+
+            <p style="font-size: 13px; color: var(--gray-500); margin-bottom: 24px;">
+                📌 Please save your Student ID above. You will need your
+                <strong>email</strong> and <strong>password</strong> to check your status.
+            </p>
+
+            <!-- Buttons -->
+            <div style="display: flex; gap: 12px; justify-content: center; flex-wrap: wrap;">
+                <a href="check-progress.html" class="btn btn-primary">
+                    🔍 Check My Status
+                </a>
+                <a href="index.html" class="btn btn-outline">
+                    🏠 Go to Home
+                </a>
+            </div>
+
+        </div>
+    </div>
+
+    <script>
+        // Read the name and student ID from the URL query string
+        // Example URL: success.html?name=Juan+Dela+Cruz&id=2024-00001
+        const params = new URLSearchParams(window.location.search);
+        const name = params.get('name') || 'Student';
+        const studentId = params.get('id') || '----';
+
+        document.getElementById('studentNameText').textContent =
+            `${name}'s enrollment application has been received.`;
+        document.getElementById('studentIdText').textContent = studentId;
+    </script>
+</body>
+
+</html>

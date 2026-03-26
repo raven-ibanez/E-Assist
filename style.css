@@ -1,0 +1,883 @@
+/* =========================================================
+   ENROLLMENT SYSTEM — SHARED STYLES
+   Color scheme: clean blue/white with soft accents
+   ========================================================= */
+
+/* --- Google Font import --- */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+/* --- CSS Variables (easy to change the theme) --- */
+/* --- CSS Variables --- */
+:root {
+    --maroon-dark: #7a1230;
+    --maroon-accent: #a52a2a;
+    --gold: #FFD700;
+    --gold-text: #daa520;
+    --off-white: #fdfdfd;
+    --white: #ffffff;
+    --gray-50: #f9fafb;
+    --gray-100: #f3f4f6;
+    --gray-300: #d1d5db;
+    --gray-500: #6b7280;
+    --gray-700: #374151;
+    --gray-900: #111827;
+    --shadow-soft: 0 10px 30px rgba(0, 0, 0, 0.05);
+    --shadow-hero: 0 15px 40px rgba(0, 0, 0, 0.15);
+    --radius: 12px;
+}
+
+/* --- Reset & Base --- */
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: 'Inter', sans-serif;
+    background: var(--off-white);
+    color: var(--gray-900);
+    min-height: 100vh;
+}
+
+/* --- HEADER --- */
+.navbar {
+    background: var(--maroon-dark);
+    padding: 12px 5%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+}
+
+.header-left {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.logo {
+    width: 45px;
+    height: 45px;
+    object-fit: contain;
+}
+
+.school-name {
+    color: var(--white);
+    font-size: 24px;
+    font-weight: 800;
+    letter-spacing: 1px;
+}
+
+.btn-admin {
+    background: rgba(255, 255, 255, 0.25);
+    color: var(--white);
+    padding: 10px 24px;
+    border-radius: 50px;
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 800;
+    border: 1.5px solid rgba(255, 255, 255, 0.4);
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    transition: all 0.3s ease;
+    letter-spacing: 0.5px;
+}
+
+.btn-admin:hover {
+    background: rgba(255, 255, 255, 0.35);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+.btn-admin svg {
+    width: 22px;
+    height: 22px;
+    fill: currentColor;
+}
+
+/* --- HERO SECTION --- */
+.hero-section {
+    padding: 80px 5%;
+    background: var(--off-white);
+}
+
+.hero-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: 1.2fr 1fr;
+    align-items: center;
+    gap: 60px;
+}
+
+.hero-title {
+    font-size: 58px;
+    color: var(--maroon-dark);
+    line-height: 1.1;
+    font-weight: 900;
+    margin-bottom: 30px;
+}
+
+.hero-description {
+    font-size: 18px;
+    color: var(--maroon-accent);
+    line-height: 1.7;
+    font-style: italic;
+    font-weight: 500;
+    max-width: 500px;
+}
+
+.hero-image-wrapper {
+    position: relative;
+    padding: 10px;
+}
+
+.hero-image-wrapper::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border: 3px solid #e0e0e0;
+    border-radius: 12px;
+    z-index: 0;
+    transform: translate(10px, 10px);
+}
+
+.hero-image {
+    width: 100%;
+    border-radius: 12px;
+    box-shadow: var(--shadow-hero);
+    position: relative;
+    z-index: 1;
+    border: 4px solid var(--white);
+}
+
+/* --- ACTION SECTION --- */
+.action-section {
+    background: var(--maroon-dark);
+    padding: 80px 5%;
+}
+
+.action-container {
+    max-width: 1000px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 40px;
+}
+
+.action-card-new {
+    background: var(--white);
+    border-radius: 4px;
+    padding: 25px;
+    text-decoration: none;
+    position: relative;
+    transition: transform 0.3s ease;
+    border-right: 6px solid var(--gold);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+}
+
+.action-card-new:hover {
+    transform: translateY(-5px);
+}
+
+.card-content {
+    display: flex;
+    align-items: center;
+    gap: 25px;
+}
+
+.card-icon {
+    width: 70px;
+    height: 70px;
+    object-fit: contain;
+}
+
+.card-text h3 {
+    color: #1a1a1a;
+    font-size: 26px;
+    font-weight: 900;
+    line-height: 1.1;
+    margin-bottom: 12px;
+}
+
+.continue-btn {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    color: #444;
+    font-weight: 600;
+    font-size: 18px;
+}
+
+.arrow {
+    font-size: 24px;
+    transition: transform 0.3s ease;
+}
+
+.action-card-new:hover .arrow {
+    transform: translateX(8px);
+}
+
+/* --- FOOTER --- */
+.footer {
+    padding: 40px 5% 20px;
+    background: var(--off-white);
+    text-align: center;
+}
+
+.footer-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 15px;
+    margin-bottom: 30px;
+}
+
+.footer-logo {
+    width: 50px;
+    height: 50px;
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
+}
+
+.footer-school-name {
+    color: var(--maroon-dark);
+    font-weight: 800;
+    font-size: 18px;
+}
+
+.footer-address {
+    color: var(--gold-text);
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.footer-copyright {
+    color: var(--gold-text);
+    font-size: 13px;
+    font-weight: 500;
+}
+
+/* =========================================================
+   FORM STYLES
+   ========================================================= */
+.form-section {
+    margin-bottom: 28px;
+}
+
+.form-section h3 {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--blue-dark);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 16px;
+    padding-bottom: 8px;
+    border-bottom: 2px solid var(--blue-light);
+}
+
+.form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin-bottom: 16px;
+}
+
+.form-group.full {
+    grid-column: 1 / -1;
+}
+
+label {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--gray-700);
+}
+
+input,
+select,
+textarea {
+    padding: 10px 14px;
+    border: 1.5px solid var(--gray-300);
+    border-radius: 8px;
+    font-size: 14px;
+    font-family: inherit;
+    color: var(--gray-900);
+    background: var(--white);
+    transition: border-color 0.2s;
+    width: 100%;
+}
+
+input:focus,
+select:focus,
+textarea:focus {
+    outline: none;
+    border-color: var(--blue-mid);
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+}
+
+/* =========================================================
+   BUTTONS
+   ========================================================= */
+.btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 12px 24px;
+    border: none;
+    border-radius: 8px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-decoration: none;
+}
+
+.btn-primary {
+    background: var(--blue-dark);
+    color: var(--white);
+}
+
+.btn-primary:hover {
+    background: #1d4ed8;
+    transform: translateY(-1px);
+}
+
+.btn-success {
+    background: var(--green);
+    color: var(--white);
+    padding: 8px 16px;
+    font-size: 13px;
+}
+
+.btn-success:hover {
+    background: #15803d;
+}
+
+.btn-danger {
+    background: var(--red);
+    color: var(--white);
+    padding: 8px 16px;
+    font-size: 13px;
+}
+
+.btn-danger:hover {
+    background: #b91c1c;
+}
+
+.btn-outline {
+    background: transparent;
+    color: var(--blue-dark);
+    border: 2px solid var(--blue-dark);
+}
+
+.btn-outline:hover {
+    background: var(--blue-dark);
+    color: var(--white);
+}
+
+.btn-full {
+    width: 100%;
+}
+
+/* =========================================================
+   STATUS BADGES
+   ========================================================= */
+.badge {
+    display: inline-block;
+    padding: 4px 12px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.badge-pending {
+    background: #fef3c7;
+    color: #92400e;
+}
+
+.badge-approved {
+    background: #d1fae5;
+    color: #065f46;
+}
+
+.badge-rejected {
+    background: #fee2e2;
+    color: #991b1b;
+}
+
+/* =========================================================
+   TABLE STYLES (Admin Dashboard)
+   ========================================================= */
+.table-wrapper {
+    overflow-x: auto;
+    border-radius: var(--radius);
+    border: 1px solid var(--gray-100);
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+}
+
+thead {
+    background: var(--blue-dark);
+    color: var(--white);
+}
+
+thead th {
+    padding: 12px 16px;
+    text-align: left;
+    font-weight: 600;
+    font-size: 13px;
+}
+
+tbody tr {
+    border-bottom: 1px solid var(--gray-100);
+    transition: background 0.15s;
+}
+
+tbody tr:hover {
+    background: var(--blue-light);
+}
+
+tbody td {
+    padding: 12px 16px;
+    color: var(--gray-700);
+}
+
+.action-btns {
+    display: flex;
+    gap: 6px;
+}
+
+/* =========================================================
+   ALERT MESSAGES
+   ========================================================= */
+.alert {
+    padding: 14px 18px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 500;
+    margin-bottom: 20px;
+    display: none;
+    /* hidden by default, shown via JS */
+}
+
+.alert-error {
+    background: #fee2e2;
+    color: #991b1b;
+    border: 1px solid #fca5a5;
+}
+
+.alert-success {
+    background: #d1fae5;
+    color: #065f46;
+    border: 1px solid #6ee7b7;
+}
+
+/* =========================================================
+   RESULT / PROGRESS CARD
+   ========================================================= */
+.result-card {
+    background: var(--white);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    padding: 32px;
+    margin-top: 24px;
+    display: none;
+    /* shown via JS once result is fetched */
+}
+
+.result-card .status-big {
+    font-size: 48px;
+    text-align: center;
+    margin-bottom: 12px;
+}
+
+.result-card h3 {
+    text-align: center;
+    font-size: 22px;
+    font-weight: 700;
+    margin-bottom: 6px;
+}
+
+.result-card .status-label {
+    text-align: center;
+    font-size: 15px;
+    margin-bottom: 24px;
+}
+
+.info-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+}
+
+.info-item label {
+    font-size: 12px;
+    color: var(--gray-500);
+    display: block;
+    margin-bottom: 2px;
+}
+
+.info-item span {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--gray-900);
+}
+
+/* =========================================================
+   STEP INDICATOR (Breadcrumb)
+   ========================================================= */
+.steps {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 28px;
+    font-size: 13px;
+    color: var(--gray-500);
+}
+
+.steps .step-active {
+    color: var(--blue-dark);
+    font-weight: 600;
+}
+
+/* =========================================================
+   SUCCESS PAGE
+   ========================================================= */
+.success-page {
+    text-align: center;
+    padding: 60px 20px;
+}
+
+.success-page .check-icon {
+    font-size: 72px;
+    margin-bottom: 20px;
+}
+
+.success-page h2 {
+    font-size: 26px;
+    font-weight: 700;
+    margin-bottom: 10px;
+}
+
+.success-page p {
+    color: var(--gray-500);
+    font-size: 15px;
+    margin-bottom: 8px;
+}
+
+.student-id-box {
+    background: var(--blue-light);
+    border: 2px dashed var(--blue-mid);
+    border-radius: 10px;
+    padding: 20px;
+    margin: 24px auto;
+    max-width: 320px;
+}
+
+.student-id-box p {
+    color: var(--gray-700);
+    font-size: 13px;
+    margin-bottom: 6px;
+}
+
+.student-id-box strong {
+    font-size: 28px;
+    color: var(--blue-dark);
+    letter-spacing: 2px;
+}
+
+/* =========================================================
+   MODAL (Admin — View Full Details)
+   ========================================================= */
+.modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.45);
+    z-index: 100;
+    align-items: center;
+    justify-content: center;
+}
+
+.modal-overlay.active {
+    display: flex;
+}
+
+.modal {
+    background: var(--white);
+    border-radius: var(--radius);
+    padding: 32px;
+    max-width: 560px;
+    width: 90%;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
+}
+
+.modal h3 {
+    font-size: 18px;
+    font-weight: 700;
+    margin-bottom: 20px;
+    color: var(--blue-dark);
+}
+
+.modal-close {
+    float: right;
+    background: none;
+    border: none;
+    font-size: 22px;
+    cursor: pointer;
+    color: var(--gray-500);
+    line-height: 1;
+}
+
+/* =========================================================
+   RESPONSIVE
+   ========================================================= */
+@media (max-width: 640px) {
+    .form-row {
+        grid-template-columns: 1fr;
+    }
+
+    .navbar h1 {
+        font-size: 16px;
+    }
+
+    .navbar {
+        padding: 14px 16px;
+    }
+
+    .page {
+        margin: 20px auto;
+    }
+
+    .card {
+        padding: 20px;
+    }
+
+    .action-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .info-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* =========================================================
+   BIODATA PAGE SPECIFIC REDESIGN
+   ========================================================= */
+body.biodata-page {
+    background: #fbf9f1; /* Soft cream */
+}
+
+.biodata-page .page {
+    max-width: 800px;
+    margin: 40px auto;
+}
+
+.biodata-header {
+    text-align: center;
+    position: relative;
+    margin-bottom: 30px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.biodata-back-link {
+    position: absolute;
+    left: 0;
+    top: 0;
+    color: var(--maroon-dark);
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.biodata-logo {
+    width: 65px;
+    height: 65px;
+    object-fit: contain;
+    border: 2px solid var(--maroon-dark);
+    border-radius: 50%;
+    padding: 3px;
+    background: var(--white);
+    margin-bottom: 8px;
+}
+
+.biodata-header h1 {
+    color: var(--maroon-dark);
+    font-size: 19px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 2px;
+}
+
+.biodata-header p {
+    color: var(--maroon-dark);
+    font-size: 13px;
+    font-weight: 600;
+}
+
+/* Info Banner */
+.biodata-banner {
+    background: var(--maroon-dark);
+    border-radius: 12px;
+    padding: 24px;
+    display: flex;
+    gap: 20px;
+    align-items: flex-start;
+    margin-bottom: 24px;
+    color: var(--white);
+    box-shadow: 0 4px 15px rgba(122, 18, 48, 0.2);
+}
+
+.biodata-banner-icon {
+    width: 60px;
+    height: 60px;
+    flex-shrink: 0;
+}
+
+.biodata-banner-content h2 {
+    font-size: 20px;
+    font-weight: 700;
+    margin-bottom: 6px;
+}
+
+.biodata-banner-content p {
+    color: #ffd700; /* Gold */
+    font-size: 13px;
+    margin-bottom: 12px;
+}
+
+.biodata-banner-content ul {
+    list-style: none;
+    font-size: 13px;
+    color: var(--white);
+}
+.biodata-banner-content li {
+    position: relative;
+    padding-left: 14px;
+    margin-bottom: 6px;
+}
+.biodata-banner-content li::before {
+    content: "• ";
+    position: absolute;
+    left: 0;
+    color: var(--white);
+}
+
+/* Form Card specifically for Biodata */
+.biodata-card {
+    background: var(--white);
+    border: 1.5px solid var(--maroon-dark);
+    border-radius: 12px;
+    padding: 35px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+    margin-bottom: 20px;
+}
+
+/* Sections */
+.biodata-card .form-section {
+    margin-bottom: 35px;
+}
+.biodata-card .form-section h3 {
+    color: var(--maroon-dark);
+    font-size: 18px;
+    font-weight: 800;
+    border-bottom: none;
+    padding-bottom: 0;
+    border-left: 3px solid #e6a817; /* Gold/Orange line */
+    padding-left: 12px;
+    margin-bottom: 20px;
+    letter-spacing: 0;
+    text-transform: none;
+}
+
+/* Inputs */
+.biodata-card .form-group label {
+    color: var(--maroon-dark);
+    font-weight: 700;
+    font-size: 13px;
+    margin-bottom: 6px;
+}
+
+.biodata-card input,
+.biodata-card select {
+    background: #e6e6e6;
+    border: 1px solid #d1d1d1;
+    border-radius: 6px;
+    color: #333;
+    padding: 10px 14px;
+}
+
+.biodata-card input:focus,
+.biodata-card select:focus {
+    border-color: var(--maroon-dark);
+    box-shadow: 0 0 0 3px rgba(122, 18, 48, 0.15);
+}
+
+/* Footer Actions */
+.biodata-actions {
+    display: flex;
+    gap: 15px;
+    padding-top: 20px;
+    border-top: 1px solid var(--gray-300);
+}
+.biodata-actions .btn {
+    flex: 1;
+    padding: 14px;
+    font-size: 16px;
+    border-radius: 6px;
+    font-weight: 700;
+}
+
+.btn-cancel {
+    background: var(--white);
+    color: var(--maroon-dark);
+    border: 1.5px solid var(--maroon-dark);
+}
+.btn-cancel:hover {
+    background: #fdf5f7;
+}
+
+.btn-submit-maroon {
+    background: var(--maroon-dark);
+    color: var(--white);
+}
+.btn-submit-maroon:hover {
+    background: #5c0d24;
+}
+
+.biodata-footer-note {
+    text-align: center;
+    margin-top: 20px;
+    font-size: 13px;
+    color: #555;
+}
+.biodata-footer-note a {
+    color: var(--maroon-dark);
+    font-weight: 700;
+    text-decoration: underline;
+}
