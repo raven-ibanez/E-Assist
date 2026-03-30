@@ -1,60 +1,68 @@
 <?php
-/**
- * db.php - DATABASE CONNECTION SETTINGS
- * ---------------------------------------------------------
- * This file handles the connection between PHP and your MySQL database.
- * We use "PDO" (PHP Data Objects) because it is secure and modern.
- * ---------------------------------------------------------
+/*
+ * ============================================================
+ *  db.php — DATABASE CONNECTION
+ * ============================================================
+ *  WHAT THIS FILE DOES:
+ *  - Connects PHP to the MySQL database using PDO.
+ *  - Provides a helper function (sendJSON) to send data back
+ *    to the browser in JSON format.
+ *
+ *  This file is "included" by other PHP files using:
+ *      require_once '../db.php';
+ * ============================================================
  */
 
-// 1. Error Reporting Configuration
-// ob_start() captures output so we can clean it before sending JSON errors.
-ob_start(); 
+// --- STEP 1: Hide PHP errors from showing on the page ---
+// ob_start() captures any accidental output so it doesn't break our JSON responses.
+ob_start();
 error_reporting(E_ALL);
-// We hide errors from the screen for security, but they still happen in the background.
-ini_set('display_errors', 0); 
+ini_set('display_errors', 0);
 
-// 2. Database Credentials
-// These are the details needed to talk to your XAMPP MySQL server.
-$host = 'localhost';
-$db   = 'enrollment_db';
-$user = 'root';
-$pass = ''; // XAMPP default password is empty
-$charset = 'utf8mb4';
+// --- STEP 2: Database login details ---
+// These must match your XAMPP MySQL settings.
+$host    = 'localhost';       // The server (localhost = your computer)
+$db      = 'enrollment_db';  // The database name
+$user    = 'root';            // MySQL username (default for XAMPP)
+$pass    = '';                // MySQL password (empty by default in XAMPP)
+$charset = 'utf8mb4';        // Character encoding (supports emojis, etc.)
 
-// 3. The Connection String (DSN)
-// This tells PHP where the database is and what name it has.
+// --- STEP 3: Build the connection string ---
+// DSN = Data Source Name. It tells PHP where the database is.
 $dsn = "mysql:host=$host;dbname=$db;charset=$charset";
 
-// 4. PDO Options
-// These settings make the database connection "behave" better.
+// --- STEP 4: Connection settings ---
 $options = [
-    PDO::ATTR_ERRMODE            => PDO::ERRMODE_EXCEPTION, // Show errors as "Exceptions" so we can catch them.
-    PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,       // Return data as an associative array (e.g., ['id' => 1]).
-    PDO::ATTR_EMULATE_PREPARES   => false,                 // Use real prepared statements for better security.
+    PDO::ATTR_ERRMODE            => PDO::ERRMODE_EXCEPTION,  // Show errors as exceptions (easier to debug)
+    PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,        // Return rows as arrays like ['name' => 'Juan']
+    PDO::ATTR_EMULATE_PREPARES   => false,                   // Use real prepared statements (more secure)
 ];
 
-// 5. Try to Connect
+// --- STEP 5: Connect to the database ---
 try {
-    // Create the connection object called $pdo
+    // Create the connection. We use "$pdo" everywhere to talk to the database.
     $pdo = new PDO($dsn, $user, $pass, $options);
-} catch (\PDOException $e) {
-    // If connection fails, stop everything and send a JSON error message.
+} catch (PDOException $e) {
+    // If the connection fails, send an error message and stop.
     ob_clean();
     header('Content-Type: application/json');
     echo json_encode(['error' => 'Database connection failed: ' . $e->getMessage()]);
     exit;
 }
 
-/**
- * sendJSON($data, $status)
- * A helper function to send data back to the JavaScript (frontend) in a clean format.
+/*
+ * --- HELPER FUNCTION: sendJSON() ---
+ * Sends a PHP array back to the browser as JSON.
+ *
+ * Example usage:
+ *   sendJSON(['message' => 'Success!']);         → sends {"message":"Success!"}
+ *   sendJSON(['error' => 'Not found.'], 404);    → sends 404 error with {"error":"Not found."}
  */
 function sendJSON($data, $status = 200) {
-    ob_clean(); // Clear any accidental text output
-    http_response_code($status); // Set the HTTP status (e.g., 200 OK or 400 Bad Request)
-    header('Content-Type: application/json'); // Tell the browser this is JSON data
-    echo json_encode($data); // Convert the PHP array to a JSON string
-    exit; // Stop the script
+    ob_clean();                        // Clear any accidental output
+    http_response_code($status);       // Set HTTP status (200 = OK, 400 = Bad Request, etc.)
+    header('Content-Type: application/json');  // Tell browser this is JSON
+    echo json_encode($data);           // Convert PHP array to JSON string
+    exit;                              // Stop the script
 }
 ?>

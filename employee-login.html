@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Login — Enrollment System</title>
+    <title>Employee Login — Enrollment System</title>
     <link rel="stylesheet" href="style.css">
 </head>
 
@@ -14,7 +14,7 @@
         <span class="logo-icon">🏫</span>
         <div>
             <h1>School Enrollment System</h1>
-            <p>Admin Access Only</p>
+            <p>Employee Access Only</p>
         </div>
     </nav>
 
@@ -23,20 +23,20 @@
         <div class="steps">
             <a href="index.html">🏠 Home</a>
             <span>›</span>
-            <span class="step-active">Admin Login</span>
+            <span class="step-active">Employee Login</span>
         </div>
 
         <div class="card">
             <div style="text-align:center; margin-bottom: 24px;">
                 <div style="font-size: 48px;">🔐</div>
-                <div class="card-title">Admin Dashboard Login</div>
-                <div class="card-subtitle">School staff only. Enter your credentials below.</div>
+                <div class="card-title">Employee Login</div>
+                <div class="card-subtitle">Enter your credentials to access the system.</div>
             </div>
 
             <!-- Error message -->
             <div id="alert" class="alert"></div>
 
-            <form id="adminLoginForm">
+            <form id="employeeLoginForm">
                 <div class="form-group">
                     <label for="username">Username</label>
                     <input type="text" id="username" name="username" placeholder="Enter username" required autofocus>
@@ -47,7 +47,7 @@
                 </div>
 
                 <button type="submit" id="loginBtn" class="btn btn-primary btn-full" style="margin-top: 8px;">
-                    Login to Dashboard
+                    Login
                 </button>
             </form>
 
@@ -60,30 +60,45 @@
 
     <script src="main.js"></script>
     <script>
-        document.getElementById('adminLoginForm').addEventListener('submit', async function (e) {
+        /*
+         * TUTORIAL: Employee Login Flow
+         * 1. User enters username and password.
+         * 2. We send credentials to registrar.php?action=login.
+         * 3. If valid, the server returns the user's role (admin/registrar/cashier).
+         * 4. We save the login status in sessionStorage.
+         * 5. We redirect to the correct dashboard based on the role.
+         */
+        document.getElementById('employeeLoginForm').addEventListener('submit', async function (e) {
             e.preventDefault();
             hideAlert('alert');
 
+            // Get the values from the form
             const username = document.getElementById('username').value.trim();
             const password = document.getElementById('password').value;
 
-            setLoading('loginBtn', true, 'Login to Dashboard');
+            setLoading('loginBtn', true, 'Login');
 
             try {
-                // POST credentials to the backend
-                await apiPost('api/admin.php?action=login', { username, password });
+                // Send username & password to the server
+                const result = await apiPost('api/registrar.php?action=login', { username, password });
 
-                // Save a simple session flag in sessionStorage
-                // (only lasts while the browser tab is open)
-                sessionStorage.setItem('adminLoggedIn', 'yes');
-                sessionStorage.setItem('adminUser', username);
+                // Save login status in sessionStorage (used by dashboards to check if logged in)
+                sessionStorage.setItem('registrarLoggedIn', 'yes');
+                sessionStorage.setItem('registrarUser', username);
+                sessionStorage.setItem('userRole', result.role);
 
-                // Redirect to admin dashboard
-                window.location.href = 'admin-dashboard.html';
+                // Redirect to the correct dashboard based on role
+                if (result.role === 'cashier') {
+                    window.location.href = 'cashier-dashboard.html';
+                } else if (result.role === 'admin') {
+                    window.location.href = 'admin-dashboard.html';
+                } else {
+                    window.location.href = 'registrar-dashboard.html';
+                }
 
             } catch (err) {
                 showAlert('alert', '❌ ' + err.message);
-                setLoading('loginBtn', false, 'Login to Dashboard');
+                setLoading('loginBtn', false, 'Login');
             }
         });
     </script>

@@ -1,110 +1,125 @@
-/**
- * main.js - SHARED JAVASCRIPT UTILITIES
- * ---------------------------------------------------------
- * This file contains functions that are used by your HTML pages
- * to talk to the PHP backend.
- * ---------------------------------------------------------
+/*
+ * ============================================================
+ *  main.js — SHARED JAVASCRIPT FUNCTIONS
+ * ============================================================
+ *  WHAT THIS FILE DOES:
+ *  - Contains reusable functions used by ALL HTML pages.
+ *  - Handles communication between the browser and the PHP backend.
+ *  - Provides helper functions for showing alerts and loading states.
+ *
+ *  This file is included in every HTML page using:
+ *      <script src="main.js"></script>
+ * ============================================================
  */
 
-// 1. The API URL
-// Since the HTML and PHP are on the same server, we can leave this empty.
-const API = ''; 
 
-/**
- * apiPost(url, data)
- * This function sends JSON data (like a name or age) to a PHP file.
- * "async" means it waits for the server to reply before finishing.
+/*
+ * --- FUNCTION: apiPost(url, data) ---
+ * Sends JSON data to a PHP file using the POST method.
+ * Used for: Login, approving students, adding employees, etc.
+ *
+ * Example:
+ *   const result = await apiPost('api/registrar.php?action=login', { username: 'admin', password: 'admin123' });
  */
 async function apiPost(url, data) {
-    try {
-        // 1. Tell the browser to send data to the URL
-        const res = await fetch(API + url, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(data) // Convert the JS object to a string
-        });
+    // Send data to the server
+    const res = await fetch(url, {
+        method: 'POST',                                    // POST = sending data to the server
+        headers: { 'Content-Type': 'application/json' },   // Tell server we're sending JSON
+        body: JSON.stringify(data)                         // Convert JS object to JSON string
+    });
 
-        // 2. Wait for the response and convert it to JSON
-        const json = await res.json();
+    // Read the server's response as JSON
+    const json = await res.json();
 
-        // 3. If there is an error from the server, tell us
-        if (!res.ok) throw new Error(json.error || 'Something went wrong.');
-        
-        return json;
-    } catch (e) {
-        console.error('API ERROR:', e);
-        throw e;
-    }
+    // If the server returned an error, throw it so we can catch it
+    if (!res.ok) throw new Error(json.error || 'Something went wrong.');
+
+    return json;  // Return the successful response
 }
 
-/**
- * apiPostForm(url, formData)
- * This is used for forms that include FILE UPLOADS (like PSA or SF10).
+
+/*
+ * --- FUNCTION: apiPostForm(url, formData) ---
+ * Sends form data (including file uploads) to a PHP file.
+ * Used for: The enrollment form submission (which includes PSA/SF10 file uploads).
+ *
+ * Example:
+ *   const formData = new FormData(document.getElementById('myForm'));
+ *   const result = await apiPostForm('api/register.php', formData);
  */
 async function apiPostForm(url, formData) {
-    try {
-        const res = await fetch(API + url, {
-            method: 'POST',
-            body: formData // For files, we send the whole 'formData' object
-        });
+    // Send form data (no Content-Type header needed — browser sets it automatically for FormData)
+    const res = await fetch(url, {
+        method: 'POST',
+        body: formData    // FormData can include files, unlike JSON
+    });
 
-        const json = await res.json();
-        if (!res.ok) throw new Error(json.error || 'Something went wrong.');
-        
-        return json;
-    } catch (e) {
-        console.error('API FORM ERROR:', e);
-        throw e;
-    }
+    const json = await res.json();
+    if (!res.ok) throw new Error(json.error || 'Something went wrong.');
+
+    return json;
 }
 
-/**
- * apiGet(url)
- * This is used to "GET" data from the server (like a list of students).
+
+/*
+ * --- FUNCTION: apiGet(url) ---
+ * Fetches data FROM the server using the GET method.
+ * Used for: Loading student lists, payment records, dropdown options, etc.
+ *
+ * Example:
+ *   const students = await apiGet('api/registrar.php?action=students');
  */
 async function apiGet(url) {
-    try {
-        const res = await fetch(API + url);
-        const json = await res.json();
-        if (!res.ok) throw new Error(json.error || 'Something went wrong.');
-        return json;
-    } catch (e) {
-        console.error('API GET ERROR:', e);
-        throw e;
-    }
+    const res = await fetch(url);       // GET is the default method
+    const json = await res.json();      // Parse response as JSON
+    if (!res.ok) throw new Error(json.error || 'Something went wrong.');
+    return json;
 }
 
-/**
- * showAlert(elementId, message, type)
- * Shows a colored message box on the screen.
- * type = 'success' (green) or 'error' (red)
+
+/*
+ * --- FUNCTION: showAlert(elementId, message, type) ---
+ * Shows a colored message box on the page.
+ *   type = 'error'   → red box
+ *   type = 'success' → green box
+ *
+ * Example:
+ *   showAlert('alert', '❌ Login failed.');
+ *   showAlert('alert', '✅ Student approved!', 'success');
  */
 function showAlert(elementId, message, type = 'error') {
-    const el = document.getElementById(elementId);
-    if (!el) return;
-    el.textContent = message;
-    el.className = `alert alert-${type}`;
-    el.style.display = 'block';
-    // Smoothly scroll to the message so the user sees it
-    el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    const el = document.getElementById(elementId);  // Find the alert box by its ID
+    if (!el) return;                                 // If it doesn't exist, do nothing
+    el.textContent = message;                        // Set the message text
+    el.className = `alert alert-${type}`;            // Set the CSS class (red or green)
+    el.style.display = 'block';                      // Make it visible
+    el.scrollIntoView({ behavior: 'smooth', block: 'center' });  // Scroll to it
 }
 
-/**
- * hideAlert(elementId)
- * Hides the message box.
+
+/*
+ * --- FUNCTION: hideAlert(elementId) ---
+ * Hides a previously shown alert box.
  */
 function hideAlert(elementId) {
     const el = document.getElementById(elementId);
     if (el) el.style.display = 'none';
 }
 
-/**
- * setLoading(buttonId, isLoading, originalText)
- * Disables a button and shows a "wait" message while the server is working.
+
+/*
+ * --- FUNCTION: setLoading(buttonId, isLoading, originalText) ---
+ * Disables a button and shows "Please wait..." while the server is processing.
+ * When done, it re-enables the button and restores the original text.
+ *
+ * Example:
+ *   setLoading('submitBtn', true, 'Submit');    → shows "⏳ Please wait..."
+ *   setLoading('submitBtn', false, 'Submit');   → shows "Submit" again
  */
 function setLoading(buttonId, isLoading, originalText = 'Submit') {
     const btn = document.getElementById(buttonId);
     if (!btn) return;
-    btn.disabled = isLoading;
-    btn.textContent = isLoading ? '⏳ Please wait...' : originalText;
+    btn.disabled = isLoading;                                      // Disable/enable the button
+    btn.textContent = isLoading ? '⏳ Please wait...' : originalText;  // Change button text
 }

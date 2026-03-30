@@ -1,25 +1,30 @@
 <?php
-/**
- * api/register.php - STUDENT REGISTRATION LOGIC
- * ---------------------------------------------------------
- * This file is called when a user submits the registration form.
- * It handles:
- * 1. Taking the data from the form.
- * 2. Saving uploaded files (PSA, SF10).
- * 3. Saving the Parent and Student info into the database.
- * ---------------------------------------------------------
+/*
+ * ============================================================
+ *  api/register.php — ENROLLMENT FORM SUBMISSION
+ * ============================================================
+ *  WHAT THIS FILE DOES:
+ *  - Receives all the enrollment form data from the browser.
+ *  - Saves uploaded files (PSA, SF10) to the "uploads" folder.
+ *  - Inserts the Parent, Student, and Enrollment records into the database.
+ *  - Generates a unique Student Number (e.g., 2026-00001).
+ *
+ *  HOW IT'S CALLED:
+ *    The enrollment form (enroll-payment.html) sends a POST request
+ *    with all the form data using apiPostForm().
+ * ============================================================
  */
 
-// Include the database connection file
+// Connect to the database
 require_once '../db.php';
 
-// 1. Security Check: Only allow POST requests (form submissions)
+// Only allow POST requests (form submissions)
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-    sendJSON(['error' => 'Invalid request method. Go back to the form.'], 400);
+    sendJSON(['error' => 'Invalid request method.'], 400);
 }
 
-// 2. Collect Data from the Form ($_POST)
-// The names inside the brackets (like 'first_name') must match the "name" attribute in your HTML.
+// --- STEP 1: Collect all form data ---
+// Each variable matches a "name" attribute in the HTML form inputs.
 $first_name         = $_POST['first_name'] ?? '';
 $last_name          = $_POST['last_name'] ?? '';
 $birth_date         = $_POST['birth_date'] ?? '';
@@ -33,22 +38,23 @@ $parent_contact     = $_POST['parent_contact'] ?? '';
 $occupation         = $_POST['occupation'] ?? '';
 $monthly_income     = $_POST['monthly_income'] ?? '';
 $previous_school    = $_POST['previous_school'] ?? '';
+$payment_method     = $_POST['payment_method'] ?? '';
+$reference_number   = $_POST['reference_number'] ?? '';
 $email              = $_POST['email'] ?? '';
-$password           = $_POST['password'] ?? '';
 
-// 3. Basic Validation
-// Check if essential fields are empty
-if (!$first_name || !$last_name || !$email || !$password) {
-    sendJSON(['error' => 'Name, Email, and Password are required.'], 400);
+// --- STEP 2: Validate required fields ---
+if (!$first_name || !$last_name || !$email || !$payment_method || !$reference_number) {
+    sendJSON(['error' => 'All required fields including Payment details must be filled.'], 400);
 }
 
-// 4. Handle File Uploads
-// We save files into a folder called "uploads" so we don't lose them.
+// --- STEP 3: Handle file uploads ---
+// Save uploaded files to the "api/uploads/" folder.
 $uploadDir = __DIR__ . '/uploads/';
 if (!is_dir($uploadDir)) {
-    mkdir($uploadDir, 0777, true); // Create the folder if it doesn't exist
+    mkdir($uploadDir, 0777, true);  // Create the folder if it doesn't exist
 }
 
+// Upload PSA Birth Certificate (optional)
 $psa_path = null;
 if (isset($_FILES['psa_birth_cert']) && $_FILES['psa_birth_cert']['error'] === UPLOAD_ERR_OK) {
     $filename = time() . '_psa_' . basename($_FILES['psa_birth_cert']['name']);
@@ -56,6 +62,7 @@ if (isset($_FILES['psa_birth_cert']) && $_FILES['psa_birth_cert']['error'] === U
     move_uploaded_file($_FILES['psa_birth_cert']['tmp_name'], $uploadDir . $filename);
 }
 
+// Upload SF10 / Form 137 (optional — for transferees only)
 $sf10_path = null;
 if (isset($_FILES['sf10_document']) && $_FILES['sf10_document']['error'] === UPLOAD_ERR_OK) {
     $filename = time() . '_sf10_' . basename($_FILES['sf10_document']['name']);
@@ -63,53 +70,49 @@ if (isset($_FILES['sf10_document']) && $_FILES['sf10_document']['error'] === UPL
     move_uploaded_file($_FILES['sf10_document']['tmp_name'], $uploadDir . $filename);
 }
 
-// 5. Database Operations
+// --- STEP 4: Save everything to the database ---
 try {
-    // Start a "Transaction" - this means if one part fails, none of it is saved.
+    // Start a Transaction — if anything fails, nothing gets saved (all-or-nothing).
     $pdo->beginTransaction();
 
-    // A. Check if the Email is already used
+    // A. Check if the email is already registered
     $stmt = $pdo->prepare("SELECT id FROM parents WHERE email = ?");
     $stmt->execute([$email]);
     if ($stmt->fetch()) {
         sendJSON(['error' => 'This email is already registered.'], 400);
     }
 
-    // B. Insert Parent Info
-    $sqlParent = "INSERT INTO parents (full_name, relation_id, contact_no, occupation, monthly_income, email, password) 
-                  VALUES (?, ?, ?, ?, ?, ?, ?)";
-    $stmtParent = $pdo->prepare($sqlParent);
-    $stmtParent->execute([$parent_name, $relation_id, $parent_contact, $occupation, $monthly_income, $email, $password]);
-    $parentId = $pdo->lastInsertId(); // Get the ID of the new parent
+    // B. Insert the Parent record
+    $stmt = $pdo->prepare("INSERT INTO parents (full_name, relation_id, contact_no, occupation, monthly_income, email, password) VALUES (?, ?, ?, ?, ?, ?, ?)");
+    $stmt->execute([$parent_name, $relation_id, $parent_contact, $occupation, $monthly_income, $email, 'N/A']);
+    $parentId = $pdo->lastInsertId();  // Get the new parent's ID
 
-    // C. Generate a unique Student Number (e.g., 2026-00001)
+    // C. Generate a unique Student Number (format: YEAR-00001)
     $stmtCount = $pdo->query("SELECT COUNT(*) as total FROM students");
     $count = $stmtCount->fetch()['total'] + 1;
     $studentNo = date('Y') . '-' . str_pad($count, 5, '0', STR_PAD_LEFT);
 
-    // D. Insert Student Info
-    $sqlStudent = "INSERT INTO students (student_no, first_name, last_name, birth_date, gender, address, previous_school, psa_birth_cert, sf10_document) 
-                   VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
-    $stmtStudent = $pdo->prepare($sqlStudent);
-    $stmtStudent->execute([$studentNo, $first_name, $last_name, $birth_date, $gender, $address, $previous_school, $psa_path, $sf10_path]);
+    // D. Insert the Student record
+    $stmt = $pdo->prepare("INSERT INTO students (student_no, first_name, last_name, birth_date, gender, address, previous_school, psa_birth_cert, sf10_document) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)");
+    $stmt->execute([$studentNo, $first_name, $last_name, $birth_date, $gender, $address, $previous_school, $psa_path, $sf10_path]);
     $studentId = $pdo->lastInsertId();
 
-    // E. Link Student and Parent in the 'enrollments' table (Status 1 = Pending)
-    $stmtEnroll = $pdo->prepare("INSERT INTO enrollments (student_id, parent_id, grade_level_id, session_preference, status_id) VALUES (?, ?, ?, ?, 1)");
-    $stmtEnroll->execute([$studentId, $parentId, $grade_level_id, $session_preference]);
+    // E. Create the Enrollment record (linking student + parent, status = Pending)
+    $stmt = $pdo->prepare("INSERT INTO enrollments (student_id, parent_id, grade_level_id, session_preference, payment_method, reference_number, status_id) VALUES (?, ?, ?, ?, ?, ?, 1)");
+    $stmt->execute([$studentId, $parentId, $grade_level_id, $session_preference, $payment_method, $reference_number]);
 
     // Save everything!
     $pdo->commit();
 
-    // Send success message back to the website
+    // Send success response back to the browser
     sendJSON([
-        'message' => 'Registration successful! You can now check your progress.',
+        'message' => 'Registration successful!',
         'student_no' => $studentNo,
         'name' => "$first_name $last_name"
     ]);
 
 } catch (Exception $e) {
-    // If something goes wrong, "Rollback" (undo everything)
+    // If anything went wrong, undo all database changes
     $pdo->rollBack();
     sendJSON(['error' => 'Something went wrong: ' . $e->getMessage()], 500);
 }

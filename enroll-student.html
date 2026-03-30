@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Step 1: Student Information — Enrollment System</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body class="biodata-page">
+
+    <div class="page">
+        <!-- Header -->
+        <div class="biodata-header">
+            <a href="index.html" class="biodata-back-link">
+                <svg viewBox="0 0 24 24">
+                    <path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z" />
+                </svg>
+                Back to Home
+            </a>
+            <div class="biodata-logo"
+                style="display:flex;align-items:center;justify-content:center;font-size:32px;background:#fff;">🏫</div>
+            <h1>ENROLLMENT FORM</h1>
+            <p>Nursery to Grade 6</p>
+        </div>
+
+
+
+        <div id="alert" class="alert" style="max-width: 800px; margin: 0 auto 20px;"></div>
+
+        <!-- MODULE 1 Card -->
+        <div class="biodata-card">
+            <form id="step1Form">
+                <div class="form-section">
+                    <h3>1. Student Information</h3>
+                    <p style="font-size: 13px; color: #666; margin-bottom: 20px;">Step 1 of 4: Please provide the
+                        student's basic details.</p>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="last_name">Last Name *</label>
+                            <input type="text" id="last_name" name="last_name" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="first_name">First Name *</label>
+                            <input type="text" id="first_name" name="first_name" required>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="birth_date">Date of Birth *</label>
+                            <input type="date" id="birth_date" name="birth_date" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="gender">Gender *</label>
+                            <select id="gender" name="gender" required>
+                                <option value="">-- Select --</option>
+                                <option value="Male">Male</option>
+                                <option value="Female">Female</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="grade_level_id">Grade Level to Enroll *</label>
+                            <select id="grade_level_id" name="grade_level_id" required>
+                                <option value="">-- Loading... --</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="session_preference">Class Schedule / Session *</label>
+                            <select id="session_preference" name="session_preference" required disabled>
+                                <option value="">-- Select Grade Level First --</option>
+                            </select>
+                            <small id="schedule_note"
+                                style="color: var(--maroon-dark); display: none; margin-top: 4px; font-size: 12px; font-weight: 500;"></small>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="address">Complete Address *</label>
+                        <input type="text" id="address" name="address"
+                            placeholder="House No., Street, Barangay, City, Province" required>
+                    </div>
+                </div>
+
+                <div class="step-actions">
+                    <button type="button" class="btn btn-cancel"
+                        onclick="window.location.href='index.html'">Cancel</button>
+                    <button type="submit" class="btn btn-next">Next: Parent Information</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Include the shared JavaScript functions (apiGet, showAlert, etc.) -->
+    <script src="main.js"></script>
+    <script>
+        /*
+         * TUTORIAL: sessionStorage
+         * sessionStorage is like a temporary notepad in the browser.
+         * We use it to save form data as the user moves between steps.
+         * When the browser tab is closed, sessionStorage is cleared automatically.
+         */
+
+        // Load any previously saved data (if user clicked "Back" from Step 2)
+        const savedData = JSON.parse(sessionStorage.getItem('enroll_data') || '{}');
+
+        // Fill in the form fields with the saved data
+        Object.keys(savedData).forEach(key => {
+            const input = document.getElementById(key);
+            if (input) input.value = savedData[key];
+        });
+
+        // --- Load the Grade Level dropdown from the database ---
+        async function loadDropdowns() {
+            try {
+                // Fetch grade levels from the server
+                const grades = await apiGet('api/lookups.php?action=grade-levels');
+                const gradeSelect = document.getElementById('grade_level_id');
+
+                // Build the dropdown options
+                gradeSelect.innerHTML = '<option value="">-- Select Grade Level --</option>';
+                grades.forEach(g => {
+                    const sel = (savedData.grade_level_id == g.id) ? 'selected' : '';
+                    gradeSelect.innerHTML += `<option value="${g.id}" ${sel}>${g.name}</option>`;
+                });
+
+                // If a grade was already selected, trigger the schedule update
+                if (savedData.grade_level_id) {
+                    gradeSelect.dispatchEvent(new Event('change'));
+                }
+            } catch (err) {
+                console.warn('Failed to load grade levels');
+            }
+        }
+        loadDropdowns();
+
+        // --- When the user selects a grade level, update the session/schedule dropdown ---
+        document.getElementById('grade_level_id').addEventListener('change', function (e) {
+            const gradeName = e.target.options[e.target.selectedIndex].text;
+            const schedSelect = document.getElementById('session_preference');
+            const note = document.getElementById('schedule_note');
+
+            // Reset the schedule dropdown
+            schedSelect.innerHTML = '';
+            schedSelect.disabled = false;
+            note.style.display = 'none';
+
+            // Set schedule options based on the selected grade level
+            if (gradeName.includes('Kinder')) {
+                schedSelect.innerHTML += `<option value="">-- Select Session --</option>`;
+                schedSelect.innerHTML += `<option value="Kinder 1 (2.5 hrs)">Kinder 1 (2.5 hrs)</option>`;
+                schedSelect.innerHTML += `<option value="Kinder 2 - Session 1 (2.5 hrs)">Kinder 2 - Session 1 (2.5 hrs)</option>`;
+                schedSelect.innerHTML += `<option value="Kinder 2 - Session 2 (2.5 hrs)">Kinder 2 - Session 2 (2.5 hrs)</option>`;
+            } else if (gradeName.includes('Grade 1')) {
+                schedSelect.innerHTML += `<option value="">-- Select Session --</option>`;
+                schedSelect.innerHTML += `<option value="Grade 1 - AM Session">AM Session</option>`;
+                schedSelect.innerHTML += `<option value="Grade 1 - PM Session">PM Session</option>`;
+            } else if (gradeName.includes('Grade 2') || gradeName.includes('Grade 3') || gradeName.includes('Grade 4')) {
+                schedSelect.innerHTML += `<option value="Morning Session">Morning Session</option>`;
+                note.textContent = "Note: Grades 2, 3, and 4 are morning sessions.";
+                note.style.display = 'block';
+            } else if (gradeName.includes('Grade 5') || gradeName.includes('Grade 6')) {
+                schedSelect.innerHTML += `<option value="Afternoon Session">Afternoon Session</option>`;
+                note.textContent = "Note: Grades 5 and 6 are afternoon sessions.";
+                note.style.display = 'block';
+            } else {
+                schedSelect.innerHTML = `<option value="">-- Select Grade Level First --</option>`;
+                schedSelect.disabled = true;
+            }
+        });
+
+        // --- When the form is submitted, save data and go to Step 2 ---
+        document.getElementById('step1Form').addEventListener('submit', function (e) {
+            e.preventDefault();  // Prevent the page from reloading
+
+            // Collect all form values
+            const formData = new FormData(e.target);
+            const data = JSON.parse(sessionStorage.getItem('enroll_data') || '{}');
+
+            // Save each field to sessionStorage
+            formData.forEach((value, key) => data[key] = value);
+            sessionStorage.setItem('enroll_data', JSON.stringify(data));
+
+            // Go to the next step
+            window.location.href = 'enroll-parent.html';
+        });
+    </script>
+</body>
+
+</html>
