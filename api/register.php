@@ -97,8 +97,8 @@ try {
     $stmt->execute([$studentNo, $first_name, $last_name, $birth_date, $gender, $address, $previous_school, $psa_path, $sf10_path]);
     $studentId = $pdo->lastInsertId();
 
-    // E. Create the Enrollment record (linking student + parent, status = Pending)
-    $stmt = $pdo->prepare("INSERT INTO enrollments (student_id, parent_id, grade_level_id, session_preference, payment_method, reference_number, status_id) VALUES (?, ?, ?, ?, ?, ?, 1)");
+    // E. Create the Enrollment record (linking student + parent)
+    $stmt = $pdo->prepare("INSERT INTO enrollments (student_id, parent_id, grade_level_id, session_preference, payment_method, reference_number) VALUES (?, ?, ?, ?, ?, ?)");
     $stmt->execute([$studentId, $parentId, $grade_level_id, $session_preference, $payment_method, $reference_number]);
 
     // Save everything!

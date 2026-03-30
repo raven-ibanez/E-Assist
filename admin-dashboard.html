@@ -209,16 +209,9 @@
                     <div>
                         <div class="card-title">📋 Student Enrollment Applications</div>
                         <div class="card-subtitle" style="margin-bottom:0;">
-                            Review and approve or reject each enrollment application.
+                            View all enrollment applications.
                         </div>
                     </div>
-                    <select id="filterStatus" onchange="filterStudents()"
-                        style="padding:8px 14px; border:1.5px solid var(--gray-300); border-radius:8px; font-size:14px;">
-                        <option value="All">All Statuses</option>
-                        <option value="Pending">Pending</option>
-                        <option value="Approved">Approved</option>
-                        <option value="Rejected">Rejected</option>
-                    </select>
                 </div>
 
                 <div id="enrollAlert" class="alert"></div>
@@ -233,12 +226,11 @@
                                 <th>Parent</th>
                                 <th>Contact</th>
                                 <th>Date Applied</th>
-                                <th>Status</th>
                                 <th>Actions</th>
                             </tr>
                         </thead>
                         <tbody id="studentsTableBody">
-                            <tr><td colspan="8" style="text-align:center; color:var(--gray-500); padding:40px;">⏳ Loading...</td></tr>
+                            <tr><td colspan="7" style="text-align:center; color:var(--gray-500); padding:40px;">⏳ Loading...</td></tr>
                         </tbody>
                     </table>
                 </div>
@@ -252,7 +244,7 @@
                     <div>
                         <div class="card-title">💳 Enrollee Payment Records</div>
                         <div class="card-subtitle" style="margin-bottom:0;">
-                            View payment method, reference number, and enrollment status.
+                            View payment method and reference number.
                         </div>
                     </div>
                 </div>
@@ -281,12 +273,11 @@
                                 <th>Parent</th>
                                 <th>Payment Method</th>
                                 <th>Reference No.</th>
-                                <th>Status</th>
                                 <th>Date Applied</th>
                             </tr>
                         </thead>
                         <tbody id="paymentsTableBody">
-                            <tr><td colspan="8" style="text-align:center; color:var(--gray-500); padding:40px;">⏳ Loading...</td></tr>
+                            <tr><td colspan="7" style="text-align:center; color:var(--gray-500); padding:40px;">⏳ Loading...</td></tr>
                         </tbody>
                     </table>
                 </div>
@@ -416,7 +407,7 @@
         function renderStudents(students) {
             const tbody = document.getElementById('studentsTableBody');
             if (students.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="8" style="text-align:center;color:var(--gray-500);padding:40px;">No students found.</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;color:var(--gray-500);padding:40px;">No students found.</td></tr>`;
                 return;
             }
             tbody.innerHTML = students.map(s => `
@@ -427,34 +418,15 @@
                     <td>${s.parent_name}</td>
                     <td>${s.parent_contact || '—'}</td>
                     <td>${formatDate(s.applied_at)}</td>
-                    <td><span class="badge badge-${s.status.toLowerCase()}">${s.status}</span></td>
                     <td>
-                        <div class="action-btns">
-                            <button class="btn" style="padding:6px 12px;font-size:12px;background:var(--gray-100);color:var(--gray-700);"
-                                    onclick="viewStudent(${s.enrollment_id})">👁 View</button>
-                            ${s.status !== 'Approved' ? `<button class="btn btn-success" onclick="setStatus(${s.enrollment_id}, 'Approved')">✓</button>` : ''}
-                            ${s.status !== 'Rejected' ? `<button class="btn btn-danger" onclick="setStatus(${s.enrollment_id}, 'Rejected')">✗</button>` : ''}
-                        </div>
+                        <button class="btn" style="padding:6px 12px;font-size:12px;background:var(--gray-100);color:var(--gray-700);"
+                                onclick="viewStudent(${s.enrollment_id})">👁 View</button>
                     </td>
                 </tr>
             `).join('');
         }
 
-        function filterStudents() {
-            const filter = document.getElementById('filterStatus').value;
-            const filtered = filter === 'All' ? allStudents : allStudents.filter(s => s.status === filter);
-            renderStudents(filtered);
-        }
 
-        async function setStatus(id, action) {
-            if (!window.confirm(`Are you sure you want to ${action} this student?`)) return;
-            try {
-                await apiPost(`api/registrar.php?action=validate&id=${id}`, { action });
-                loadStudents();
-            } catch (err) {
-                showAlert('enrollAlert', '❌ ' + err.message);
-            }
-        }
 
         async function viewStudent(id) {
             try {
@@ -480,8 +452,7 @@
                     <div style="grid-column:1/-1;font-size:13px;font-weight:700;color:var(--blue-dark);text-transform:uppercase;letter-spacing:0.5px;border-bottom:2px solid var(--blue-light);padding-bottom:6px;margin-top:12px;margin-bottom:4px;">Documents</div>
                     <div class="info-item"><label>PSA Birth Certificate</label><span>${s.psa_birth_cert ? '✅ Uploaded' : '❌ Not uploaded'}</span></div>
                     <div class="info-item"><label>SF10 / Form 137</label><span>${s.sf10_document ? '✅ Uploaded' : '❌ Not uploaded'}</span></div>
-                    <div style="grid-column:1/-1;font-size:13px;font-weight:700;color:var(--blue-dark);text-transform:uppercase;letter-spacing:0.5px;border-bottom:2px solid var(--blue-light);padding-bottom:6px;margin-top:12px;margin-bottom:4px;">Enrollment Status</div>
-                    <div class="info-item"><label>Status</label><span class="badge badge-${s.status.toLowerCase()}">${s.status}</span></div>
+                    <div style="grid-column:1/-1;font-size:13px;font-weight:700;color:var(--blue-dark);text-transform:uppercase;letter-spacing:0.5px;border-bottom:2px solid var(--blue-light);padding-bottom:6px;margin-top:12px;margin-bottom:4px;">Enrollment Info</div>
                     <div class="info-item"><label>Date Applied</label><span>${formatDate(s.applied_at)}</span></div>
                 `;
                 document.getElementById('modalOverlay').classList.add('active');
@@ -514,7 +485,7 @@
         function renderPayments(records) {
             const tbody = document.getElementById('paymentsTableBody');
             if (records.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="8" style="text-align:center;color:var(--gray-500);padding:40px;">No records found.</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;color:var(--gray-500);padding:40px;">No records found.</td></tr>`;
                 return;
             }
             tbody.innerHTML = records.map(r => `
@@ -525,7 +496,6 @@
                     <td>${r.parent_name}</td>
                     <td>${getPaymentBadge(r.payment_method)}</td>
                     <td>${r.reference_number ? `<span class="ref-number">${r.reference_number}</span>` : '<span style="color:var(--gray-500);">—</span>'}</td>
-                    <td><span class="badge badge-${r.status.toLowerCase()}">${r.status}</span></td>
                     <td>${formatDate(r.applied_at)}</td>
                 </tr>
             `).join('');

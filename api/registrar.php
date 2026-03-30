@@ -72,13 +72,11 @@ if ($action === 'students') {
             s.last_name,
             gl.name AS grade_level,
             p.full_name AS parent_name,
-            p.contact_no AS parent_contact,
-            es.name AS status
+            p.contact_no AS parent_contact
         FROM enrollments e
         JOIN students s            ON e.student_id    = s.id
         JOIN parents p             ON e.parent_id     = p.id
         JOIN grade_levels gl       ON e.grade_level_id = gl.id
-        JOIN enrollment_statuses es ON e.status_id     = es.id
         ORDER BY e.applied_at DESC
     ");
     sendJSON($stmt->fetchAll());
@@ -113,13 +111,11 @@ if ($action === 'detail') {
             p.email, 
             p.occupation, 
             p.monthly_income,
-            r.name AS parent_relation,
-            es.name AS status
+            r.name AS parent_relation
         FROM enrollments e
         JOIN students s            ON e.student_id    = s.id
         JOIN parents p             ON e.parent_id     = p.id
         JOIN grade_levels gl       ON e.grade_level_id = gl.id
-        JOIN enrollment_statuses es ON e.status_id     = es.id
         JOIN relations r           ON p.relation_id    = r.id
         WHERE e.id = ?
     ");
@@ -134,28 +130,7 @@ if ($action === 'detail') {
 }
 
 
-// =============================================================
-//  ACTION: APPROVE OR REJECT A STUDENT
-//  - Changes the enrollment status to "Approved" or "Rejected".
-// =============================================================
-if ($action === 'validate') {
-    $id = $_GET['id'] ?? '';
-    $status_name = $data['action'] ?? '';  // "Approved" or "Rejected"
 
-    // Find the status ID from the name
-    $stmt = $pdo->prepare("SELECT id FROM enrollment_statuses WHERE name = ?");
-    $stmt->execute([$status_name]);
-    $status = $stmt->fetch();
-
-    if (!$status) {
-        sendJSON(['error' => 'Invalid status name.'], 400);
-    }
-
-    // Update the enrollment record
-    $stmt = $pdo->prepare("UPDATE enrollments SET status_id = ? WHERE id = ?");
-    $stmt->execute([$status['id'], $id]);
-    sendJSON(['message' => "Student record has been $status_name."]);
-}
 
 
 // =============================================================
@@ -175,13 +150,11 @@ if ($action === 'payments') {
             s.last_name,
             gl.name AS grade_level,
             p.full_name AS parent_name,
-            p.contact_no AS parent_contact,
-            es.name AS status
+            p.contact_no AS parent_contact
         FROM enrollments e
         JOIN students s            ON e.student_id    = s.id
         JOIN parents p             ON e.parent_id     = p.id
         JOIN grade_levels gl       ON e.grade_level_id = gl.id
-        JOIN enrollment_statuses es ON e.status_id     = es.id
         ORDER BY e.applied_at DESC
     ");
     sendJSON($stmt->fetchAll());

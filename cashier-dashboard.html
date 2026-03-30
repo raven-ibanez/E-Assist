@@ -128,13 +128,6 @@
                     <option value="Bank Transfer">Bank Transfer</option>
                     <option value="None">No Payment</option>
                 </select>
-                <select id="filterStatus" onchange="filterPayments()"
-                    style="padding:8px 14px; border:1.5px solid var(--gray-300); border-radius:8px; font-size:14px;">
-                    <option value="All">All Statuses</option>
-                    <option value="Pending">Pending</option>
-                    <option value="Approved">Approved</option>
-                    <option value="Rejected">Rejected</option>
-                </select>
             </div>
 
             <div id="alert" class="alert"></div>
@@ -151,13 +144,12 @@
                             <th>Contact</th>
                             <th>Payment Method</th>
                             <th>Reference No.</th>
-                            <th>Status</th>
                             <th>Date Applied</th>
                         </tr>
                     </thead>
                     <tbody id="paymentsTableBody">
                         <tr>
-                            <td colspan="9" style="text-align:center; color:var(--gray-500); padding:40px;">
+                            <td colspan="8" style="text-align:center; color:var(--gray-500); padding:40px;">
                                 ⏳ Loading...
                             </td>
                         </tr>
@@ -237,7 +229,7 @@
             const tbody = document.getElementById('paymentsTableBody');
 
             if (records.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="9" style="text-align:center;color:var(--gray-500);padding:40px;">
+                tbody.innerHTML = `<tr><td colspan="8" style="text-align:center;color:var(--gray-500);padding:40px;">
                     No records found.</td></tr>`;
                 return;
             }
@@ -251,7 +243,6 @@
                     <td>${r.parent_contact || '—'}</td>
                     <td>${getPaymentBadge(r.payment_method)}</td>
                     <td>${r.reference_number ? `<span class="ref-number">${r.reference_number}</span>` : '<span style="color:var(--gray-500);">—</span>'}</td>
-                    <td><span class="badge badge-${r.status.toLowerCase()}">${r.status}</span></td>
                     <td>${formatDate(r.applied_at)}</td>
                 </tr>
             `).join('');
@@ -261,7 +252,6 @@
         function filterPayments() {
             const search = document.getElementById('searchInput').value.toLowerCase();
             const payFilter = document.getElementById('filterPayment').value;
-            const statusFilter = document.getElementById('filterStatus').value;
 
             let filtered = allPayments;
 
@@ -284,10 +274,7 @@
                 }
             }
 
-            // Status filter
-            if (statusFilter !== 'All') {
-                filtered = filtered.filter(r => r.status === statusFilter);
-            }
+
 
             renderTable(filtered);
         }
@@ -303,7 +290,6 @@
                 <div class="info-item"><label>Grade Level</label><span>${r.grade_level}</span></div>
                 <div class="info-item"><label>Parent / Guardian</label><span>${r.parent_name}</span></div>
                 <div class="info-item"><label>Contact</label><span>${r.parent_contact || '—'}</span></div>
-                <div class="info-item"><label>Enrollment Status</label><span class="badge badge-${r.status.toLowerCase()}">${r.status}</span></div>
                 <div class="info-item"><label>Payment Method</label><span>${r.payment_method || 'Not provided'}</span></div>
                 <div class="info-item"><label>Reference Number</label><span class="ref-number">${r.reference_number || '—'}</span></div>
                 <div class="info-item"><label>Tuition Fee</label><span style="font-weight:700;color:var(--maroon-dark);">₱10,000</span></div>

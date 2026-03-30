@@ -35,19 +35,7 @@ INSERT IGNORE INTO grade_levels (name, sort_order) VALUES
     ('Grade 6', 7);
 
 
--- ============================================================
---  TABLE: enrollment_statuses
---  The possible statuses of an enrollment application.
--- ============================================================
-CREATE TABLE IF NOT EXISTS enrollment_statuses (
-    id   INT AUTO_INCREMENT PRIMARY KEY,
-    name VARCHAR(50) NOT NULL UNIQUE
-);
 
-INSERT IGNORE INTO enrollment_statuses (id, name) VALUES
-    (1, 'Pending'),
-    (2, 'Approved'),
-    (3, 'Rejected');
 
 
 -- ============================================================
@@ -115,12 +103,10 @@ CREATE TABLE IF NOT EXISTS enrollments (
     session_preference VARCHAR(100) DEFAULT NULL,  -- e.g., "AM Session"
     payment_method     VARCHAR(50) DEFAULT NULL,   -- GCash, Maya, Bank Transfer
     reference_number   VARCHAR(100) DEFAULT NULL,  -- Payment reference number
-    status_id          INT NOT NULL DEFAULT 1,     -- 1 = Pending
     applied_at         TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (student_id)     REFERENCES students(id) ON DELETE CASCADE,
     FOREIGN KEY (parent_id)      REFERENCES parents(id) ON DELETE CASCADE,
-    FOREIGN KEY (grade_level_id) REFERENCES grade_levels(id),
-    FOREIGN KEY (status_id)      REFERENCES enrollment_statuses(id)
+    FOREIGN KEY (grade_level_id) REFERENCES grade_levels(id)
 );
 
 
