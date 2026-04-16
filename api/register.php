@@ -27,23 +27,29 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 // Each variable matches a "name" attribute in the HTML form inputs.
 $first_name         = $_POST['first_name'] ?? '';
 $last_name          = $_POST['last_name'] ?? '';
+$middle_name        = $_POST['middle_name'] ?? '';
+$suffix             = $_POST['suffix'] ?? '';
 $birth_date         = $_POST['birth_date'] ?? '';
 $gender             = $_POST['gender'] ?? '';
+$religion           = $_POST['religion'] ?? '';
 $address            = $_POST['address'] ?? '';
 $grade_level_id     = $_POST['grade_level_id'] ?? '';
-$session_preference = $_POST['session_preference'] ?? '';
+$session_id         = $_POST['session_id'] ?? '';
 $relation_id        = $_POST['relation_id'] ?? '';
-$parent_name        = $_POST['parent_name'] ?? '';
+$parent_first_name  = $_POST['parent_first_name'] ?? '';
+$parent_last_name   = $_POST['parent_last_name'] ?? '';
+$parent_middle_name = $_POST['parent_middle_name'] ?? '';
 $parent_contact     = $_POST['parent_contact'] ?? '';
 $occupation         = $_POST['occupation'] ?? '';
-$monthly_income     = $_POST['monthly_income'] ?? '';
+$income_range_id    = $_POST['income_range_id'] ?? '';
 $previous_school    = $_POST['previous_school'] ?? '';
-$payment_method     = $_POST['payment_method'] ?? '';
+$payment_method_id  = $_POST['payment_method_id'] ?? '';
+$payment_mode       = $_POST['payment_mode'] ?? 'Monthly';
 $reference_number   = $_POST['reference_number'] ?? '';
 $email              = $_POST['email'] ?? '';
 
 // --- STEP 2: Validate required fields ---
-if (!$first_name || !$last_name || !$email || !$payment_method || !$reference_number) {
+if (!$first_name || !$last_name || !$email || !$address || !$payment_method_id) {
     sendJSON(['error' => 'All required fields including Payment details must be filled.'], 400);
 }
 
@@ -70,39 +76,57 @@ if (isset($_FILES['sf10_document']) && $_FILES['sf10_document']['error'] === UPL
     move_uploaded_file($_FILES['sf10_document']['tmp_name'], $uploadDir . $filename);
 }
 
+// Upload 2x2 Picture (optional)
+$picture_2x2_path = null;
+if (isset($_FILES['picture_2x2']) && $_FILES['picture_2x2']['error'] === UPLOAD_ERR_OK) {
+    $filename = time() . '_2x2_' . basename($_FILES['picture_2x2']['name']);
+    $picture_2x2_path = 'api/uploads/' . $filename;
+    move_uploaded_file($_FILES['picture_2x2']['tmp_name'], $uploadDir . $filename);
+}
+
 // --- STEP 4: Save everything to the database ---
 try {
     // Start a Transaction — if anything fails, nothing gets saved (all-or-nothing).
-    $pdo->beginTransaction();
+    $conn->begin_transaction();
 
     // A. Check if the email is already registered
-    $stmt = $pdo->prepare("SELECT id FROM parents WHERE email = ?");
-    $stmt->execute([$email]);
-    if ($stmt->fetch()) {
+    $stmt = $conn->prepare("SELECT id FROM parents WHERE email = ?");
+    $stmt->bind_param("s", $email);
+    $stmt->execute();
+    if ($stmt->get_result()->fetch_assoc()) {
         sendJSON(['error' => 'This email is already registered.'], 400);
     }
 
     // B. Insert the Parent record
-    $stmt = $pdo->prepare("INSERT INTO parents (full_name, relation_id, contact_no, occupation, monthly_income, email, password) VALUES (?, ?, ?, ?, ?, ?, ?)");
-    $stmt->execute([$parent_name, $relation_id, $parent_contact, $occupation, $monthly_income, $email, 'N/A']);
-    $parentId = $pdo->lastInsertId();  // Get the new parent's ID
+    $stmt = $conn->prepare("INSERT INTO parents (first_name, last_name, middle_name, relation_id, contact_no, occupation, income_range_id, email) VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
+    $stmt->bind_param("sssissss", $parent_first_name, $parent_last_name, $parent_middle_name, $relation_id, $parent_contact, $occupation, $income_range_id, $email);
+    $stmt->execute();
+    $parentId = $conn->insert_id;  // Get the new parent's ID
 
     // C. Generate a unique Student Number (format: YEAR-00001)
-    $stmtCount = $pdo->query("SELECT COUNT(*) as total FROM students");
-    $count = $stmtCount->fetch()['total'] + 1;
+    $stmtCount = $conn->query("SELECT COUNT(*) as total FROM students");
+    $count = $stmtCount->fetch_assoc()['total'] + 1;
     $studentNo = date('Y') . '-' . str_pad($count, 5, '0', STR_PAD_LEFT);
 
-    // D. Insert the Student record
-    $stmt = $pdo->prepare("INSERT INTO students (student_no, first_name, last_name, birth_date, gender, address, previous_school, psa_birth_cert, sf10_document) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)");
-    $stmt->execute([$studentNo, $first_name, $last_name, $birth_date, $gender, $address, $previous_school, $psa_path, $sf10_path]);
-    $studentId = $pdo->lastInsertId();
+    // D. Insert the Student record (Linking to the Parent)
+    $stmt = $conn->prepare("INSERT INTO students (parent_id, student_no, first_name, last_name, middle_name, suffix, birth_date, gender, religion, address, previous_school, psa_birth_cert, sf10_document, picture_2x2) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+    $stmt->bind_param("isssssssssssss", $parentId, $studentNo, $first_name, $last_name, $middle_name, $suffix, $birth_date, $gender, $religion, $address, $previous_school, $psa_path, $sf10_path, $picture_2x2_path);
+    $stmt->execute();
+    $studentId = $conn->insert_id;
 
-    // E. Create the Enrollment record (linking student + parent)
-    $stmt = $pdo->prepare("INSERT INTO enrollments (student_id, parent_id, grade_level_id, session_preference, payment_method, reference_number) VALUES (?, ?, ?, ?, ?, ?)");
-    $stmt->execute([$studentId, $parentId, $grade_level_id, $session_preference, $payment_method, $reference_number]);
+    // E. Create the Enrollment record (linking to student only)
+    $stmt = $conn->prepare("INSERT INTO enrollments (student_id, grade_level_id, session_id) VALUES (?, ?, ?)");
+    $stmt->bind_param("iii", $studentId, $grade_level_id, $session_id);
+    $stmt->execute();
+    $enrollmentId = $conn->insert_id;
+
+    // F. Create the Payment record
+    $stmt = $conn->prepare("INSERT INTO payments (enrollment_id, payment_method_id, payment_mode, reference_number) VALUES (?, ?, ?, ?)");
+    $stmt->bind_param("iiss", $enrollmentId, $payment_method_id, $payment_mode, $reference_number);
+    $stmt->execute();
 
     // Save everything!
-    $pdo->commit();
+    $conn->commit();
 
     // Send success response back to the browser
     sendJSON([
@@ -113,7 +137,7 @@ try {
 
 } catch (Exception $e) {
     // If anything went wrong, undo all database changes
-    $pdo->rollBack();
+    $conn->rollback();
     sendJSON(['error' => 'Something went wrong: ' . $e->getMessage()], 500);
 }
 ?>

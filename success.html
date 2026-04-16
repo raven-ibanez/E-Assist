@@ -8,55 +8,57 @@
     <link rel="stylesheet" href="style.css">
 </head>
 
-<body>
+<body class="biodata-page">
 
-    <nav class="navbar">
-        <span class="logo-icon">🏫</span>
-        <div>
-            <h1>School Enrollment System</h1>
-            <p>Kinder to Grade 6 Enrollment Portal</p>
+    <div class="page" style="text-align: center;">
+        
+        <!-- Header -->
+        <div class="biodata-header">
+            <a href="index.html" class="biodata-back-link">
+                <svg viewBox="0 0 24 24">
+                    <path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z" />
+                </svg>
+                Back to Home
+            </a>
+            <div class="biodata-logo"
+                style="display:flex;align-items:center;justify-content:center;font-size:32px;background:#fff;">🏫</div>
+            <h1>ENROLLMENT FORM</h1>
+            <p>Nursery to Grade 6</p>
         </div>
-    </nav>
 
-    <div class="page">
-        <div class="card success-page">
-
-            <div class="check-icon">🎉</div>
-            <h2>Registration Submitted!</h2>
-            <p id="studentNameText">Your enrollment application has been received.</p>
-            <p>Please wait for the registrar to review and approve your application.</p>
-
-            <!-- Show the auto-generated Student ID -->
-            <div class="student-id-box">
-                <p>Your Student Reference ID</p>
-                <strong id="studentIdText">----</strong>
+        <!-- Submission Card -->
+        <div class="submission-card">
+            <div class="submission-icon-wrapper">
+                <div class="submission-icon-doc">
+                    <div style="height: 4px; width: 40px; background: #9ca3af; margin: 4px 0;"></div>
+                    <div style="height: 4px; width: 40px; background: #9ca3af; margin: 4px 0;"></div>
+                    <div style="height: 4px; width: 20px; background: #9ca3af; margin: 4px 0;"></div>
+                </div>
+                <div class="submission-icon-check">✓</div>
             </div>
-
-            <p style="font-size: 13px; color: var(--gray-500); margin-bottom: 24px;">
-                📌 Please save your Student ID above. Your enrollment status
-                will be sent to your <strong>registered email</strong>.
-            </p>
-
-            <!-- Buttons -->
-            <div style="display: flex; gap: 12px; justify-content: center; flex-wrap: wrap;">
-                <a href="index.html" class="btn btn-primary">
-                    🏠 Go to Home
-                </a>
+            <div class="submission-content">
+                <h2>Your Enrollment Application has been Submitted</h2>
+                <p>Please check your email for further notice.</p>
+                <p style="font-size: 16px; opacity: 0.8; margin-top: 8px;">Please tune in to the school’s facebook page for announcements</p>
             </div>
-
         </div>
+
+        <!-- Help Footer -->
+        <div class="success-help-footer">
+            Need help? Contact us at the school office or visit our <a href="#" class="facebook-link">Facebook page</a>.
+        </div>
+
     </div>
 
     <script>
-        // Read the name and student ID from the URL query string
-        // Example URL: success.html?name=Juan+Dela+Cruz&id=2024-00001
+        // Data logic remains for potential use, though not displayed in this simplified UI
         const params = new URLSearchParams(window.location.search);
         const name = params.get('name') || 'Student';
         const studentId = params.get('id') || '----';
-
-        document.getElementById('studentNameText').textContent =
-            `${name}'s enrollment application has been received.`;
-        document.getElementById('studentIdText').textContent = studentId;
+        console.log("Registered:", name, studentId);
+        
+        // Clear enrollment data from sessionStorage now that it's submitted
+        sessionStorage.removeItem('enroll_data');
     </script>
 </body>
 

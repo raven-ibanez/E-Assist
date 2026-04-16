@@ -158,7 +158,7 @@ body {
     content: '';
     position: absolute;
     inset: 0;
-    border: 3px solid #e0e0e0;
+
     border-radius: 12px;
     z-index: 0;
     transform: translate(10px, 10px);
@@ -242,9 +242,10 @@ body {
 
 /* --- FOOTER --- */
 .footer {
-    padding: 40px 5% 20px;
-    background: var(--off-white);
+    padding: 60px 5% 40px;
+    background: var(--maroon-dark);
     text-align: center;
+    color: var(--white);
 }
 
 .footer-content {
@@ -262,21 +263,23 @@ body {
 }
 
 .footer-school-name {
-    color: var(--maroon-dark);
+    color: var(--white);
     font-weight: 800;
-    font-size: 18px;
+    font-size: 20px;
+    letter-spacing: 0.5px;
 }
 
 .footer-address {
-    color: var(--gold-text);
-    font-size: 14px;
+    color: var(--gold);
+    font-size: 15px;
     font-weight: 600;
 }
 
 .footer-copyright {
-    color: var(--gold-text);
-    font-size: 13px;
+    color: var(--gold);
+    font-size: 14px;
     font-weight: 500;
+    opacity: 0.9;
 }
 
 /* =========================================================
@@ -407,6 +410,28 @@ textarea:focus {
     width: 100%;
 }
 
+/* --- Enroll Now Button (as per image) --- */
+.btn-enroll {
+    display: inline-block;
+    background: var(--maroon-dark);
+    color: var(--white);
+    padding: 16px 36px;
+    border-radius: 12px;
+    text-decoration: none;
+    font-weight: 700;
+    font-size: 18px;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    border: none;
+    cursor: pointer;
+}
+
+.btn-enroll:hover {
+    background: #5a0d24; /* Slightly darker maroon */
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25);
+}
+
 /* =========================================================
    STATUS BADGES
    ========================================================= */
@@ -429,6 +454,21 @@ textarea:focus {
 }
 
 .badge-rejected {
+    background: #fee2e2;
+    color: #991b1b;
+}
+
+.badge-for-review {
+    background: #dbeafe;
+    color: #1e40af;
+}
+
+.badge-enrolled {
+    background: #d1fae5;
+    color: #065f46;
+}
+
+.badge-declined {
     background: #fee2e2;
     color: #991b1b;
 }
@@ -618,15 +658,110 @@ tbody td {
     letter-spacing: 2px;
 }
 
+/* --- New Success Page Redesign --- */
+.submission-card {
+    background: var(--maroon-dark);
+    border-radius: 24px;
+    padding: 40px;
+    color: var(--white);
+    display: flex;
+    align-items: center;
+    gap: 30px;
+    margin: 40px auto;
+    max-width: 900px;
+    text-align: left;
+    box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+}
+
+.submission-icon-wrapper {
+    position: relative;
+    flex-shrink: 0;
+}
+
+.submission-icon-doc {
+    font-size: 64px;
+    background: #e5e7eb;
+    color: #9ca3af;
+    width: 90px;
+    height: 110px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 8px 30px 8px 8px; /* Folded corner feel */
+    position: relative;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+}
+
+.submission-icon-doc::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 30px;
+    height: 30px;
+    background: #cbd5e1;
+    border-radius: 0 30px 0 8px;
+}
+
+.submission-icon-check {
+    position: absolute;
+    bottom: -5px;
+    right: -10px;
+    background: #22c55e;
+    color: white;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    border: 3px solid var(--maroon-dark);
+    box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+}
+
+.submission-content h2 {
+    font-size: 32px;
+    font-weight: 700;
+    margin-bottom: 12px;
+    letter-spacing: -0.5px;
+}
+
+.submission-content p {
+    font-size: 18px;
+    opacity: 0.95;
+    margin-bottom: 5px;
+    color: var(--white) !important;
+}
+
+.success-help-footer {
+    margin-top: 60px;
+    color: var(--maroon-dark);
+    font-size: 18px;
+    font-weight: 500;
+}
+
+.facebook-link {
+    color: var(--maroon-dark);
+    font-weight: 700;
+    text-decoration: underline;
+}
+
 /* =========================================================
    MODAL (Registrar — View Full Details)
    ========================================================= */
 .modal-overlay {
     display: none;
     position: fixed;
-    inset: 0;
-    background: rgba(0, 0, 0, 0.45);
-    z-index: 100;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.6);
+    z-index: 9999;
+    /* Higher than sticky navbar */
+    display: none;
+    /* Reset for JS toggle */
     align-items: center;
     justify-content: center;
 }
@@ -635,13 +770,39 @@ tbody td {
     display: flex;
 }
 
+body.modal-open {
+    overflow: hidden;
+}
+
 .modal {
     background: var(--white);
     border-radius: var(--radius);
     padding: 32px;
-    max-width: 560px;
+    max-width: 650px;
     width: 90%;
-    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
+    max-height: 85vh;
+    overflow-y: auto;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+    position: relative;
+    text-align: left;
+    scrollbar-width: thin;
+    /* For Firefox */
+    scrollbar-color: var(--maroon-dark) var(--gray-100);
+}
+
+/* Custom scrollbar for Chrome/Safari */
+.modal::-webkit-scrollbar {
+    width: 8px;
+}
+
+.modal::-webkit-scrollbar-track {
+    background: var(--gray-100);
+    border-radius: 4px;
+}
+
+.modal::-webkit-scrollbar-thumb {
+    background: var(--maroon-dark);
+    border-radius: 4px;
 }
 
 .modal h3 {
@@ -1031,6 +1192,56 @@ body.biodata-page {
     margin-bottom: 25px;
 }
 
+/* Payment Mode (Full/Monthly) Cards */
+.mode-options {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
+    margin-bottom: 25px;
+}
+
+.mode-card {
+    border: 2px solid var(--gray-300);
+    border-radius: 10px;
+    padding: 20px 15px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    background: var(--white);
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+}
+
+.mode-card:hover {
+    border-color: var(--maroon-accent);
+}
+
+.mode-card.selected {
+    border-color: var(--maroon-dark);
+    background: #fff1f2;
+    box-shadow: 0 4px 12px rgba(122, 18, 48, 0.1);
+}
+
+.mode-card .mode-name {
+    font-size: 15px;
+    font-weight: 800;
+    color: var(--maroon-dark);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.mode-card .mode-desc {
+    font-size: 11px;
+    color: #666;
+}
+
+.mode-card input[type="radio"] {
+    display: none;
+}
+
 .payment-card {
     border: 2px solid var(--gray-100);
     border-radius: 10px;
@@ -1116,4 +1327,232 @@ body.biodata-page {
 .btn-submit-maroon:hover {
     background: #16a34a !important;
     transform: translateY(-2px);
+}
+
+/* =========================================================
+   DASHBOARD V2 THEME (Aesthetics inspired by reference image)
+   ========================================================= */
+body.theme-v2 {
+    background: #faf5ea;
+    /* Soft cream closer to the image */
+}
+
+/* Nav & Header */
+.v2-nav {
+    display: flex;
+    justify-content: space-between;
+    padding: 24px 40px;
+    align-items: center;
+}
+
+.btn-v2-nav {
+    background: transparent;
+    border: 1px solid var(--maroon-dark);
+    color: var(--maroon-dark);
+    padding: 8px 16px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.2s;
+}
+
+.btn-v2-nav:hover {
+    background: #fff5f6;
+}
+
+.v2-header {
+    text-align: center;
+    margin-bottom: 40px;
+}
+
+.v2-header-logo {
+    height: 70px;
+    margin-bottom: 8px;
+}
+
+.v2-header h1 {
+    color: var(--maroon-dark);
+    font-size: 26px;
+    font-weight: 800;
+    margin-bottom: 4px;
+}
+
+.v2-header p {
+    color: var(--maroon-dark);
+    font-size: 16px;
+    font-weight: 500;
+}
+
+/* Page Container */
+.v2-container {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 0 20px;
+}
+
+/* Stats */
+.v2-stats {
+    display: flex;
+    gap: 16px;
+    margin-bottom: 24px;
+    flex-wrap: wrap;
+}
+
+.v2-stat-card {
+    flex: 1;
+    min-width: 200px;
+    border: 1px solid var(--gray-400);
+    border-radius: 12px;
+    padding: 20px 24px;
+    background: transparent;
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+}
+
+.v2-stat-icon {
+    font-size: 24px;
+    color: var(--maroon-dark);
+    display: flex;
+    align-items: center;
+    margin-top: 2px;
+}
+
+.v2-stat-info {
+    display: flex;
+    flex-direction: column;
+}
+
+.v2-stat-label {
+    color: var(--maroon-dark);
+    font-size: 15px;
+    font-weight: 500;
+    margin-bottom: 4px;
+}
+
+.v2-stat-value {
+    color: var(--maroon-dark);
+    font-size: 20px;
+    font-weight: 600;
+}
+
+/* Tables Layout */
+.v2-table-container {
+    border: 1px solid var(--gray-400);
+    border-radius: 12px;
+    padding: 24px 0;
+    background: transparent;
+    margin-bottom: 40px;
+}
+
+.v2-table-title {
+    color: var(--maroon-dark);
+    font-size: 20px;
+    font-weight: 700;
+    margin-bottom: 24px;
+    padding: 0 24px;
+}
+
+.v2-table-wrapper {
+    overflow-x: auto;
+}
+
+.v2-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.v2-table th,
+.v2-table td {
+    padding: 16px 24px;
+    text-align: left;
+    color: var(--maroon-dark);
+    font-size: 14px;
+}
+
+.v2-table th {
+    font-weight: 500;
+    border-bottom: 2px solid var(--maroon-dark);
+    white-space: nowrap;
+    color: white;
+}
+
+.v2-table td {
+    border-bottom: 1px solid var(--gray-300);
+}
+
+.v2-table tr:last-child td {
+    border-bottom: none;
+}
+
+/* Status Badges */
+.v2-badge-salmon {
+    background: #ffcccc;
+    color: #cc0000;
+    padding: 6px 16px;
+    border-radius: 6px;
+    border: 1px solid #ff9999;
+    font-size: 13px;
+    font-weight: 600;
+    display: inline-block;
+    text-align: center;
+}
+
+.v2-badge-green {
+    background: #e6f4ea;
+    color: #137333;
+    padding: 6px 16px;
+    border-radius: 6px;
+    border: 1px solid #ceead6;
+    font-size: 13px;
+    font-weight: 600;
+    display: inline-block;
+    text-align: center;
+}
+
+.v2-badge-blue {
+    background: #e8f0fe;
+    color: #1a73e8;
+    padding: 6px 16px;
+    border-radius: 6px;
+    border: 1px solid #d2e3fc;
+    font-size: 13px;
+    font-weight: 600;
+    display: inline-block;
+    text-align: center;
+}
+
+.v2-badge-gray {
+    background: #f3f4f6;
+    color: #4b5563;
+    padding: 6px 16px;
+    border-radius: 6px;
+    border: 1px solid #d1d5db;
+    font-size: 13px;
+    font-weight: 600;
+    display: inline-block;
+    text-align: center;
+}
+
+/* Actions Select */
+.v2-action-select {
+    background: var(--gray-200);
+    border: none;
+    padding: 8px 16px;
+    border-radius: 6px;
+    color: var(--gray-700);
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    appearance: none;
+    padding-right: 32px;
+    background-image: url('data:image/svg+xml;utf8,<svg fill="%236b7280" height="24" viewBox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg"><path d="M7 10l5 5 5-5z"/><path d="M0 0h24v24H0z" fill="none"/></svg>');
+    background-repeat: no-repeat;
+    background-position-x: 100%;
+    background-position-y: 50%;
 }

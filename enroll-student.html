@@ -46,6 +46,14 @@
                             <label for="first_name">First Name *</label>
                             <input type="text" id="first_name" name="first_name" required>
                         </div>
+                        <div class="form-group" style="flex: 1.5;">
+                            <label for="middle_name">Middle Name</label>
+                            <input type="text" id="middle_name" name="middle_name">
+                        </div>
+                        <div class="form-group" style="flex: 0.5;">
+                            <label for="suffix">Suffix</label>
+                            <input type="text" id="suffix" name="suffix" placeholder="e.g. Jr.">
+                        </div>
                     </div>
 
                     <div class="form-row">
@@ -61,6 +69,10 @@
                                 <option value="Female">Female</option>
                             </select>
                         </div>
+                        <div class="form-group">
+                            <label for="religion">Religion *</label>
+                            <input type="text" id="religion" name="religion" required>
+                        </div>
                     </div>
 
                     <div class="form-row">
@@ -71,8 +83,8 @@
                             </select>
                         </div>
                         <div class="form-group">
-                            <label for="session_preference">Class Schedule / Session *</label>
-                            <select id="session_preference" name="session_preference" required disabled>
+                            <label for="session_id">Class Schedule / Session *</label>
+                            <select id="session_id" name="session_id" required disabled>
                                 <option value="">-- Select Grade Level First --</option>
                             </select>
                             <small id="schedule_note"
@@ -115,11 +127,18 @@
             if (input) input.value = savedData[key];
         });
 
+        let allSessions = [];
+
         // --- Load the Grade Level dropdown from the database ---
         async function loadDropdowns() {
             try {
-                // Fetch grade levels from the server
-                const grades = await apiGet('api/lookups.php?action=grade-levels');
+                // Fetch grade levels and sessions from the server
+                const [grades, sessions] = await Promise.all([
+                    apiGet('api/lookups.php?action=grade-levels'),
+                    apiGet('api/lookups.php?action=sessions')
+                ]);
+                
+                allSessions = sessions;
                 const gradeSelect = document.getElementById('grade_level_id');
 
                 // Build the dropdown options
@@ -134,7 +153,7 @@
                     gradeSelect.dispatchEvent(new Event('change'));
                 }
             } catch (err) {
-                console.warn('Failed to load grade levels');
+                console.warn('Failed to load grade levels or sessions');
             }
         }
         loadDropdowns();
@@ -142,7 +161,7 @@
         // --- When the user selects a grade level, update the session/schedule dropdown ---
         document.getElementById('grade_level_id').addEventListener('change', function (e) {
             const gradeName = e.target.options[e.target.selectedIndex].text;
-            const schedSelect = document.getElementById('session_preference');
+            const schedSelect = document.getElementById('session_id');
             const note = document.getElementById('schedule_note');
 
             // Reset the schedule dropdown
@@ -150,22 +169,30 @@
             schedSelect.disabled = false;
             note.style.display = 'none';
 
+            const addOption = (name) => {
+                const session = allSessions.find(s => s.name === name);
+                if (session) {
+                    const sel = (savedData.session_id == session.id) ? 'selected' : '';
+                    schedSelect.innerHTML += `<option value="${session.id}" ${sel}>${session.name}</option>`;
+                }
+            };
+
             // Set schedule options based on the selected grade level
             if (gradeName.includes('Kinder')) {
                 schedSelect.innerHTML += `<option value="">-- Select Session --</option>`;
-                schedSelect.innerHTML += `<option value="Kinder 1 (2.5 hrs)">Kinder 1 (2.5 hrs)</option>`;
-                schedSelect.innerHTML += `<option value="Kinder 2 - Session 1 (2.5 hrs)">Kinder 2 - Session 1 (2.5 hrs)</option>`;
-                schedSelect.innerHTML += `<option value="Kinder 2 - Session 2 (2.5 hrs)">Kinder 2 - Session 2 (2.5 hrs)</option>`;
+                addOption('Kinder 1 (2.5 hrs)');
+                addOption('Kinder 2 - Session 1 (2.5 hrs)');
+                addOption('Kinder 2 - Session 2 (2.5 hrs)');
             } else if (gradeName.includes('Grade 1')) {
                 schedSelect.innerHTML += `<option value="">-- Select Session --</option>`;
-                schedSelect.innerHTML += `<option value="Grade 1 - AM Session">AM Session</option>`;
-                schedSelect.innerHTML += `<option value="Grade 1 - PM Session">PM Session</option>`;
+                addOption('AM Session');
+                addOption('PM Session');
             } else if (gradeName.includes('Grade 2') || gradeName.includes('Grade 3') || gradeName.includes('Grade 4')) {
-                schedSelect.innerHTML += `<option value="Morning Session">Morning Session</option>`;
+                addOption('Morning Session');
                 note.textContent = "Note: Grades 2, 3, and 4 are morning sessions.";
                 note.style.display = 'block';
             } else if (gradeName.includes('Grade 5') || gradeName.includes('Grade 6')) {
-                schedSelect.innerHTML += `<option value="Afternoon Session">Afternoon Session</option>`;
+                addOption('Afternoon Session');
                 note.textContent = "Note: Grades 5 and 6 are afternoon sessions.";
                 note.style.display = 'block';
             } else {

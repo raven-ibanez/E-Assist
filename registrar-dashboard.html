@@ -6,66 +6,140 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Registrar Dashboard — Enrollment System</title>
     <link rel="stylesheet" href="style.css">
+    <style>
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+            gap: 16px;
+            margin-bottom: 28px;
+        }
+
+        .stat-card {
+            background: var(--white);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            text-align: center;
+            padding: 20px;
+        }
+
+        .stat-value {
+            font-size: 32px;
+            font-weight: 700;
+        }
+
+        .stat-label {
+            font-size: 13px;
+            color: var(--gray-500);
+        }
+
+        .search-bar {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .search-bar input {
+            flex: 1;
+            min-width: 200px;
+        }
+    </style>
 </head>
 
-<body>
+<body class="theme-v2">
 
-    <nav class="navbar">
-        <span class="logo-icon">🏫</span>
-        <div>
-            <h1>Registrar Dashboard</h1>
-            <p id="registrarUserLabel">Enrollment Management</p>
-        </div>
-        <!-- Logout button on the right side -->
-        <button onclick="logout()" style="margin-left:auto; background:#fff2; border:none; color:white;
-                       padding:8px 16px; border-radius:8px; cursor:pointer; font-size:13px;">
-            🚪 Logout
-        </button>
+    <!-- Navbar -->
+    <nav class="v2-nav">
+        <a href="index.html" class="btn-v2-nav">← Back to Home</a>
+        <button onclick="logout()" class="btn-v2-nav">[→ Logout</button>
     </nav>
 
-    <div class="page-wide">
+    <div class="v2-container">
+        <!-- Header -->
+        <div class="v2-header">
+            <img src="assets/logo.png" alt="Logo" class="v2-header-logo" onerror="this.src=''; this.alt='🏫'; this.style.fontSize='50px';">
+            <h1 id="registrarUserLabel">Registrar Dashboard</h1>
+            <p>Brother Sun Sister Moon Academy Inc.</p>
+        </div>
 
-        <!-- Stats Summary -->
-        <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(180px,1fr)); gap:16px; margin-bottom:28px;">
-            <div class="card" style="text-align:center; padding:20px;">
-                <div style="font-size:32px; font-weight:700; color:var(--blue-dark);" id="totalCount">0</div>
-                <div style="font-size:13px; color:var(--gray-500);">Total Applications</div>
+        <!-- Stats -->
+        <div class="v2-stats">
+            <div class="v2-stat-card">
+                <div class="v2-stat-icon">👥</div>
+                <div class="v2-stat-info">
+                    <span class="v2-stat-label">Total Applications</span>
+                    <span class="v2-stat-value" id="totalCount">0</span>
+                </div>
+            </div>
+            <div class="v2-stat-card">
+                <div class="v2-stat-icon">📝</div>
+                <div class="v2-stat-info">
+                    <span class="v2-stat-label">Pending</span>
+                    <span class="v2-stat-value" id="pendingCount">0</span>
+                </div>
+            </div>
+            <div class="v2-stat-card">
+                <div class="v2-stat-icon">👀</div>
+                <div class="v2-stat-info">
+                    <span class="v2-stat-label">For Payment Review</span>
+                    <span class="v2-stat-value" id="reviewCount">0</span>
+                </div>
+            </div>
+            <div class="v2-stat-card">
+                <div class="v2-stat-icon">✅</div>
+                <div class="v2-stat-info">
+                    <span class="v2-stat-label">Enrolled</span>
+                    <span class="v2-stat-value" id="enrolledCount">0</span>
+                </div>
+            </div>
+            <div class="v2-stat-card">
+                <div class="v2-stat-icon">❌</div>
+                <div class="v2-stat-info">
+                    <span class="v2-stat-label">Declined</span>
+                    <span class="v2-stat-value" id="declinedCount">0</span>
+                </div>
             </div>
         </div>
 
-        <div class="card">
-            <div
-                style="display:flex; align-items:center; justify-content:space-between; margin-bottom:20px; flex-wrap:wrap; gap:12px;">
-                <div>
-                    <div class="card-title">📋 Student Enrollment Applications</div>
-                    <div class="card-subtitle" style="margin-bottom:0;">
-                        View all enrollment applications.
-                    </div>
+        <div id="alert" class="alert"></div>
+
+        <!-- Table Container -->
+        <div class="v2-table-container">
+            <div class="v2-table-title" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
+                <div>Student Enrollment Applications</div>
+                
+                <!-- Search & Filter -->
+                <div class="search-bar" style="margin-bottom:0;">
+                    <input type="text" id="searchInput" placeholder="🔍 Search name..." oninput="filterStudents()" style="padding:8px; border:1px solid var(--gray-400); border-radius:6px; background:transparent;">
+                    <select id="filterStatus" onchange="filterStudents()" class="v2-action-select">
+                        <option value="All">All Statuses</option>
+                        <option value="Pending">Pending</option>
+                        <option value="For Payment Review">For Payment Review</option>
+                        <option value="For Application Review">For Application Review</option>
+                        <option value="Enrolled">Enrolled</option>
+                        <option value="Declined">Declined</option>
+                    </select>
                 </div>
             </div>
 
-            <div id="alert" class="alert"></div>
-
             <!-- Students Table -->
-            <div class="table-wrapper">
-                <table>
+            <div class="v2-table-wrapper">
+                <table class="v2-table">
                     <thead>
                         <tr>
                             <th>Student ID</th>
-                            <th>Name</th>
+                            <th>Last Name</th>
                             <th>Grade Level</th>
                             <th>Parent</th>
                             <th>Contact</th>
                             <th>Date Applied</th>
+                            <th>Status</th>
                             <th>Actions</th>
                         </tr>
                     </thead>
                     <tbody id="studentsTableBody">
-                        <!-- Rows are added here by JavaScript -->
                         <tr>
-                            <td colspan="7" style="text-align:center; color:var(--gray-500); padding:40px;">
-                                ⏳ Loading...
-                            </td>
+                            <td colspan="8" style="text-align:center;">⏳ Loading...</td>
                         </tr>
                     </tbody>
                 </table>
@@ -74,13 +148,11 @@
     </div>
 
     <!-- ===== MODAL: View Full Student Details ===== -->
-    <div class="modal-overlay" id="modalOverlay">
-        <div class="modal">
+    <div class="modal-overlay" id="modalOverlay" onclick="closeModal()">
+        <div class="modal" onclick="event.stopPropagation()">
             <button class="modal-close" onclick="closeModal()">✕</button>
-            <h3>🧒 Student Full Details</h3>
-            <div id="modalContent" class="info-grid">
-                <!-- Filled by JS when registrar clicks "View" -->
-            </div>
+            <h3 id="modalTitle">🧒 Student Full Details</h3>
+            <div id="modalContent" class="info-grid"></div>
             <div style="margin-top:24px; text-align:right;">
                 <button class="btn btn-outline" onclick="closeModal()">Close</button>
             </div>
@@ -97,7 +169,7 @@
          *  - Checks if the user is logged in (auth guard)
          *  - Loads all student enrollment data from the server
          *  - Displays students in a table with status badges
-         *  - Lets the registrar Approve or Reject students
+         *  - Lets the registrar Approve or Decline applications
          *  - Shows full student details in a popup modal
          * ============================================================
          */
@@ -114,6 +186,19 @@
         const registrarUser = sessionStorage.getItem('registrarUser') || 'Registrar';
         document.getElementById('registrarUserLabel').textContent = `Logged in as: ${registrarUser}`;
 
+        // --- Helper: get a colored status badge ---
+        function getStatusBadge(status) {
+            const map = {
+                'Pending': 'v2-badge-salmon',
+                'For Payment Review': 'v2-badge-gray',
+                'For Application Review': 'v2-badge-gray',
+                'Enrolled': 'v2-badge-green',
+                'Declined': 'v2-badge-salmon'
+            };
+            const cls = map[status] || 'v2-badge-gray';
+            return `<span class="${cls}">${status}</span>`;
+        }
+
         // --- Load all students from the database ---
         async function loadStudents() {
             try {
@@ -125,9 +210,13 @@
             }
         }
 
-        // --- Update the total count ---
+        // --- Update the stat cards ---
         function updateStats(students) {
             document.getElementById('totalCount').textContent = students.length;
+            document.getElementById('pendingCount').textContent = students.filter(s => s.status === 'Pending').length;
+            document.getElementById('reviewCount').textContent = students.filter(s => s.status === 'For Payment Review').length;
+            document.getElementById('enrolledCount').textContent = students.filter(s => s.status === 'Enrolled').length;
+            document.getElementById('declinedCount').textContent = students.filter(s => s.status === 'Declined').length;
         }
 
         // --- Render the student table ---
@@ -135,7 +224,7 @@
             const tbody = document.getElementById('studentsTableBody');
 
             if (students.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;color:var(--gray-500);padding:40px;">
+                tbody.innerHTML = `<tr><td colspan="8" style="text-align:center;color:var(--gray-500);padding:40px;">
                     No students found.</td></tr>`;
                 return;
             }
@@ -144,21 +233,73 @@
             tbody.innerHTML = students.map(s => `
                 <tr>
                     <td><strong>${s.student_no}</strong></td>
-                    <td>${s.last_name}, ${s.first_name}</td>
+                    <td>${s.last_name}${s.suffix ? ' ' + s.suffix : ''}, ${s.first_name}</td>
                     <td>${s.grade_level}</td>
                     <td>${s.parent_name}</td>
                     <td>${s.parent_contact}</td>
                     <td>${formatDate(s.applied_at)}</td>
+                    <td>${getStatusBadge(s.status)}</td>
                     <td>
-                        <button class="btn" style="padding:6px 12px;font-size:12px;background:var(--gray-100);color:var(--gray-700);"
-                                onclick="viewStudent(${s.enrollment_id})">
-                            👁 View
-                        </button>
+                        <div class="action-btns" style="display:flex; gap:8px;">
+                            <button class="btn" style="padding:4px 12px; border:1px solid var(--maroon-dark); color:var(--maroon-dark); background:transparent; border-radius:6px; font-size:12px;"
+                                    onclick="viewStudent(${s.enrollment_id})">
+                                View Detail
+                            </button>
+                            ${s.registrar_status === 'pending' ? `
+                                <button class="btn btn-success" style="padding:6px 10px;font-size:11px;"
+                                        onclick="reviewApplication(${s.enrollment_id}, 'approved')">
+                                    ✅ Approve
+                                </button>
+                                <button class="btn btn-danger" style="padding:6px 10px;font-size:11px;"
+                                        onclick="reviewApplication(${s.enrollment_id}, 'declined')">
+                                    ❌ Decline
+                                </button>
+                            ` : `<span style="font-size:11px;color:var(--gray-500);">Reviewed</span>`}
+                        </div>
                     </td>
                 </tr>
             `).join('');
         }
 
+        // --- Filter students by search text and status ---
+        function filterStudents() {
+            const search = document.getElementById('searchInput').value.toLowerCase();
+            const statusFilter = document.getElementById('filterStatus').value;
+
+            let filtered = allStudents;
+
+            if (search) {
+                filtered = filtered.filter(s =>
+                    (s.first_name + ' ' + s.last_name).toLowerCase().includes(search) ||
+                    s.student_no.toLowerCase().includes(search) ||
+                    (s.parent_name || '').toLowerCase().includes(search)
+                );
+            }
+
+            if (statusFilter !== 'All') {
+                filtered = filtered.filter(s => s.status === statusFilter);
+            }
+
+            renderTable(filtered);
+        }
+
+        // --- Approve or Decline an application ---
+        async function reviewApplication(enrollmentId, decision) {
+            const label = decision === 'approved' ? 'approve' : 'decline';
+            if (!confirm(`Are you sure you want to ${label} this application?`)) return;
+
+            try {
+                const result = await apiPost('api/registrar.php?action=review_application', {
+                    enrollment_id: enrollmentId,
+                    decision: decision,
+                    admin_id: sessionStorage.getItem('adminId')
+                });
+                showAlert('alert', '✅ ' + result.message + ` New status: ${result.new_status}`, 'success');
+                loadStudents(); // Refresh the table
+            } catch (err) {
+                showAlert('alert', '❌ ' + err.message);
+            }
+        }
 
         // --- View full student details in a popup modal ---
         async function viewStudent(id) {
@@ -167,7 +308,7 @@
                 document.getElementById('modalContent').innerHTML = `
                     <div style="grid-column:1/-1;font-size:13px;font-weight:700;color:var(--blue-dark);text-transform:uppercase;letter-spacing:0.5px;border-bottom:2px solid var(--blue-light);padding-bottom:6px;margin-bottom:4px;">Student Information</div>
                     <div class="info-item"><label>Student ID</label><span>${s.student_no}</span></div>
-                    <div class="info-item"><label>Full Name</label><span>${s.first_name} ${s.last_name}</span></div>
+                    <div class="info-item"><label>Full Name</label><span>${s.first_name} ${s.last_name}${s.suffix ? ' ' + s.suffix : ''}</span></div>
                     <div class="info-item"><label>Date of Birth</label><span>${s.birth_date}</span></div>
                     <div class="info-item"><label>Gender</label><span>${s.gender}</span></div>
                     <div class="info-item"><label>Grade Level</label><span>${s.grade_level}</span></div>
@@ -184,13 +325,29 @@
                     <div class="info-item"><label>Monthly Income</label><span>${s.monthly_income || '—'}</span></div>
 
                     <div style="grid-column:1/-1;font-size:13px;font-weight:700;color:var(--blue-dark);text-transform:uppercase;letter-spacing:0.5px;border-bottom:2px solid var(--blue-light);padding-bottom:6px;margin-top:12px;margin-bottom:4px;">Documents</div>
-                    <div class="info-item"><label>PSA Birth Certificate</label><span>${s.psa_birth_cert ? '✅ Uploaded' : '❌ Not uploaded'}</span></div>
-                    <div class="info-item"><label>SF10 / Form 137</label><span>${s.sf10_document ? '✅ Uploaded' : '❌ Not uploaded'}</span></div>
+                    <div class="info-item" style="grid-column:1/-1;">
+                        <label>PSA Birth Certificate</label>
+                        <span>${s.psa_birth_cert
+                            ? `<a href="${s.psa_birth_cert}" target="_blank" style="color:var(--blue-dark);font-weight:600;text-decoration:underline;">📄 View Document</a>
+                               <div style="margin-top:8px;"><img src="${s.psa_birth_cert}" style="max-width:100%;max-height:200px;border-radius:8px;border:1px solid var(--gray-300);cursor:pointer;" onclick="window.open('${s.psa_birth_cert}','_blank')" onerror="this.style.display='none'"></div>`
+                            : '❌ Not uploaded'}</span>
+                    </div>
+                    <div class="info-item" style="grid-column:1/-1;">
+                        <label>SF10 / Form 137</label>
+                        <span>${s.sf10_document
+                            ? `<a href="${s.sf10_document}" target="_blank" style="color:var(--blue-dark);font-weight:600;text-decoration:underline;">📄 View Document</a>
+                               <div style="margin-top:8px;"><img src="${s.sf10_document}" style="max-width:100%;max-height:200px;border-radius:8px;border:1px solid var(--gray-300);cursor:pointer;" onclick="window.open('${s.sf10_document}','_blank')" onerror="this.style.display='none'"></div>`
+                            : '❌ Not uploaded'}</span>
+                    </div>
 
-                    <div style="grid-column:1/-1;font-size:13px;font-weight:700;color:var(--blue-dark);text-transform:uppercase;letter-spacing:0.5px;border-bottom:2px solid var(--blue-light);padding-bottom:6px;margin-top:12px;margin-bottom:4px;">Enrollment Info</div>
+                    <div style="grid-column:1/-1;font-size:13px;font-weight:700;color:var(--blue-dark);text-transform:uppercase;letter-spacing:0.5px;border-bottom:2px solid var(--blue-light);padding-bottom:6px;margin-top:12px;margin-bottom:4px;">Review Status</div>
+                    <div class="info-item"><label>Overall Status</label><span>${getStatusBadge(s.status)}</span></div>
+                    <div class="info-item"><label>Registrar Review</label><span>${s.registrar_status}</span></div>
+                    <div class="info-item"><label>Cashier Review</label><span>${s.cashier_status}</span></div>
                     <div class="info-item"><label>Date Applied</label><span>${formatDate(s.applied_at)}</span></div>
                 `;
                 document.getElementById('modalOverlay').classList.add('active');
+                document.body.classList.add('modal-open');
             } catch (err) {
                 showAlert('alert', '❌ Could not load student details.');
             }
@@ -198,6 +355,7 @@
 
         function closeModal() {
             document.getElementById('modalOverlay').classList.remove('active');
+            document.body.classList.remove('modal-open');
         }
 
         // --- Logout: clear session and go to login page ---

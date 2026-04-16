@@ -22,14 +22,38 @@ $action = $_GET['action'] ?? '';
 
 // --- ACTION: Get all grade levels (for the enrollment form dropdown) ---
 if ($action === 'grade-levels') {
-    $stmt = $pdo->query("SELECT id, name FROM grade_levels ORDER BY sort_order");
-    sendJSON($stmt->fetchAll());
+    $result = $conn->query("SELECT id, name FROM grade_levels ORDER BY sort_order");
+    sendJSON($result->fetch_all(MYSQLI_ASSOC));
 }
 
 // --- ACTION: Get all relationships (Mother, Father, Guardian, etc.) ---
 if ($action === 'relations') {
-    $stmt = $pdo->query("SELECT id, name FROM relations ORDER BY id");
-    sendJSON($stmt->fetchAll());
+    $result = $conn->query("SELECT id, name FROM relations ORDER BY id");
+    sendJSON($result->fetch_all(MYSQLI_ASSOC));
+}
+
+// --- ACTION: Get all income ranges ---
+if ($action === 'income-ranges') {
+    $result = $conn->query("SELECT id, range_label FROM income_ranges ORDER BY id");
+    sendJSON($result->fetch_all(MYSQLI_ASSOC));
+}
+
+// --- ACTION: Get all sessions ---
+if ($action === 'sessions') {
+    $result = $conn->query("SELECT id, name FROM sessions ORDER BY id");
+    sendJSON($result->fetch_all(MYSQLI_ASSOC));
+}
+
+// --- ACTION: Get all payment methods ---
+if ($action === 'payment-methods') {
+    $result = $conn->query("SELECT id, name FROM payment_methods ORDER BY id");
+    sendJSON($result->fetch_all(MYSQLI_ASSOC));
+}
+
+// --- ACTION: Get all employee roles ---
+if ($action === 'roles') {
+    $result = $conn->query("SELECT id, name FROM roles ORDER BY id");
+    sendJSON($result->fetch_all(MYSQLI_ASSOC));
 }
 
 // If no valid action was provided, return an error

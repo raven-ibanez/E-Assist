@@ -53,8 +53,16 @@
 
                     <div class="form-row">
                         <div class="form-group">
-                            <label for="parent_name">Full Name *</label>
-                            <input type="text" id="parent_name" name="parent_name" required>
+                            <label for="parent_first_name">First Name *</label>
+                            <input type="text" id="parent_first_name" name="parent_first_name" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="parent_last_name">Last Name *</label>
+                            <input type="text" id="parent_last_name" name="parent_last_name" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="parent_middle_name">Middle Name</label>
+                            <input type="text" id="parent_middle_name" name="parent_middle_name">
                         </div>
                         <div class="form-group">
                             <label for="relation_id">Relationship *</label>
@@ -70,13 +78,9 @@
                             <input type="text" id="occupation" name="occupation">
                         </div>
                         <div class="form-group">
-                            <label for="monthly_income">Estimated Monthly Income</label>
-                            <select id="monthly_income" name="monthly_income">
-                                <option value="">-- Select --</option>
-                                <option value="Below 10,000">Below ₱10,000</option>
-                                <option value="10,000 - 30,000">₱10,000 - ₱30,000</option>
-                                <option value="30,000 - 50,000">₱30,000 - ₱50,000</option>
-                                <option value="Above 50,000">Above ₱50,000</option>
+                            <label for="income_range_id">Estimated Monthly Income</label>
+                            <select id="income_range_id" name="income_range_id">
+                                <option value="">-- Loading... --</option>
                             </select>
                         </div>
                     </div>
@@ -112,9 +116,10 @@
             if (input) input.value = savedData[key];
         });
 
-        // --- Load the Relationship dropdown (Mother, Father, Guardian, etc.) ---
+        // --- Load dropdowns from the database ---
         async function loadDropdowns() {
             try {
+                // Load Relationships
                 const relations = await apiGet('api/lookups.php?action=relations');
                 const relSelect = document.getElementById('relation_id');
                 relSelect.innerHTML = '<option value="">-- Select --</option>';
@@ -122,8 +127,17 @@
                     const sel = (savedData.relation_id == r.id) ? 'selected' : '';
                     relSelect.innerHTML += `<option value="${r.id}" ${sel}>${r.name}</option>`;
                 });
+
+                // Load Income Ranges
+                const incomes = await apiGet('api/lookups.php?action=income-ranges');
+                const incSelect = document.getElementById('income_range_id');
+                incSelect.innerHTML = '<option value="">-- Select --</option>';
+                incomes.forEach(i => {
+                    const sel = (savedData.income_range_id == i.id) ? 'selected' : '';
+                    incSelect.innerHTML += `<option value="${i.id}" ${sel}>${i.range_label}</option>`;
+                });
             } catch (err) {
-                console.warn('Failed to load relationships');
+                console.warn('Failed to load dropdowns');
             }
         }
         loadDropdowns();

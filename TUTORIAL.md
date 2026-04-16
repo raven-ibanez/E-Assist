@@ -57,8 +57,7 @@ E-Assist/
 │
 └── Images:
     ├── logo.png
-    ├── hero-image.png
-    └── registration-icon.png
+    └── hero-image.png
 ```
 
 ---
@@ -125,12 +124,16 @@ CREATE TABLE IF NOT EXISTS students (
     student_no      VARCHAR(20) NOT NULL UNIQUE,   -- e.g., "2026-00001"
     first_name      VARCHAR(100) NOT NULL,
     last_name       VARCHAR(100) NOT NULL,
+    middle_name     VARCHAR(255) DEFAULT NULL,
+    suffix          VARCHAR(10) DEFAULT NULL,       -- e.g., "Jr.", "Sr.", "III"
     birth_date      DATE NOT NULL,
     gender          ENUM('Male', 'Female') NOT NULL,
+    religion        VARCHAR(100) DEFAULT NULL,
     address         TEXT NOT NULL,
-    previous_school VARCHAR(255) DEFAULT NULL,      -- Only if transferee
-    psa_birth_cert  VARCHAR(255) DEFAULT NULL,      -- File path
-    sf10_document   VARCHAR(255) DEFAULT NULL       -- File path
+    previous_school VARCHAR(255) DEFAULT NULL,
+    psa_birth_cert  VARCHAR(255) DEFAULT NULL,
+    sf10_document   VARCHAR(255) DEFAULT NULL,
+    picture_2x2     VARCHAR(255) DEFAULT NULL
 );
 ```
 - `student_no` — auto-generated ID like "2026-00001"
@@ -216,16 +219,15 @@ $charset = 'utf8mb4';
 - `root` with empty password = XAMPP default
 
 ```php
-$dsn = "mysql:host=$host;dbname=$db;charset=$charset";
+$conn = new mysqli($host, $user, $pass, $db);
 ```
-- DSN = Data Source Name. It's a connection string that tells PHP where the database is
-- PHP replaces `$host`, `$db`, `$charset` with their values
+- `mysqli` = MySQL Improved (a tool to talk to databases)
+- `$conn` is the connection object. We use it everywhere to run queries
 
 ```php
-$pdo = new PDO($dsn, $user, $pass, $options);
+$conn->set_charset($charset);
 ```
-- `PDO` = PHP Data Objects (a tool to talk to databases)
-- `$pdo` is the connection object. We use it everywhere to run queries
+- This ensures the connection uses the correct character encoding (supports emojis, etc.)
 
 ```php
 function sendJSON($data, $status = 200) {
@@ -366,17 +368,18 @@ function setLoading(buttonId, isLoading, originalText = 'Submit') {
 - `<a href="employee-login.html">` — a link to the employee login page
 
 ```html
-<a href="enroll-student.html" class="action-card-new">
-    <div class="card-content">
-        <img src="registration-icon.png" alt="Form" class="card-icon">
-        <div class="card-text">
-            <h3>REGISTRATION<br>FORM</h3>
-        </div>
+### The Enrollment Trigger:
+```html
+<div class="hero-text">
+    ...
+    <div style="margin-top: 35px;">
+        <a href="enroll-student.html" class="btn-enroll">Enroll Now</a>
     </div>
-</a>
+</div>
 ```
-- This is the big "Registration Form" card button
-- Clicking it takes you to `enroll-student.html` (Step 1 of enrollment)
+- The previous card-based design was replaced with a minimal, premium **Enroll Now** button.
+- It is placed directly in the Hero Section for maximum visibility.
+- Clicking it takes you to `enroll-student.html` (Step 1 of enrollment).
 
 ---
 
@@ -431,7 +434,12 @@ document.getElementById('stepForm').addEventListener('submit', function(e) {
 ### Step 4 (Payment) — Final Submission:
 ```javascript
 // This step is different — it SUBMITS everything
-const finalFormData = new FormData(e.target);  // This step's data (payment + files)
+const finalFormData = new FormData(e.target);
+
+// Hiding fields via JavaScript (Conditional UI)
+if (name === 'Cash') {
+    refGroup.style.display = 'none'; // Clear out inputs the user doesn't need
+}
 
 // Add all saved data from previous steps
 Object.keys(savedData).forEach(key => {
@@ -442,11 +450,18 @@ Object.keys(savedData).forEach(key => {
 
 // Send EVERYTHING to the server
 const result = await apiPostForm('api/register.php', finalFormData);
-
-// Clear saved data and go to success page
-sessionStorage.removeItem('enroll_data');
-window.location.href = `success.html?name=...&id=...`;
 ```
+- **Conditional Visibility**: The form dynamically hides the Reference Number if "Cash" is chosen.
+- **Bank Instructions**: Custom messages like "bank details are to be followed" appear based on selection.
+- **Card-Based Modes**: Payment modes (Full/Monthly) use interactive cards instead of plain radio buttons.
+
+## CHAPTER 5.5: success.html
+**What is this?** The "Thank You" page shown after a successful submission.
+
+- **Submission Card**: Instead of a plain list, it uses a large maroon card with a document icon and a checkmark badge.
+- **Social Media Integration**: Explicitly tells parents to follow the school's Facebook page for the latest enrollment announcements.
+- **Biodata Theme**: Uses the same layout as the form to maintain a consistent feeling.
+
 
 ---
 
@@ -488,23 +503,25 @@ if (isset($_FILES['psa_birth_cert']) && $_FILES['psa_birth_cert']['error'] === U
 
 **Database Transaction:**
 ```php
-$pdo->beginTransaction();   // Start recording
+$conn->begin_transaction();   // Start recording
 // ... multiple INSERT operations ...
-$pdo->commit();              // Save everything at once
+$conn->commit();              // Save everything at once
 // If something fails:
-$pdo->rollBack();            // Undo everything
+$conn->rollback();            // Undo everything
 ```
 - A transaction means "do ALL of these or NONE of them"
 - If inserting the student fails, the parent insert is also undone
 
 **Prepared Statements:**
 ```php
-$stmt = $pdo->prepare("INSERT INTO students (first_name) VALUES (?)");
-$stmt->execute([$first_name]);
+$stmt = $conn->prepare("INSERT INTO students (first_name) VALUES (?)");
+$stmt->bind_param("s", $first_name);
+$stmt->execute();
 ```
 - The `?` is a placeholder — PHP fills it in safely
+- `bind_param("s", ...)` — tells PHP that the first placeholder is a **s**tring
 - This prevents SQL injection attacks (hackers can't break your query)
-- `$pdo->lastInsertId()` gets the ID of the row we just inserted
+- `$conn->insert_id` gets the ID of the row we just inserted
 
 ---
 
@@ -558,6 +575,11 @@ JOIN grade_levels gl ON e.grade_level_id = gl.id
 # CHAPTER 8: Employee Login Flow
 **File: employee-login.html**
 
+### The Interface Design:
+The login page uses a two-column layout wrapped in a rounded white card over a maroon background (`var(--maroon-dark)`).
+- The left column holds the `Username` field.
+- The right column holds the `Password` field and submission button.
+
 ```
 User types username + password
     → JavaScript sends to registrar.php?action=login
@@ -587,19 +609,26 @@ if (!sessionStorage.getItem('registrarLoggedIn')) {
 ---
 
 # CHAPTER 9: Dashboard Pages
+### The Premium Design System (`.style.css`)
+The system follows a high-end educational aesthetic:
+- **Primary Color**: `var(--maroon-dark)` (#7a1230) — Used for headers, primary buttons, and critical UI elements.
+- **Accent Color**: `var(--gold)` (#FFD700) — Used for highlighting details, footer text, and active states.
+- **Glassmorphism**: Employee buttons and navigation use subtle blur effects for a modern, transparent feel.
+- **Rounded UI**: A standard 12px radius (`--radius`) is applied to all cards and inputs to create a softened, friendly look.
 
 ### Registrar Dashboard (registrar-dashboard.html):
 - Shows ALL enrollment applications in a table
-- Can click "View" to see full details in a modal popup
+- Can click "View Detail" to see full info in a modal popup
+- Controls actions like approving academic docs (or rejecting)
 
 ### Cashier Dashboard (cashier-dashboard.html):
 - Shows ALL enrollments with **payment info** (method, reference number)
 - Can search by name, student ID, or reference number
 - Can filter by payment method (GCash, Maya, Bank Transfer)
-- Can click a row to see payment details in a modal
+- Can click "View Detail" to verify receipts and approve/decline payments
 
 ### Admin Dashboard (admin-dashboard.html):
-- Has **3 tabs**:
+- Has **3 sections** mapped dynamically:
   1. **Enrollments** — same as Registrar (can view applications)
   2. **Payments** — same as Cashier (can view payments)
   3. **Employee Accounts** — can create and delete employee accounts

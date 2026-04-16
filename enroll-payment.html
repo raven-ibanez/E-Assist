@@ -14,10 +14,13 @@
         <!-- Header -->
         <div class="biodata-header">
             <a href="enroll-docs.html" class="biodata-back-link">
-                <svg viewBox="0 0 24 24"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg>
+                <svg viewBox="0 0 24 24">
+                    <path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z" />
+                </svg>
                 Back to Academic History
             </a>
-            <div class="biodata-logo" style="display:flex;align-items:center;justify-content:center;font-size:32px;background:#fff;">🏫</div>
+            <div class="biodata-logo"
+                style="display:flex;align-items:center;justify-content:center;font-size:32px;background:#fff;">🏫</div>
             <h1>ENROLLMENT FORM</h1>
             <p>Tuition, Payment & Documents</p>
         </div>
@@ -48,45 +51,80 @@
         <div class="biodata-card">
             <form id="step4Form">
                 <div class="form-section">
-                    <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom: 20px;">
+                    <div
+                        style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom: 20px;">
                         <div>
                             <h3>4. Payment & Document Uploads</h3>
-                            <p style="font-size: 13px; color: #666;">Step 4 of 4: Pay the tuition and upload your documents.</p>
+                            <p style="font-size: 13px; color: #666;">Step 4 of 4: Pay the tuition and upload your
+                                documents.</p>
                         </div>
-                        <div style="background:var(--maroon-dark); color:white; padding:8px 15px; border-radius:8px; text-align:right;">
-                            <div style="font-size:10px; opacity:0.8; text-transform:uppercase;">Tuition Fee</div>
-                            <div style="font-size:18px; font-weight:900;">₱10,000</div>
+                        <div
+                            style="background:var(--maroon-dark); color:white; padding:15px; border-radius:8px; text-align:right; min-width: 200px;">
+                            <div style="font-size:11px; opacity:0.8; text-transform:uppercase; margin-bottom: 4px;">Fees
+                                Summary</div>
+                            <div
+                                style="display: flex; justify-content: space-between; font-size: 13px; margin-bottom: 2px;">
+                                <span>Tuition:</span> <span id="display-tuition">₱0</span>
+                            </div>
+                            <div
+                                style="display: flex; justify-content: space-between; font-size: 13px; margin-bottom: 6px;">
+                                <span>Books:</span> <span id="display-books">₱0</span>
+                            </div>
+                            <div
+                                style="border-top: 1px solid rgba(255,255,255,0.2); margin-top: 4px; padding-top: 4px; display: flex; justify-content: space-between; font-size: 16px; font-weight: 900;">
+                                <span>Total:</span> <span id="display-total">₱0</span>
+                            </div>
                         </div>
                     </div>
 
-                    <label style="display: block; margin-bottom: 12px; font-weight: 700;">Select Payment Method *</label>
+                    <label style="display: block; margin-bottom: 12px; font-weight: 700;">Select Payment Mode *</label>
+                    <div class="mode-options">
+                        <div class="mode-card selected" id="mode-Full" onclick="selectMode('Full', this)">
+                            <input type="radio" name="payment_mode" value="Full" checked>
+                            <span class="mode-name">Full Payment</span>
+                            <span class="mode-desc">Pay the whole amount now</span>
+                        </div>
+                        <div class="mode-card" id="mode-Monthly" onclick="selectMode('Monthly', this)">
+                            <input type="radio" name="payment_mode" value="Monthly">
+                            <span class="mode-name">Monthly</span>
+                            <span class="mode-desc">Pay in installments</span>
+                        </div>
+                    </div>
+
+                    <label style="display: block; margin-bottom: 12px; font-weight: 700;">Select Payment Method
+                        *</label>
                     <div class="payment-options" style="margin-bottom: 20px;">
-                        <div class="payment-card" onclick="selectPayment('GCash', this)">
-                            <input type="radio" name="payment_method" value="GCash" style="display:none;" required>
+                        <div class="payment-card" id="card-GCash" onclick="selectPayment('GCash', this)">
+                            <input type="radio" name="payment_method_id" value="" style="display:none;" required>
                             <span class="payment-icon">📱</span>
                             <span class="payment-name">GCash</span>
                         </div>
-                        <div class="payment-card" onclick="selectPayment('Maya', this)">
-                            <input type="radio" name="payment_method" value="Maya" style="display:none;">
-                            <span class="payment-icon">💳</span>
-                            <span class="payment-name">Maya</span>
+                        <div class="payment-card" id="card-Cash" onclick="selectPayment('Cash', this)">
+                            <input type="radio" name="payment_method_id" value="" style="display:none;">
+                            <span class="payment-icon">💵</span>
+                            <span class="payment-name">Cash</span>
                         </div>
-                        <div class="payment-card" onclick="selectPayment('Bank Transfer', this)">
-                            <input type="radio" name="payment_method" value="Bank Transfer" style="display:none;">
+                        <div class="payment-card" id="card-Bank Transfer"
+                            onclick="selectPayment('Bank Transfer', this)">
+                            <input type="radio" name="payment_method_id" value="" style="display:none;">
                             <span class="payment-icon">🏦</span>
                             <span class="payment-name">Bank Transfer</span>
                         </div>
                     </div>
 
-                    <div id="payment-instruction" class="payment-instructions" style="display: none; border-radius: 8px;">
-                        <p style="margin-bottom:5px;">Please send your payment to:</p>
-                        <strong style="font-size:20px; color:var(--maroon-dark);">09917956018</strong>
+                    <div id="payment-instruction" class="payment-instructions"
+                        style="display: none; border-radius: 8px;">
+                        <div id="transfer-details">
+                            <p style="margin-bottom:5px;">Please send your payment to:</p>
+                            <strong style="font-size:20px; color:var(--maroon-dark);">09686101591</strong>
+                        </div>
                         <p id="method-text" style="font-size: 11px; margin-top: 5px; opacity: 0.8;"></p>
                     </div>
 
-                    <div class="form-group">
-                        <label for="reference_number">Reference Number / Transaction ID *</label>
-                        <input type="text" id="reference_number" name="reference_number" placeholder="Enter Reference" required>
+                    <div class="form-group" id="reference-group">
+                        <label for="reference_number">Reference Number / Transaction ID</label>
+                        <input type="text" id="reference_number" name="reference_number" placeholder="Enter Reference"
+                            required>
                     </div>
 
                     <!-- Document Uploads -->
@@ -102,12 +140,19 @@
                             <input type="file" id="sf10_document" name="sf10_document" accept="image/*,.pdf">
                             <small style="color: #666; font-size: 11px;">Optional (To follow)</small>
                         </div>
+                        <div class="form-group">
+                            <label for="picture_2x2">2x2 Picture</label>
+                            <input type="file" id="picture_2x2" name="picture_2x2" accept="image/*">
+                            <small style="color: #666; font-size: 11px;">Required</small>
+                        </div>
                     </div>
                 </div>
 
                 <div class="step-actions">
-                    <button type="button" class="btn btn-prev" onclick="window.location.href='enroll-docs.html'">Back</button>
-                    <button type="submit" id="submitBtn" class="btn btn-submit-maroon" style="padding: 14px 40px; border-radius: 8px;">Submit Application</button>
+                    <button type="button" class="btn btn-prev"
+                        onclick="window.location.href='enroll-docs.html'">Back</button>
+                    <button type="submit" id="submitBtn" class="btn btn-submit-maroon"
+                        style="padding: 14px 40px; border-radius: 8px;">Submit Application</button>
                 </div>
             </form>
         </div>
@@ -123,30 +168,115 @@
             document.getElementById('reference_number').value = savedData.reference_number;
         }
 
-        /*
-         * --- selectPayment(method, el) ---
-         * Called when the user clicks a payment card (GCash, Maya, Bank Transfer).
-         * It highlights the selected card and shows the payment instructions.
+        /**
+         * --- loadDropdowns() ---
+         * Fetches payment methods from the database and assigns IDs to the cards.
          */
-        function selectPayment(method, el) {
+        async function loadDropdowns() {
+            try {
+                const methods = await apiGet('api/lookups.php?action=payment-methods');
+
+                // Assign IDs to the radio inputs based on the name
+                methods.forEach(m => {
+                    const card = document.getElementById(`card-${m.name}`);
+                    if (card) {
+                        const input = card.querySelector('input');
+                        input.value = m.id;
+
+                        // If this ID was previously saved, select it
+                        if (savedData.payment_method_id == m.id) {
+                            selectPayment(m.name, card);
+                        }
+                    }
+                });
+            } catch (err) {
+                console.warn('Failed to load payment methods');
+            }
+        }
+        loadDropdowns();
+
+        let currentGradeName = '';
+
+        async function loadFees() {
+            try {
+                const grades = await apiGet('api/lookups.php?action=grade-levels');
+                const selectedGrade = grades.find(g => g.id == savedData.grade_level_id);
+                if (selectedGrade) {
+                    currentGradeName = selectedGrade.name;
+                    calculateFees();
+                }
+            } catch (e) {
+                console.warn(e);
+            }
+        }
+
+        function calculateFees() {
+            if (!currentGradeName) return;
+            let tuition = 0;
+            let books = 0;
+            const modeResult = document.querySelector('input[name="payment_mode"]:checked');
+            const mode = modeResult ? modeResult.value : 'Full';
+
+            if (currentGradeName.includes('Kinder')) {
+                books = 5000;
+                tuition = mode === 'Full' ? 21000 : 1500;
+            } else {
+                // Grades 1-6
+                if (currentGradeName.includes('Grade 1') || currentGradeName.includes('Grade 2') || currentGradeName.includes('Grade 3')) {
+                    books = 6500;
+                } else if (currentGradeName.includes('Grade 4') || currentGradeName.includes('Grade 5') || currentGradeName.includes('Grade 6')) {
+                    books = 7000;
+                } else {
+                    books = 6500;
+                }
+                tuition = mode === 'Full' ? 23500 : 1700;
+            }
+
+            document.getElementById('display-tuition').textContent = '₱' + tuition.toLocaleString();
+            document.getElementById('display-books').textContent = '₱' + books.toLocaleString();
+            document.getElementById('display-total').textContent = '₱' + (tuition + books).toLocaleString();
+        }
+
+        loadFees();
+
+        function selectMode(mode, el) {
+            document.querySelectorAll('.mode-card').forEach(c => c.classList.remove('selected'));
+            el.classList.add('selected');
+            el.querySelector('input').checked = true;
+            calculateFees();
+        }
+
+        function selectPayment(name, el) {
             // Remove "selected" from all cards, then add it to the clicked one
             document.querySelectorAll('.payment-card').forEach(c => c.classList.remove('selected'));
             el.classList.add('selected');
             el.querySelector('input').checked = true;
 
-            // Show the payment instructions
-            document.getElementById('payment-instruction').style.display = 'block';
-            document.getElementById('method-text').textContent =
-                `Please ensure you are using the ${method} app to send the exact amount.`;
-        }
+            const refInput = document.getElementById('reference_number');
+            const refGroup = document.getElementById('reference-group');
+            const instructionBox = document.getElementById('payment-instruction');
+            const transferDetails = document.getElementById('transfer-details');
 
-        // If a payment method was already selected, auto-select it
-        if (savedData.payment_method) {
-            document.querySelectorAll('.payment-card').forEach(c => {
-                if (c.innerText.includes(savedData.payment_method)) {
-                    selectPayment(savedData.payment_method, c);
+            // Show the payment instructions
+            instructionBox.style.display = 'block';
+            
+            if (name === 'Cash') {
+                refGroup.style.display = 'none';
+                refInput.required = false;
+                transferDetails.style.display = 'none';
+                document.getElementById('method-text').textContent = 'Please pay exactly via cash at the school office.';
+            } else {
+                refGroup.style.display = 'block';
+                refInput.required = true;
+                
+                if (name === 'Bank Transfer') {
+                    transferDetails.style.display = 'block';
+                    document.getElementById('method-text').textContent = 'bank details are to be followed';
+                } else {
+                    transferDetails.style.display = 'block';
+                    document.getElementById('method-text').textContent = `Please ensure you are using the ${name} app to send the exact amount.`;
                 }
-            });
+            }
         }
 
         /*
@@ -157,7 +287,7 @@
          * 3. Sends everything to register.php
          * 4. Redirects to success.html on success
          */
-        document.getElementById('step4Form').addEventListener('submit', async function(e) {
+        document.getElementById('step4Form').addEventListener('submit', async function (e) {
             e.preventDefault();
             hideAlert('alert');
 
@@ -189,4 +319,5 @@
         });
     </script>
 </body>
+
 </html>

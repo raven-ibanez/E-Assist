@@ -4,7 +4,7 @@
  *  db.php — DATABASE CONNECTION
  * ============================================================
  *  WHAT THIS FILE DOES:
- *  - Connects PHP to the MySQL database using PDO.
+ *  - Connects PHP to the MySQL database using MySQLi (Object-Oriented).
  *  - Provides a helper function (sendJSON) to send data back
  *    to the browser in JSON format.
  *
@@ -21,34 +21,26 @@ ini_set('display_errors', 0);
 
 // --- STEP 2: Database login details ---
 // These must match your XAMPP MySQL settings.
-$host    = 'localhost';       // The server (localhost = your computer)
-$db      = 'enrollment_db';  // The database name
-$user    = 'root';            // MySQL username (default for XAMPP)
-$pass    = '';                // MySQL password (empty by default in XAMPP)
+$host = 'localhost';       // The server (localhost = your computer)
+$db = 'enrollment_db';  // The database name
+$user = 'root';            // MySQL username (default for XAMPP)
+$pass = '';                // MySQL password (empty by default in XAMPP)
 $charset = 'utf8mb4';        // Character encoding (supports emojis, etc.)
 
-// --- STEP 3: Build the connection string ---
-// DSN = Data Source Name. It tells PHP where the database is.
-$dsn = "mysql:host=$host;dbname=$db;charset=$charset";
+// --- STEP 3: Connect to the database using MySQLi ---
+// Create the connection. We use "$conn" everywhere to talk to the database.
+$conn = new mysqli($host, $user, $pass, $db);
 
-// --- STEP 4: Connection settings ---
-$options = [
-    PDO::ATTR_ERRMODE            => PDO::ERRMODE_EXCEPTION,  // Show errors as exceptions (easier to debug)
-    PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,        // Return rows as arrays like ['name' => 'Juan']
-    PDO::ATTR_EMULATE_PREPARES   => false,                   // Use real prepared statements (more secure)
-];
-
-// --- STEP 5: Connect to the database ---
-try {
-    // Create the connection. We use "$pdo" everywhere to talk to the database.
-    $pdo = new PDO($dsn, $user, $pass, $options);
-} catch (PDOException $e) {
-    // If the connection fails, send an error message and stop.
+// --- STEP 4: Check for connection errors ---
+if ($conn->connect_error) {
     ob_clean();
     header('Content-Type: application/json');
-    echo json_encode(['error' => 'Database connection failed: ' . $e->getMessage()]);
+    echo json_encode(['error' => 'Database connection failed: ' . $conn->connect_error]);
     exit;
 }
+
+// --- STEP 5: Set character set (supports emojis, etc.) ---
+$conn->set_charset($charset);
 
 /*
  * --- HELPER FUNCTION: sendJSON() ---
@@ -58,7 +50,8 @@ try {
  *   sendJSON(['message' => 'Success!']);         → sends {"message":"Success!"}
  *   sendJSON(['error' => 'Not found.'], 404);    → sends 404 error with {"error":"Not found."}
  */
-function sendJSON($data, $status = 200) {
+function sendJSON($data, $status = 200)
+{
     ob_clean();                        // Clear any accidental output
     http_response_code($status);       // Set HTTP status (200 = OK, 400 = Bad Request, etc.)
     header('Content-Type: application/json');  // Tell browser this is JSON
