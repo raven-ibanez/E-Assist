@@ -48,7 +48,11 @@ INSERT IGNORE INTO school_years (label, is_current) VALUES
     ('2023-2024', 0),
     ('2024-2025', 0),
     ('2025-2026', 1),
-    ('2026-2027', 0);
+    ('2026-2027', 0),
+    ('2027-2028', 0),
+    ('2028-2029', 0),
+    ('2029-2030', 0),
+    ('2030-2031', 0);
 
 
 -- ============================================================
@@ -166,7 +170,7 @@ CREATE TABLE IF NOT EXISTS students (
     previous_school VARCHAR(255) DEFAULT NULL,      -- Only for transferees
     psa_birth_cert  VARCHAR(255) DEFAULT NULL,      -- File path to uploaded PSA
     sf10_document   VARCHAR(255) DEFAULT NULL,      -- File path to uploaded SF10
-    picture_2x2     VARCHAR(255) DEFAULT NULL,      -- File path to uploaded 2x2 Picture
+    picture_2x2     VARCHAR(255) NOT NULL,      -- File path to uploaded 2x2 Picture (Required)
     FOREIGN KEY (parent_id) REFERENCES parents(id) ON DELETE CASCADE
 );
 
@@ -211,7 +215,7 @@ CREATE TABLE IF NOT EXISTS payments (
     months_count      INT DEFAULT NULL,             -- For Monthly mode: always 10 months
     tuition_fee       DECIMAL(10,2) DEFAULT NULL,  -- Computed tuition amount
     books_fee         DECIMAL(10,2) DEFAULT NULL,  -- Computed books fee
-    reference_number  VARCHAR(100) DEFAULT NULL,
+    reference_number  VARCHAR(100) DEFAULT NULL UNIQUE,
     applied_at        TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (enrollment_id)     REFERENCES enrollments(id) ON DELETE CASCADE,
     FOREIGN KEY (payment_method_id) REFERENCES payment_methods(id)

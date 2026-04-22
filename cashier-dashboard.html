@@ -173,7 +173,7 @@
                     <select id="filterPayment" onchange="filterPayments()" class="v2-action-select">
                         <option value="All">All Methods</option>
                         <option value="GCash">GCash</option>
-                        <option value="Maya">Maya</option>
+                        <option value="Maya">Cash</option>
                         <option value="Bank Transfer">Bank Transfer</option>
                         <option value="None">No Payment</option>
                     </select>
@@ -249,14 +249,14 @@
         // --- Helper: get a colored status badge ---
         function getStatusBadge(status) {
             const map = {
-                'Pending':                'v2-badge-salmon',
-                'For Payment Review':     'v2-badge-gray',
+                'Pending': 'v2-badge-salmon',
+                'For Payment Review': 'v2-badge-gray',
                 'For Application Review': 'v2-badge-gray',
-                'Enrolled':               'v2-badge-green',
-                'Enrolled (Doc. Pending)':'v2-badge-blue',
-                'Declined':               'v2-badge-salmon',
-                'Dropped':                'v2-badge-salmon',
-                'Refunded':               'v2-badge-gray'
+                'Enrolled': 'v2-badge-green',
+                'Enrolled (Doc. Pending)': 'v2-badge-blue',
+                'Declined': 'v2-badge-salmon',
+                'Dropped': 'v2-badge-salmon',
+                'Refunded': 'v2-badge-gray'
             };
             const cls = map[status] || 'v2-badge-gray';
             return `<span class="${cls}">${status}</span>`;
