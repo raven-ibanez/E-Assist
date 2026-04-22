@@ -91,6 +91,15 @@
                         </div>
                     </div>
 
+                    <!-- Monthly info label — shown only when Monthly is selected -->
+                    <div id="monthly-info" style="display:none; background:#fef3c7; border-left:4px solid #f59e0b; border-radius:8px; padding:12px 16px; margin-bottom: 16px;">
+                        <p style="margin:0; font-size:13px; color:#92400e; font-weight:600;">📅 Monthly Payment Plan: <strong>10 months</strong> to pay — starting from enrollment approval.</p>
+                    </div>
+
+                    <!-- Hidden fields for fee amounts (submitted with the form) -->
+                    <input type="hidden" id="hidden_tuition_fee" name="tuition_fee" value="0">
+                    <input type="hidden" id="hidden_books_fee" name="books_fee" value="0">
+
                     <label style="display: block; margin-bottom: 12px; font-weight: 700;">Select Payment Method
                         *</label>
                     <div class="payment-options" style="margin-bottom: 20px;">
@@ -203,6 +212,10 @@
                 const selectedGrade = grades.find(g => g.id == savedData.grade_level_id);
                 if (selectedGrade) {
                     currentGradeName = selectedGrade.name;
+                    // Store grade name for the receipt
+                    const d = JSON.parse(sessionStorage.getItem('enroll_data') || '{}');
+                    d.grade_level_name = selectedGrade.name;
+                    sessionStorage.setItem('enroll_data', JSON.stringify(d));
                     calculateFees();
                 }
             } catch (e) {
@@ -235,6 +248,10 @@
             document.getElementById('display-tuition').textContent = '₱' + tuition.toLocaleString();
             document.getElementById('display-books').textContent = '₱' + books.toLocaleString();
             document.getElementById('display-total').textContent = '₱' + (tuition + books).toLocaleString();
+
+            // Update hidden fields so fees get submitted to the server
+            document.getElementById('hidden_tuition_fee').value = tuition;
+            document.getElementById('hidden_books_fee').value = books;
         }
 
         loadFees();
@@ -243,6 +260,8 @@
             document.querySelectorAll('.mode-card').forEach(c => c.classList.remove('selected'));
             el.classList.add('selected');
             el.querySelector('input').checked = true;
+            // Show/hide the monthly info label
+            document.getElementById('monthly-info').style.display = (mode === 'Monthly') ? 'block' : 'none';
             calculateFees();
         }
 
@@ -308,9 +327,29 @@
                 // Send everything to the server
                 const result = await apiPostForm('api/register.php', finalFormData);
 
-                // Clear saved data and go to success page
+                // Collect receipt data before clearing sessionStorage
+                const paymentMethodName = document.querySelector('.payment-card.selected .payment-name')?.textContent || '';
+                const paymentModeName   = document.querySelector('input[name="payment_mode"]:checked')?.value || '';
+                const referenceNum      = document.getElementById('reference_number')?.value || 'N/A';
+                const totalText         = document.getElementById('display-total')?.textContent || '';
+                const tuitionText       = document.getElementById('display-tuition')?.textContent || '';
+                const booksText         = document.getElementById('display-books')?.textContent || '';
+                const gradeLevel        = currentGradeName || '';
+
+                // Clear saved data and go to success page with receipt params
                 sessionStorage.removeItem('enroll_data');
-                window.location.href = `success.html?name=${encodeURIComponent(result.name)}&id=${encodeURIComponent(result.student_no)}`;
+                const params = new URLSearchParams({
+                    name:      result.name,
+                    id:        result.student_no,
+                    method:    paymentMethodName,
+                    mode:      paymentModeName,
+                    ref:       referenceNum,
+                    total:     totalText,
+                    tuition:   tuitionText,
+                    books:     booksText,
+                    grade:     gradeLevel
+                });
+                window.location.href = `success.html?${params.toString()}`;
             } catch (err) {
                 // Show error message if something went wrong
                 showAlert('alert', '❌ ' + err.message);

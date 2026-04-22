@@ -100,7 +100,8 @@
     <div class="v2-container">
         <!-- Header -->
         <div class="v2-header">
-            <img src="assets/logo.png" alt="Logo" class="v2-header-logo" onerror="this.src=''; this.alt='💰'; this.style.fontSize='50px';">
+            <img src="assets/logo.png" alt="Logo" class="v2-header-logo"
+                onerror="this.src=''; this.alt='💰'; this.style.fontSize='50px';">
             <h1 id="cashierUserLabel">Cashier Dashboard</h1>
             <p>Brother Sun Sister Moon Academy Inc.</p>
         </div>
@@ -124,8 +125,15 @@
             <div class="v2-stat-card">
                 <div class="v2-stat-icon">👀</div>
                 <div class="v2-stat-info">
+                    <span class="v2-stat-label">For Payment Review</span>
+                    <span class="v2-stat-value" id="paymentReviewCount">0</span>
+                </div>
+            </div>
+            <div class="v2-stat-card">
+                <div class="v2-stat-icon">📋</div>
+                <div class="v2-stat-info">
                     <span class="v2-stat-label">For Application Review</span>
-                    <span class="v2-stat-value" id="reviewCount">0</span>
+                    <span class="v2-stat-value" id="appReviewCount">0</span>
                 </div>
             </div>
             <div class="v2-stat-card">
@@ -142,17 +150,26 @@
                     <span class="v2-stat-value" id="declinedCount">0</span>
                 </div>
             </div>
+            <div class="v2-stat-card">
+                <div class="v2-stat-icon">💸</div>
+                <div class="v2-stat-info">
+                    <span class="v2-stat-label">Refunded</span>
+                    <span class="v2-stat-value" id="refundedCount">0</span>
+                </div>
+            </div>
         </div>
 
         <div id="alert" class="alert"></div>
 
         <div class="v2-table-container">
-            <div class="v2-table-title" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
+            <div class="v2-table-title"
+                style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
                 <div>Enrollee Payment Records</div>
-                
+
                 <!-- Search & Filter -->
                 <div class="search-bar" style="margin-bottom:0;">
-                    <input type="text" id="searchInput" placeholder="🔍 Search res..." oninput="filterPayments()" style="padding:8px; border:1px solid var(--gray-400); border-radius:6px; background:transparent;">
+                    <input type="text" id="searchInput" placeholder="🔍 Search res..." oninput="filterPayments()"
+                        style="padding:8px; border:1px solid var(--gray-400); border-radius:6px; background:transparent;">
                     <select id="filterPayment" onchange="filterPayments()" class="v2-action-select">
                         <option value="All">All Methods</option>
                         <option value="GCash">GCash</option>
@@ -166,6 +183,9 @@
                         <option value="For Payment Review">For Payment Review</option>
                         <option value="For Application Review">For Application Review</option>
                         <option value="Enrolled">Enrolled</option>
+                        <option value="Enrolled (Doc. Pending)">Enrolled (Doc. Pending)</option>
+                        <option value="Dropped">Dropped</option>
+                        <option value="Refunded">Refunded</option>
                         <option value="Declined">Declined</option>
                     </select>
                 </div>
@@ -177,7 +197,7 @@
                     <thead>
                         <tr>
                             <th>Student ID</th>
-                            <th>Last Name</th>
+                            <th>Full Name</th>
                             <th>Grade Level</th>
                             <th>Parent</th>
                             <th>Method</th>
@@ -229,11 +249,14 @@
         // --- Helper: get a colored status badge ---
         function getStatusBadge(status) {
             const map = {
-                'Pending': 'v2-badge-salmon',
-                'For Payment Review': 'v2-badge-gray',
+                'Pending':                'v2-badge-salmon',
+                'For Payment Review':     'v2-badge-gray',
                 'For Application Review': 'v2-badge-gray',
-                'Enrolled': 'v2-badge-green',
-                'Declined': 'v2-badge-salmon'
+                'Enrolled':               'v2-badge-green',
+                'Enrolled (Doc. Pending)':'v2-badge-blue',
+                'Declined':               'v2-badge-salmon',
+                'Dropped':                'v2-badge-salmon',
+                'Refunded':               'v2-badge-gray'
             };
             const cls = map[status] || 'v2-badge-gray';
             return `<span class="${cls}">${status}</span>`;
@@ -254,9 +277,11 @@
         function updateStats(records) {
             document.getElementById('totalCount').textContent = records.length;
             document.getElementById('pendingCount').textContent = records.filter(r => r.status === 'Pending').length;
-            document.getElementById('reviewCount').textContent = records.filter(r => r.status === 'For Application Review').length;
-            document.getElementById('enrolledCount').textContent = records.filter(r => r.status === 'Enrolled').length;
+            document.getElementById('paymentReviewCount').textContent = records.filter(r => r.status === 'For Payment Review').length;
+            document.getElementById('appReviewCount').textContent = records.filter(r => r.status === 'For Application Review').length;
+            document.getElementById('enrolledCount').textContent = records.filter(r => r.status === 'Enrolled' || r.status === 'Enrolled (Doc. Pending)').length;
             document.getElementById('declinedCount').textContent = records.filter(r => r.status === 'Declined').length;
+            document.getElementById('refundedCount').textContent = records.filter(r => r.status === 'Refunded').length;
         }
 
         // --- Helper: creates a colored badge for the payment method ---
@@ -291,23 +316,31 @@
                     <td>${getPaymentBadge(r.payment_method)}</td>
                     <td>${r.reference_number ? `<span class="ref-number">${r.reference_number}</span>` : '<span style="color:var(--gray-500);">—</span>'}</td>
                     <td>${formatDate(r.applied_at)}</td>
-                    <td>${getStatusBadge(r.status)}</td>
                     <td>
-                        <div class="action-btns" style="display:flex; gap:8px;">
-                            <button class="btn" style="padding:4px 12px; border:1px solid var(--maroon-dark); color:var(--maroon-dark); background:transparent; border-radius:6px; font-size:12px;"
+                        ${getStatusBadge(r.status)}
+                        ${r.documents_pending == 1 ? '<br><span style="font-size:10px;color:#dc2626;font-weight:700;">🔴 Doc. Pending</span>' : ''}
+                    </td>
+                    <td>
+                        <div class="action-btns" style="display:flex; gap:6px; flex-wrap:wrap;">
+                            <button class="btn" style="padding:4px 10px; border:1px solid var(--maroon-dark); color:var(--maroon-dark); background:transparent; border-radius:6px; font-size:11px;"
                                     onclick="viewPayment(${r.enrollment_id})">
-                                View Detail
+                                👁 View
                             </button>
                             ${r.cashier_status === 'pending' ? `
-                                <button class="btn btn-success" style="padding:6px 10px;font-size:11px;"
+                                <button class="btn btn-success" style="padding:4px 8px;font-size:11px;"
                                         onclick="reviewPayment(${r.enrollment_id}, 'approved')">
                                     ✅ Approve
                                 </button>
-                                <button class="btn btn-danger" style="padding:6px 10px;font-size:11px;"
+                                <button class="btn btn-danger" style="padding:4px 8px;font-size:11px;"
                                         onclick="reviewPayment(${r.enrollment_id}, 'declined')">
                                     ❌ Decline
                                 </button>
-                            ` : `<span style="font-size:11px;color:var(--gray-500);">Reviewed</span>`}
+                            ` : r.cashier_status === 'approved' && r.status !== 'Refunded' ? `
+                                <button class="btn" style="padding:4px 8px;font-size:11px; background:#7f1d1d; color:#fff; border:none; border-radius:6px;"
+                                        onclick="reviewPayment(${r.enrollment_id}, 'refunded')">
+                                    💸 Refund
+                                </button>
+                            ` : `<span style="font-size:11px;color:var(--gray-500);">${r.status}</span>`}
                         </div>
                     </td>
                 </tr>
@@ -351,8 +384,12 @@
 
         // --- Approve or Decline a payment ---
         async function reviewPayment(enrollmentId, decision) {
-            const label = decision === 'approved' ? 'approve' : 'decline';
-            if (!confirm(`Are you sure you want to ${label} this payment?`)) return;
+            const labels = {
+                'approved': 'approve this payment',
+                'declined': 'decline this payment',
+                'refunded': 'mark this payment as REFUNDED'
+            };
+            if (!confirm(`Are you sure you want to ${labels[decision]}?`)) return;
 
             try {
                 const result = await apiPost('api/registrar.php?action=review_payment', {
@@ -379,8 +416,10 @@
                 <div class="info-item"><label>Parent / Guardian</label><span>${r.parent_name}</span></div>
                 <div class="info-item"><label>Contact</label><span>${r.parent_contact || '—'}</span></div>
                 <div class="info-item"><label>Payment Method</label><span>${r.payment_method || 'Not provided'}</span></div>
+                <div class="info-item"><label>Payment Mode</label><span>${r.payment_mode || '—'}${r.payment_mode === 'Monthly' ? ' (10 months)' : ''}</span></div>
                 <div class="info-item"><label>Reference Number</label><span class="ref-number">${r.reference_number || '—'}</span></div>
-                <div class="info-item"><label>Tuition Fee</label><span style="font-weight:700;color:var(--maroon-dark);">₱10,000</span></div>
+                <div class="info-item"><label>Tuition Fee</label><span style="font-weight:700;color:var(--maroon-dark);">${r.tuition_fee ? '₱' + parseFloat(r.tuition_fee).toLocaleString() : '—'}</span></div>
+                <div class="info-item"><label>Books Fee</label><span style="font-weight:700;color:var(--maroon-dark);">${r.books_fee ? '₱' + parseFloat(r.books_fee).toLocaleString() : '—'}</span></div>
                 <div class="info-item"><label>Overall Status</label><span>${getStatusBadge(r.status)}</span></div>
                 <div class="info-item"><label>Registrar Review</label><span>${r.registrar_status}</span></div>
                 <div class="info-item"><label>Cashier Review</label><span>${r.cashier_status}</span></div>

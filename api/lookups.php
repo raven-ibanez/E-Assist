@@ -56,6 +56,12 @@ if ($action === 'roles') {
     sendJSON($result->fetch_all(MYSQLI_ASSOC));
 }
 
+// --- ACTION: Get all school years ---
+if ($action === 'school-years') {
+    $result = $conn->query("SELECT id, label, is_current FROM school_years ORDER BY id DESC");
+    sendJSON($result->fetch_all(MYSQLI_ASSOC));
+}
+
 // If no valid action was provided, return an error
 sendJSON(['error' => 'Invalid action'], 400);
 ?>

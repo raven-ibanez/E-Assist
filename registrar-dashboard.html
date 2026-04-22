@@ -57,7 +57,8 @@
     <div class="v2-container">
         <!-- Header -->
         <div class="v2-header">
-            <img src="assets/logo.png" alt="Logo" class="v2-header-logo" onerror="this.src=''; this.alt='🏫'; this.style.fontSize='50px';">
+            <img src="assets/logo.png" alt="Logo" class="v2-header-logo"
+                onerror="this.src=''; this.alt='🏫'; this.style.fontSize='50px';">
             <h1 id="registrarUserLabel">Registrar Dashboard</h1>
             <p>Brother Sun Sister Moon Academy Inc.</p>
         </div>
@@ -82,7 +83,14 @@
                 <div class="v2-stat-icon">👀</div>
                 <div class="v2-stat-info">
                     <span class="v2-stat-label">For Payment Review</span>
-                    <span class="v2-stat-value" id="reviewCount">0</span>
+                    <span class="v2-stat-value" id="paymentReviewCount">0</span>
+                </div>
+            </div>
+            <div class="v2-stat-card">
+                <div class="v2-stat-icon">📋</div>
+                <div class="v2-stat-info">
+                    <span class="v2-stat-label">For Application Review</span>
+                    <span class="v2-stat-value" id="appReviewCount">0</span>
                 </div>
             </div>
             <div class="v2-stat-card">
@@ -99,24 +107,35 @@
                     <span class="v2-stat-value" id="declinedCount">0</span>
                 </div>
             </div>
+            <div class="v2-stat-card">
+                <div class="v2-stat-icon">🚫</div>
+                <div class="v2-stat-info">
+                    <span class="v2-stat-label">Dropped</span>
+                    <span class="v2-stat-value" id="droppedCount">0</span>
+                </div>
+            </div>
         </div>
 
         <div id="alert" class="alert"></div>
 
         <!-- Table Container -->
         <div class="v2-table-container">
-            <div class="v2-table-title" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
+            <div class="v2-table-title"
+                style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
                 <div>Student Enrollment Applications</div>
-                
+
                 <!-- Search & Filter -->
                 <div class="search-bar" style="margin-bottom:0;">
-                    <input type="text" id="searchInput" placeholder="🔍 Search name..." oninput="filterStudents()" style="padding:8px; border:1px solid var(--gray-400); border-radius:6px; background:transparent;">
+                    <input type="text" id="searchInput" placeholder="🔍 Search name..." oninput="filterStudents()"
+                        style="padding:8px; border:1px solid var(--gray-400); border-radius:6px; background:transparent;">
                     <select id="filterStatus" onchange="filterStudents()" class="v2-action-select">
                         <option value="All">All Statuses</option>
                         <option value="Pending">Pending</option>
                         <option value="For Payment Review">For Payment Review</option>
                         <option value="For Application Review">For Application Review</option>
                         <option value="Enrolled">Enrolled</option>
+                        <option value="Enrolled (Doc. Pending)">Enrolled (Doc. Pending)</option>
+                        <option value="Dropped">Dropped</option>
                         <option value="Declined">Declined</option>
                     </select>
                 </div>
@@ -128,7 +147,7 @@
                     <thead>
                         <tr>
                             <th>Student ID</th>
-                            <th>Last Name</th>
+                            <th>Full Name</th>
                             <th>Grade Level</th>
                             <th>Parent</th>
                             <th>Contact</th>
@@ -156,6 +175,63 @@
             <div style="margin-top:24px; text-align:right;">
                 <button class="btn btn-outline" onclick="closeModal()">Close</button>
             </div>
+        </div>
+    </div>
+
+    <!-- ===== MODAL: Edit Student Information ===== -->
+    <div class="modal-overlay" id="editModalOverlay" onclick="closeEditModal()">
+        <div class="modal" style="max-width:700px;" onclick="event.stopPropagation()">
+            <button class="modal-close" onclick="closeEditModal()">✕</button>
+            <h3>✏️ Edit Student Information</h3>
+            <p style="font-size:13px;color:var(--gray-500);margin-bottom:16px;">Update the student or parent details below. Only changed fields will be saved.</p>
+            <form id="editStudentForm" onsubmit="submitEdit(event)">
+                <input type="hidden" id="edit_enrollment_id" name="enrollment_id">
+                <input type="hidden" id="edit_student_id"   name="student_id">
+                <input type="hidden" id="edit_parent_id"    name="parent_id">
+
+                <!-- Student Section -->
+                <div style="font-size:13px;font-weight:700;color:var(--maroon-dark);text-transform:uppercase;border-bottom:2px solid var(--maroon-light);padding-bottom:6px;margin-bottom:14px;">Student Details</div>
+                <div class="form-row" style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:12px;">
+                    <div><label style="font-size:12px;font-weight:600;display:block;margin-bottom:4px;">First Name *</label><input id="edit_first_name" name="first_name" class="form-input" required style="width:100%;padding:8px;border:1px solid var(--gray-300);border-radius:6px;font-size:13px;"></div>
+                    <div><label style="font-size:12px;font-weight:600;display:block;margin-bottom:4px;">Last Name *</label><input id="edit_last_name" name="last_name" class="form-input" required style="width:100%;padding:8px;border:1px solid var(--gray-300);border-radius:6px;font-size:13px;"></div>
+                    <div><label style="font-size:12px;font-weight:600;display:block;margin-bottom:4px;">Middle Name</label><input id="edit_middle_name" name="middle_name" class="form-input" style="width:100%;padding:8px;border:1px solid var(--gray-300);border-radius:6px;font-size:13px;"></div>
+                </div>
+                <div class="form-row" style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:12px;margin-bottom:12px;">
+                    <div><label style="font-size:12px;font-weight:600;display:block;margin-bottom:4px;">Suffix</label><input id="edit_suffix" name="suffix" class="form-input" style="width:100%;padding:8px;border:1px solid var(--gray-300);border-radius:6px;font-size:13px;"></div>
+                    <div><label style="font-size:12px;font-weight:600;display:block;margin-bottom:4px;">Birth Date</label><input id="edit_birth_date" name="birth_date" type="date" class="form-input" style="width:100%;padding:8px;border:1px solid var(--gray-300);border-radius:6px;font-size:13px;"></div>
+                    <div><label style="font-size:12px;font-weight:600;display:block;margin-bottom:4px;">Gender</label>
+                        <select id="edit_gender" name="gender" style="width:100%;padding:8px;border:1px solid var(--gray-300);border-radius:6px;font-size:13px;">
+                            <option value="Male">Male</option><option value="Female">Female</option>
+                        </select>
+                    </div>
+                    <div><label style="font-size:12px;font-weight:600;display:block;margin-bottom:4px;">Religion</label><input id="edit_religion" name="religion" class="form-input" style="width:100%;padding:8px;border:1px solid var(--gray-300);border-radius:6px;font-size:13px;"></div>
+                </div>
+                <div class="form-row" style="display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:12px;margin-bottom:12px;">
+                    <div><label style="font-size:12px;font-weight:600;display:block;margin-bottom:4px;">House No. / Street</label><input id="edit_house_no_street" name="house_no_street" class="form-input" style="width:100%;padding:8px;border:1px solid var(--gray-300);border-radius:6px;font-size:13px;"></div>
+                    <div><label style="font-size:12px;font-weight:600;display:block;margin-bottom:4px;">Barangay</label><input id="edit_barangay" name="barangay" class="form-input" style="width:100%;padding:8px;border:1px solid var(--gray-300);border-radius:6px;font-size:13px;"></div>
+                    <div><label style="font-size:12px;font-weight:600;display:block;margin-bottom:4px;">City / Municipality</label><input id="edit_city_municipality" name="city_municipality" class="form-input" style="width:100%;padding:8px;border:1px solid var(--gray-300);border-radius:6px;font-size:13px;"></div>
+                    <div><label style="font-size:12px;font-weight:600;display:block;margin-bottom:4px;">Province</label><input id="edit_province" name="province" class="form-input" style="width:100%;padding:8px;border:1px solid var(--gray-300);border-radius:6px;font-size:13px;"></div>
+                </div>
+                <div style="margin-bottom:18px;"><label style="font-size:12px;font-weight:600;display:block;margin-bottom:4px;">Previous School</label><input id="edit_previous_school" name="previous_school" class="form-input" style="width:100%;padding:8px;border:1px solid var(--gray-300);border-radius:6px;font-size:13px;"></div>
+
+                <!-- Parent Section -->
+                <div style="font-size:13px;font-weight:700;color:var(--maroon-dark);text-transform:uppercase;border-bottom:2px solid var(--maroon-light);padding-bottom:6px;margin-bottom:14px;margin-top:8px;">Parent / Guardian</div>
+                <div class="form-row" style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:12px;">
+                    <div><label style="font-size:12px;font-weight:600;display:block;margin-bottom:4px;">First Name</label><input id="edit_parent_first_name" name="parent_first_name" class="form-input" style="width:100%;padding:8px;border:1px solid var(--gray-300);border-radius:6px;font-size:13px;"></div>
+                    <div><label style="font-size:12px;font-weight:600;display:block;margin-bottom:4px;">Last Name</label><input id="edit_parent_last_name" name="parent_last_name" class="form-input" style="width:100%;padding:8px;border:1px solid var(--gray-300);border-radius:6px;font-size:13px;"></div>
+                    <div><label style="font-size:12px;font-weight:600;display:block;margin-bottom:4px;">Middle Name</label><input id="edit_parent_middle_name" name="parent_middle_name" class="form-input" style="width:100%;padding:8px;border:1px solid var(--gray-300);border-radius:6px;font-size:13px;"></div>
+                </div>
+                <div class="form-row" style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:20px;">
+                    <div><label style="font-size:12px;font-weight:600;display:block;margin-bottom:4px;">Contact No.</label><input id="edit_parent_contact" name="parent_contact" class="form-input" style="width:100%;padding:8px;border:1px solid var(--gray-300);border-radius:6px;font-size:13px;"></div>
+                    <div><label style="font-size:12px;font-weight:600;display:block;margin-bottom:4px;">Email</label><input id="edit_parent_email" name="parent_email" type="email" class="form-input" style="width:100%;padding:8px;border:1px solid var(--gray-300);border-radius:6px;font-size:13px;"></div>
+                    <div><label style="font-size:12px;font-weight:600;display:block;margin-bottom:4px;">Occupation</label><input id="edit_parent_occupation" name="parent_occupation" class="form-input" style="width:100%;padding:8px;border:1px solid var(--gray-300);border-radius:6px;font-size:13px;"></div>
+                </div>
+
+                <div style="display:flex;gap:12px;justify-content:flex-end;">
+                    <button type="button" class="btn btn-outline" onclick="closeEditModal()">Cancel</button>
+                    <button type="submit" class="btn" style="background:var(--maroon-dark);color:#fff;padding:10px 28px;">💾 Save Changes</button>
+                </div>
+            </form>
         </div>
     </div>
 
@@ -189,11 +265,14 @@
         // --- Helper: get a colored status badge ---
         function getStatusBadge(status) {
             const map = {
-                'Pending': 'v2-badge-salmon',
-                'For Payment Review': 'v2-badge-gray',
+                'Pending':                'v2-badge-salmon',
+                'For Payment Review':     'v2-badge-gray',
                 'For Application Review': 'v2-badge-gray',
-                'Enrolled': 'v2-badge-green',
-                'Declined': 'v2-badge-salmon'
+                'Enrolled':               'v2-badge-green',
+                'Enrolled (Doc. Pending)':'v2-badge-blue',
+                'Declined':               'v2-badge-salmon',
+                'Dropped':                'v2-badge-salmon',
+                'Refunded':               'v2-badge-gray'
             };
             const cls = map[status] || 'v2-badge-gray';
             return `<span class="${cls}">${status}</span>`;
@@ -211,12 +290,14 @@
         }
 
         // --- Update the stat cards ---
-        function updateStats(students) {
-            document.getElementById('totalCount').textContent = students.length;
-            document.getElementById('pendingCount').textContent = students.filter(s => s.status === 'Pending').length;
-            document.getElementById('reviewCount').textContent = students.filter(s => s.status === 'For Payment Review').length;
-            document.getElementById('enrolledCount').textContent = students.filter(s => s.status === 'Enrolled').length;
-            document.getElementById('declinedCount').textContent = students.filter(s => s.status === 'Declined').length;
+        function updateStats(records) {
+            document.getElementById('totalCount').textContent = records.length;
+            document.getElementById('pendingCount').textContent = records.filter(r => r.status === 'Pending').length;
+            document.getElementById('paymentReviewCount').textContent = records.filter(r => r.status === 'For Payment Review').length;
+            document.getElementById('appReviewCount').textContent = records.filter(r => r.status === 'For Application Review').length;
+            document.getElementById('enrolledCount').textContent = records.filter(r => r.status === 'Enrolled' || r.status === 'Enrolled (Doc. Pending)').length;
+            document.getElementById('declinedCount').textContent = records.filter(r => r.status === 'Declined').length;
+            document.getElementById('droppedCount').textContent = records.filter(r => r.status === 'Dropped').length;
         }
 
         // --- Render the student table ---
@@ -238,23 +319,39 @@
                     <td>${s.parent_name}</td>
                     <td>${s.parent_contact}</td>
                     <td>${formatDate(s.applied_at)}</td>
-                    <td>${getStatusBadge(s.status)}</td>
                     <td>
-                        <div class="action-btns" style="display:flex; gap:8px;">
-                            <button class="btn" style="padding:4px 12px; border:1px solid var(--maroon-dark); color:var(--maroon-dark); background:transparent; border-radius:6px; font-size:12px;"
+                        ${getStatusBadge(s.status)}
+                        ${s.documents_pending == 1 ? '<br><span style="font-size:10px;color:#dc2626;font-weight:700;">🔴 Doc. Pending</span>' : ''}
+                    </td>
+                    <td>
+                        <div class="action-btns" style="display:flex; gap:6px; flex-wrap:wrap;">
+                            <button class="btn" style="padding:4px 10px; border:1px solid var(--maroon-dark); color:var(--maroon-dark); background:transparent; border-radius:6px; font-size:11px;"
                                     onclick="viewStudent(${s.enrollment_id})">
-                                View Detail
+                                👁 View
+                            </button>
+                            <button class="btn" style="padding:4px 10px; border:1px solid #1e40af; color:#1e40af; background:transparent; border-radius:6px; font-size:11px;"
+                                    onclick="openEditModal(${s.enrollment_id})">
+                                ✏️ Edit
                             </button>
                             ${s.registrar_status === 'pending' ? `
-                                <button class="btn btn-success" style="padding:6px 10px;font-size:11px;"
+                                <button class="btn btn-success" style="padding:4px 8px;font-size:11px;"
                                         onclick="reviewApplication(${s.enrollment_id}, 'approved')">
                                     ✅ Approve
                                 </button>
-                                <button class="btn btn-danger" style="padding:6px 10px;font-size:11px;"
+                                <button class="btn" style="padding:4px 8px;font-size:11px; background:#f59e0b; color:#fff; border:none; border-radius:6px;"
+                                        onclick="reviewApplication(${s.enrollment_id}, 'approved_dtf')">
+                                    📋 Approve (Doc. to Follow)
+                                </button>
+                                <button class="btn btn-danger" style="padding:4px 8px;font-size:11px;"
                                         onclick="reviewApplication(${s.enrollment_id}, 'declined')">
                                     ❌ Decline
                                 </button>
-                            ` : `<span style="font-size:11px;color:var(--gray-500);">Reviewed</span>`}
+                            ` : s.registrar_status === 'approved' && s.status !== 'Dropped' ? `
+                                <button class="btn" style="padding:4px 8px;font-size:11px; background:#7f1d1d; color:#fff; border:none; border-radius:6px;"
+                                        onclick="reviewApplication(${s.enrollment_id}, 'dropped')">
+                                    🚫 Drop Student
+                                </button>
+                            ` : `<span style="font-size:11px;color:var(--gray-500);">${s.status}</span>`}
                         </div>
                     </td>
                 </tr>
@@ -285,8 +382,12 @@
 
         // --- Approve or Decline an application ---
         async function reviewApplication(enrollmentId, decision) {
-            const label = decision === 'approved' ? 'approve' : 'decline';
-            if (!confirm(`Are you sure you want to ${label} this application?`)) return;
+            const labels = {
+                'approved':     'approve this application',
+                'declined':     'decline this application',
+                'approved_dtf': 'approve this application with DOCUMENT TO FOLLOW (student will be enrolled but flagged for missing documents)'
+            };
+            if (!confirm(`Are you sure you want to ${labels[decision]}?`)) return;
 
             try {
                 const result = await apiPost('api/registrar.php?action=review_application', {
@@ -295,7 +396,7 @@
                     admin_id: sessionStorage.getItem('adminId')
                 });
                 showAlert('alert', '✅ ' + result.message + ` New status: ${result.new_status}`, 'success');
-                loadStudents(); // Refresh the table
+                loadStudents();
             } catch (err) {
                 showAlert('alert', '❌ ' + err.message);
             }
@@ -305,14 +406,23 @@
         async function viewStudent(id) {
             try {
                 const s = await apiGet(`api/registrar.php?action=detail&id=${id}`);
+                document.getElementById('modalTitle').textContent = '🧒 Student Full Details';
                 document.getElementById('modalContent').innerHTML = `
+                    ${s.documents_pending == 1 ? `
+                    <div style="grid-column:1/-1; background:#fef2f2; border-left:4px solid #dc2626; border-radius:8px; padding:14px 16px; margin-bottom:8px;">
+                        <strong style="color:#dc2626;">🔴 Documents Pending</strong>
+                        <p style="margin:6px 0 0; font-size:13px; color:#7f1d1d;">This student was approved with Document to Follow. Please upload the missing document(s) below to clear this flag.</p>
+                    </div>` : ''}
+
                     <div style="grid-column:1/-1;font-size:13px;font-weight:700;color:var(--blue-dark);text-transform:uppercase;letter-spacing:0.5px;border-bottom:2px solid var(--blue-light);padding-bottom:6px;margin-bottom:4px;">Student Information</div>
                     <div class="info-item"><label>Student ID</label><span>${s.student_no}</span></div>
-                    <div class="info-item"><label>Full Name</label><span>${s.first_name} ${s.last_name}${s.suffix ? ' ' + s.suffix : ''}</span></div>
+                    <div class="info-item"><label>Full Name</label><span>${s.first_name} ${s.middle_name ? s.middle_name + ' ' : ''}${s.last_name}${s.suffix ? ' ' + s.suffix : ''}</span></div>
                     <div class="info-item"><label>Date of Birth</label><span>${s.birth_date}</span></div>
                     <div class="info-item"><label>Gender</label><span>${s.gender}</span></div>
+                    <div class="info-item"><label>Religion</label><span>${s.religion || '—'}</span></div>
                     <div class="info-item"><label>Grade Level</label><span>${s.grade_level}</span></div>
-                    <div class="info-item"><label>Address</label><span>${s.address}</span></div>
+                    <div class="info-item"><label>School Year</label><span>${s.school_year || '—'}</span></div>
+                    <div class="info-item"><label>Address</label><span>${s.house_no_street}, ${s.barangay}, ${s.city_municipality}, ${s.province}</span></div>
                     <div class="info-item"><label>Previous School</label><span>${s.previous_school || '—'}</span></div>
                     <div class="info-item"><label>Session Preference</label><span>${s.session_preference || '—'}</span></div>
 
@@ -324,20 +434,49 @@
                     <div class="info-item"><label>Occupation</label><span>${s.occupation || '—'}</span></div>
                     <div class="info-item"><label>Monthly Income</label><span>${s.monthly_income || '—'}</span></div>
 
+                    <div style="grid-column:1/-1;font-size:13px;font-weight:700;color:var(--blue-dark);text-transform:uppercase;letter-spacing:0.5px;border-bottom:2px solid var(--blue-light);padding-bottom:6px;margin-top:12px;margin-bottom:4px;">Payment Info</div>
+                    <div class="info-item"><label>Method</label><span>${s.payment_method || '—'}</span></div>
+                    <div class="info-item"><label>Mode</label><span>${s.payment_mode || '—'}${s.payment_mode === 'Monthly' ? ' (10 months)' : ''}</span></div>
+                    <div class="info-item"><label>Reference #</label><span>${s.reference_number || '—'}</span></div>
+                    <div class="info-item"><label>Tuition Fee</label><span>${s.tuition_fee ? '₱' + parseFloat(s.tuition_fee).toLocaleString() : '—'}</span></div>
+                    <div class="info-item"><label>Books Fee</label><span>${s.books_fee ? '₱' + parseFloat(s.books_fee).toLocaleString() : '—'}</span></div>
+
                     <div style="grid-column:1/-1;font-size:13px;font-weight:700;color:var(--blue-dark);text-transform:uppercase;letter-spacing:0.5px;border-bottom:2px solid var(--blue-light);padding-bottom:6px;margin-top:12px;margin-bottom:4px;">Documents</div>
+
                     <div class="info-item" style="grid-column:1/-1;">
                         <label>PSA Birth Certificate</label>
                         <span>${s.psa_birth_cert
-                            ? `<a href="${s.psa_birth_cert}" target="_blank" style="color:var(--blue-dark);font-weight:600;text-decoration:underline;">📄 View Document</a>
-                               <div style="margin-top:8px;"><img src="${s.psa_birth_cert}" style="max-width:100%;max-height:200px;border-radius:8px;border:1px solid var(--gray-300);cursor:pointer;" onclick="window.open('${s.psa_birth_cert}','_blank')" onerror="this.style.display='none'"></div>`
-                            : '❌ Not uploaded'}</span>
+                        ? `<a href="${s.psa_birth_cert}" target="_blank" style="color:var(--blue-dark);font-weight:600;text-decoration:underline;">📄 View</a>
+                               <img src="${s.psa_birth_cert}" style="display:block;margin-top:6px;max-width:100%;max-height:180px;border-radius:6px;" onerror="this.style.display='none'">`
+                        : '<span style="color:#dc2626">❌ Not uploaded</span>'}</span>
+                        <div style="margin-top:8px;">
+                            <input type="file" id="upload_psa_${s.enrollment_id}" accept="image/*,.pdf" style="font-size:12px;">
+                            <button onclick="uploadDocument(${s.enrollment_id}, ${s.student_id}, 'psa', 'upload_psa_${s.enrollment_id}')" style="margin-left:8px;padding:4px 12px;font-size:12px;background:var(--maroon-dark);color:#fff;border:none;border-radius:6px;cursor:pointer;">⬆ Upload PSA</button>
+                        </div>
                     </div>
+
                     <div class="info-item" style="grid-column:1/-1;">
                         <label>SF10 / Form 137</label>
                         <span>${s.sf10_document
-                            ? `<a href="${s.sf10_document}" target="_blank" style="color:var(--blue-dark);font-weight:600;text-decoration:underline;">📄 View Document</a>
-                               <div style="margin-top:8px;"><img src="${s.sf10_document}" style="max-width:100%;max-height:200px;border-radius:8px;border:1px solid var(--gray-300);cursor:pointer;" onclick="window.open('${s.sf10_document}','_blank')" onerror="this.style.display='none'"></div>`
-                            : '❌ Not uploaded'}</span>
+                        ? `<a href="${s.sf10_document}" target="_blank" style="color:var(--blue-dark);font-weight:600;text-decoration:underline;">📄 View</a>
+                               <img src="${s.sf10_document}" style="display:block;margin-top:6px;max-width:100%;max-height:180px;border-radius:6px;" onerror="this.style.display='none'">`
+                        : '<span style="color:#dc2626">❌ Not uploaded</span>'}</span>
+                        <div style="margin-top:8px;">
+                            <input type="file" id="upload_sf10_${s.enrollment_id}" accept="image/*,.pdf" style="font-size:12px;">
+                            <button onclick="uploadDocument(${s.enrollment_id}, ${s.student_id}, 'sf10', 'upload_sf10_${s.enrollment_id}')" style="margin-left:8px;padding:4px 12px;font-size:12px;background:var(--maroon-dark);color:#fff;border:none;border-radius:6px;cursor:pointer;">⬆ Upload SF10</button>
+                        </div>
+                    </div>
+
+                    <div class="info-item" style="grid-column:1/-1;">
+                        <label>2×2 Picture</label>
+                        <span>${s.picture_2x2
+                        ? `<img src="${s.picture_2x2}" style="width:100px;height:100px;object-fit:cover;border-radius:8px;border:1px solid var(--gray-300);" onerror="this.style.display='none'">
+                               <a href="${s.picture_2x2}" target="_blank" style="display:block;font-size:12px;color:var(--blue-dark);text-decoration:underline;margin-top:4px;">🖼 View Full</a>`
+                        : '<span style="color:#dc2626">❌ Not uploaded</span>'}</span>
+                        <div style="margin-top:8px;">
+                            <input type="file" id="upload_pic_${s.enrollment_id}" accept="image/*" style="font-size:12px;">
+                            <button onclick="uploadDocument(${s.enrollment_id}, ${s.student_id}, 'picture', 'upload_pic_${s.enrollment_id}')" style="margin-left:8px;padding:4px 12px;font-size:12px;background:var(--maroon-dark);color:#fff;border:none;border-radius:6px;cursor:pointer;">⬆ Upload Picture</button>
+                        </div>
                     </div>
 
                     <div style="grid-column:1/-1;font-size:13px;font-weight:700;color:var(--blue-dark);text-transform:uppercase;letter-spacing:0.5px;border-bottom:2px solid var(--blue-light);padding-bottom:6px;margin-top:12px;margin-bottom:4px;">Review Status</div>
@@ -351,6 +490,88 @@
             } catch (err) {
                 showAlert('alert', '❌ Could not load student details.');
             }
+        }
+
+        // --- Upload a missing document ---
+        async function uploadDocument(enrollmentId, studentId, docType, inputId) {
+            const fileInput = document.getElementById(inputId);
+            if (!fileInput || !fileInput.files[0]) {
+                alert('Please select a file first.');
+                return;
+            }
+            const formData = new FormData();
+            formData.append('enrollment_id', enrollmentId);
+            formData.append('student_id', studentId);
+            formData.append('doc_type', docType);
+            formData.append('document', fileInput.files[0]);
+            try {
+                const res = await fetch('api/registrar.php?action=upload_document', { method: 'POST', body: formData });
+                const result = await res.json();
+                if (result.error) throw new Error(result.error);
+                showAlert('alert', '✅ ' + result.message, 'success');
+                closeModal();
+                loadStudents();
+            } catch (err) {
+                showAlert('alert', '❌ Upload failed: ' + err.message);
+            }
+        }
+
+        // --- Open the Edit Student modal ---
+        async function openEditModal(enrollmentId) {
+            try {
+                const s = await apiGet(`api/registrar.php?action=detail&id=${enrollmentId}`);
+                // Populate hidden fields
+                document.getElementById('edit_enrollment_id').value = enrollmentId;
+                document.getElementById('edit_student_id').value   = s.student_id;
+                document.getElementById('edit_parent_id').value    = s.parent_id;
+                // Student fields
+                document.getElementById('edit_first_name').value        = s.first_name || '';
+                document.getElementById('edit_last_name').value         = s.last_name || '';
+                document.getElementById('edit_middle_name').value       = s.middle_name || '';
+                document.getElementById('edit_suffix').value            = s.suffix || '';
+                document.getElementById('edit_birth_date').value        = s.birth_date || '';
+                document.getElementById('edit_gender').value            = s.gender || '';
+                document.getElementById('edit_religion').value          = s.religion || '';
+                document.getElementById('edit_house_no_street').value   = s.house_no_street || '';
+                document.getElementById('edit_barangay').value          = s.barangay || '';
+                document.getElementById('edit_city_municipality').value = s.city_municipality || '';
+                document.getElementById('edit_province').value          = s.province || '';
+                document.getElementById('edit_previous_school').value   = s.previous_school || '';
+                // Parent fields
+                document.getElementById('edit_parent_first_name').value  = s.parent_first_name || '';
+                document.getElementById('edit_parent_last_name').value   = s.parent_last_name || '';
+                document.getElementById('edit_parent_middle_name').value = s.parent_middle_name || '';
+                document.getElementById('edit_parent_contact').value     = s.parent_contact || '';
+                document.getElementById('edit_parent_email').value       = s.email || '';
+                document.getElementById('edit_parent_occupation').value  = s.occupation || '';
+
+                document.getElementById('editModalOverlay').classList.add('active');
+                document.body.classList.add('modal-open');
+            } catch (err) {
+                showAlert('alert', '❌ Could not load student for editing.');
+            }
+        }
+
+        // --- Submit the edit form ---
+        async function submitEdit(e) {
+            e.preventDefault();
+            const form = document.getElementById('editStudentForm');
+            const formData = new FormData(form);
+            try {
+                const res = await fetch('api/registrar.php?action=update_student', { method: 'POST', body: formData });
+                const result = await res.json();
+                if (result.error) throw new Error(result.error);
+                showAlert('alert', '✅ ' + result.message, 'success');
+                closeEditModal();
+                loadStudents();
+            } catch (err) {
+                showAlert('alert', '❌ ' + err.message);
+            }
+        }
+
+        function closeEditModal() {
+            document.getElementById('editModalOverlay').classList.remove('active');
+            document.body.classList.remove('modal-open');
         }
 
         function closeModal() {

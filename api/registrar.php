@@ -25,10 +25,15 @@ require_once '../db.php';
 /**
  * Helper function to calculate the overall status string
  * based on the individual registrar and cashier reviews.
+ * Also accepts an optional $docs_pending flag for DTF enrollments.
  */
-function calculateStatus($reg, $cash) {
+function calculateStatus($reg, $cash, $docs_pending = 0) {
+    if ($reg === 'dropped') return 'Dropped';
+    if ($cash === 'refunded') return 'Refunded';
     if ($reg === 'declined' || $cash === 'declined') return 'Declined';
-    if ($reg === 'approved' && $cash === 'approved') return 'Enrolled';
+    if ($reg === 'approved' && $cash === 'approved') {
+        return $docs_pending ? 'Enrolled (Doc. Pending)' : 'Enrolled';
+    }
     if ($reg === 'approved') return 'For Payment Review';
     if ($cash === 'approved') return 'For Application Review';
     return 'Pending';
@@ -50,18 +55,18 @@ if ($action === 'login') {
     $username = $data['username'] ?? '';
     $password = $data['password'] ?? '';
 
-    // Find the user in the database (Joining with roles table)
+    // Find the user by username only (password check done in PHP for case-sensitivity)
     $stmt = $conn->prepare("
         SELECT a.*, r.name AS role_name 
         FROM admin a
         JOIN roles r ON a.role_id = r.id
-        WHERE a.username = ? AND a.password = ?
+        WHERE a.username = ?
     ");
-    $stmt->bind_param("ss", $username, $password);
+    $stmt->bind_param("s", $username);
     $stmt->execute();
     $user = $stmt->get_result()->fetch_assoc();
 
-    if ($user) {
+    if ($user && password_verify($password, $user['password'])) {
         // Login success — send back ID, username and the HUMAN-READABLE role name
         sendJSON([
             'message'  => 'Login successful',
@@ -70,7 +75,7 @@ if ($action === 'login') {
             'role'     => $user['role_name']
         ]);
     } else {
-        // Login failed
+        // Login failed (wrong password or unknown username)
         sendJSON(['error' => 'Invalid credentials.'], 401);
     }
 }
@@ -86,11 +91,14 @@ if ($action === 'students') {
         SELECT 
             e.id AS enrollment_id, 
             e.applied_at,
+            e.documents_pending,
+            s.id AS student_id,
             s.student_no, 
             s.first_name, 
             s.last_name,
             s.suffix,
             gl.name AS grade_level,
+            p.id AS parent_id,
             p.contact_no AS parent_contact,
             CONCAT(p.first_name, ' ', p.last_name) AS parent_name,
             COALESCE((SELECT decision FROM enrollment_reviews WHERE enrollment_id = e.id AND review_type = 'Registrar' ORDER BY created_at DESC LIMIT 1), 'pending') AS registrar_status,
@@ -108,7 +116,7 @@ if ($action === 'students') {
 
     $rows = $result->fetch_all(MYSQLI_ASSOC);
     foreach ($rows as &$item) {
-        $item['status'] = calculateStatus($item['registrar_status'], $item['cashier_status']);
+        $item['status'] = calculateStatus($item['registrar_status'], $item['cashier_status'], $item['documents_pending']);
     }
 
     sendJSON($rows);
@@ -127,20 +135,37 @@ if ($action === 'detail') {
         SELECT 
             e.id AS enrollment_id, 
             e.applied_at,
+            e.documents_pending,
+            sy.label AS school_year,
             sess.name AS session_preference,
             pm.name AS payment_method,
+            pay.payment_mode,
+            pay.months_count,
+            pay.tuition_fee,
+            pay.books_fee,
             pay.reference_number,
+            s.id AS student_id,
             s.student_no, 
             s.first_name, 
             s.last_name,
+            s.middle_name,
             s.suffix,
             s.birth_date, 
-            s.gender, 
-            s.address,
+            s.gender,
+            s.religion,
+            s.house_no_street,
+            s.barangay,
+            s.city_municipality,
+            s.province,
             s.previous_school, 
             s.psa_birth_cert, 
             s.sf10_document,
+            s.picture_2x2,
             gl.name AS grade_level,
+            p.id AS parent_id,
+            p.first_name AS parent_first_name,
+            p.last_name AS parent_last_name,
+            p.middle_name AS parent_middle_name,
             p.contact_no AS parent_contact,
             CONCAT(p.first_name, ' ', p.last_name) AS parent_name,
             p.email, 
@@ -155,6 +180,7 @@ if ($action === 'detail') {
         JOIN grade_levels gl       ON e.grade_level_id = gl.id
         JOIN relations r           ON p.relation_id    = r.id
         JOIN sessions sess         ON e.session_id     = sess.id
+        JOIN school_years sy       ON e.school_year_id = sy.id
         LEFT JOIN payments pay     ON e.id             = pay.enrollment_id
         LEFT JOIN payment_methods pm ON pay.payment_method_id = pm.id
         LEFT JOIN income_ranges ir ON p.income_range_id = ir.id
@@ -165,7 +191,7 @@ if ($action === 'detail') {
     $result = $stmt->get_result();
 
     if ($result && $row = $result->fetch_assoc()) {
-        $row['status'] = calculateStatus($row['registrar_status'], $row['cashier_status']);
+        $row['status'] = calculateStatus($row['registrar_status'], $row['cashier_status'], $row['documents_pending']);
         sendJSON($row);
     } else {
         sendJSON(['error' => 'Enrollment not found or query error.'], 404);
@@ -186,7 +212,13 @@ if ($action === 'payments') {
         SELECT 
             e.id AS enrollment_id, 
             e.applied_at,
+            e.documents_pending,
+            sy.label AS school_year,
             pm.name AS payment_method, 
+            pay.payment_mode,
+            pay.months_count,
+            pay.tuition_fee,
+            pay.books_fee,
             pay.reference_number,
             s.student_no, 
             s.first_name, 
@@ -201,6 +233,7 @@ if ($action === 'payments') {
         JOIN students s            ON e.student_id    = s.id
         JOIN parents p             ON s.parent_id     = p.id
         JOIN grade_levels gl       ON e.grade_level_id = gl.id
+        JOIN school_years sy       ON e.school_year_id = sy.id
         LEFT JOIN payments pay     ON e.id             = pay.enrollment_id
         LEFT JOIN payment_methods pm ON pay.payment_method_id = pm.id
         ORDER BY e.applied_at DESC
@@ -226,17 +259,27 @@ if ($action === 'payments') {
 // =============================================================
 if ($action === 'review_application') {
     $enrollment_id = $data['enrollment_id'] ?? '';
-    $decision      = $data['decision'] ?? '';  // 'approved' or 'declined'
+    $decision      = $data['decision'] ?? '';  // 'approved', 'declined', or 'approved_dtf'
     $admin_id      = $data['admin_id'] ?? '';
 
-    if (!$enrollment_id || !$admin_id || !in_array($decision, ['approved', 'declined'])) {
+    if (!$enrollment_id || !$admin_id || !in_array($decision, ['approved', 'declined', 'approved_dtf', 'dropped'])) {
         sendJSON(['error' => 'Invalid request. Enrollment ID, Admin ID, and decision required.'], 400);
     }
 
+    // For DTF: the db review is still 'approved', but we flag the enrollment
+    // For Dropped: insert 'dropped' as the decision directly
+    $db_decision  = ($decision === 'approved_dtf') ? 'approved' : $decision;
+    $docs_pending = ($decision === 'approved_dtf') ? 1 : 0;
+
     // Insert the new review record (The "Middle Man")
     $stmt = $conn->prepare("INSERT INTO enrollment_reviews (enrollment_id, admin_id, review_type, decision) VALUES (?, ?, 'Registrar', ?)");
-    $stmt->bind_param("iis", $enrollment_id, $admin_id, $decision);
+    $stmt->bind_param("iis", $enrollment_id, $admin_id, $db_decision);
     $stmt->execute();
+
+    // Set the documents_pending flag on the enrollment
+    $stmt2 = $conn->prepare("UPDATE enrollments SET documents_pending = ? WHERE id = ?");
+    $stmt2->bind_param("ii", $docs_pending, $enrollment_id);
+    $stmt2->execute();
 
     // To send back the new dynamic status, we fetch the cashier status
     $stmtCash = $conn->prepare("SELECT decision FROM enrollment_reviews WHERE enrollment_id = ? AND review_type = 'Cashier' ORDER BY created_at DESC LIMIT 1");
@@ -245,7 +288,7 @@ if ($action === 'review_application') {
     $cashRow = $stmtCash->get_result()->fetch_assoc();
     $cashStatus = $cashRow['decision'] ?? 'pending';
 
-    $newOverallStatus = calculateStatus($decision, $cashStatus);
+    $newOverallStatus = calculateStatus($db_decision, $cashStatus, $docs_pending);
 
     sendJSON(['message' => 'Registrar review saved.', 'new_status' => $newOverallStatus]);
 }
@@ -261,7 +304,7 @@ if ($action === 'review_payment') {
     $decision      = $data['decision'] ?? '';  // 'approved' or 'declined'
     $admin_id      = $data['admin_id'] ?? '';
 
-    if (!$enrollment_id || !$admin_id || !in_array($decision, ['approved', 'declined'])) {
+    if (!$enrollment_id || !$admin_id || !in_array($decision, ['approved', 'declined', 'refunded'])) {
         sendJSON(['error' => 'Invalid request. Enrollment ID, Admin ID, and decision required.'], 400);
     }
 
@@ -270,16 +313,125 @@ if ($action === 'review_payment') {
     $stmt->bind_param("iis", $enrollment_id, $admin_id, $decision);
     $stmt->execute();
 
-    // To send back the new dynamic status, we fetch the registrar status
+    // To send back the new dynamic status, fetch registrar status and documents_pending
     $stmtReg = $conn->prepare("SELECT decision FROM enrollment_reviews WHERE enrollment_id = ? AND review_type = 'Registrar' ORDER BY created_at DESC LIMIT 1");
     $stmtReg->bind_param("i", $enrollment_id);
     $stmtReg->execute();
     $regRow = $stmtReg->get_result()->fetch_assoc();
     $regStatus = $regRow['decision'] ?? 'pending';
 
-    $newOverallStatus = calculateStatus($regStatus, $decision);
+    $stmtDoc = $conn->prepare("SELECT documents_pending FROM enrollments WHERE id = ?");
+    $stmtDoc->bind_param("i", $enrollment_id);
+    $stmtDoc->execute();
+    $docRow = $stmtDoc->get_result()->fetch_assoc();
+    $docs_pending = $docRow['documents_pending'] ?? 0;
+
+    $newOverallStatus = calculateStatus($regStatus, $decision, $docs_pending);
 
     sendJSON(['message' => 'Cashier review saved.', 'new_status' => $newOverallStatus]);
+}
+
+
+// =============================================================
+//  ACTION: UPDATE STUDENT INFORMATION (Registrar edit)
+//  - Updates student and parent records.
+// =============================================================
+if ($action === 'update_student') {
+    $student_id        = $_POST['student_id'] ?? '';
+    $parent_id         = $_POST['parent_id'] ?? '';
+    $first_name        = $_POST['first_name'] ?? '';
+    $last_name         = $_POST['last_name'] ?? '';
+    $middle_name       = $_POST['middle_name'] ?? '';
+    $suffix            = $_POST['suffix'] ?? '';
+    $birth_date        = $_POST['birth_date'] ?? '';
+    $gender            = $_POST['gender'] ?? '';
+    $religion          = $_POST['religion'] ?? '';
+    $house_no_street   = $_POST['house_no_street'] ?? '';
+    $barangay          = $_POST['barangay'] ?? '';
+    $city_municipality = $_POST['city_municipality'] ?? '';
+    $province          = $_POST['province'] ?? '';
+    $previous_school   = $_POST['previous_school'] ?? '';
+    $parent_first_name = $_POST['parent_first_name'] ?? '';
+    $parent_last_name  = $_POST['parent_last_name'] ?? '';
+    $parent_middle_name = $_POST['parent_middle_name'] ?? '';
+    $parent_contact    = $_POST['parent_contact'] ?? '';
+    $parent_email      = $_POST['parent_email'] ?? '';
+    $parent_occupation = $_POST['parent_occupation'] ?? '';
+
+    if (!$student_id || !$parent_id || !$first_name || !$last_name) {
+        sendJSON(['error' => 'Student ID, Parent ID, first name and last name are required.'], 400);
+    }
+
+    // Update student record
+    $stmt = $conn->prepare("UPDATE students SET first_name=?, last_name=?, middle_name=?, suffix=?, birth_date=?, gender=?, religion=?, house_no_street=?, barangay=?, city_municipality=?, province=?, previous_school=? WHERE id=?");
+    $stmt->bind_param("ssssssssssssi", $first_name, $last_name, $middle_name, $suffix, $birth_date, $gender, $religion, $house_no_street, $barangay, $city_municipality, $province, $previous_school, $student_id);
+    $stmt->execute();
+
+    // Update parent record
+    $stmt2 = $conn->prepare("UPDATE parents SET first_name=?, last_name=?, middle_name=?, contact_no=?, email=?, occupation=? WHERE id=?");
+    $stmt2->bind_param("ssssssi", $parent_first_name, $parent_last_name, $parent_middle_name, $parent_contact, $parent_email, $parent_occupation, $parent_id);
+    $stmt2->execute();
+
+    sendJSON(['message' => 'Student information updated successfully.']);
+}
+
+
+// =============================================================
+//  ACTION: UPLOAD DOCUMENT (Registrar uploads missing document)
+//  - Accepts a file upload for PSA, SF10, or 2x2 picture.
+//  - Saves file to uploads/ folder and clears the documents_pending flag.
+// =============================================================
+if ($action === 'upload_document') {
+    $enrollment_id = $_POST['enrollment_id'] ?? '';
+    $student_id    = $_POST['student_id'] ?? '';
+    $doc_type      = $_POST['doc_type'] ?? '';  // 'psa', 'sf10', or 'picture'
+
+    if (!$enrollment_id || !$student_id || !in_array($doc_type, ['psa', 'sf10', 'picture'])) {
+        sendJSON(['error' => 'Invalid request. Missing required fields.'], 400);
+    }
+
+    if (!isset($_FILES['document']) || $_FILES['document']['error'] !== UPLOAD_ERR_OK) {
+        sendJSON(['error' => 'No file uploaded or upload error.'], 400);
+    }
+
+    // Determine upload directory and column name
+    $uploadDir = '../uploads/';
+    if (!is_dir($uploadDir)) mkdir($uploadDir, 0755, true);
+
+    $ext      = pathinfo($_FILES['document']['name'], PATHINFO_EXTENSION);
+    $safeExt  = strtolower(preg_replace('/[^a-zA-Z0-9]/', '', $ext));
+    $filename = $doc_type . '_' . $student_id . '_' . time() . '.' . $safeExt;
+    $destPath = $uploadDir . $filename;
+
+    if (!move_uploaded_file($_FILES['document']['tmp_name'], $destPath)) {
+        sendJSON(['error' => 'Failed to save uploaded file.'], 500);
+    }
+
+    $webPath = 'uploads/' . $filename;
+
+    $colMap = ['psa' => 'psa_birth_cert', 'sf10' => 'sf10_document', 'picture' => 'picture_2x2'];
+    $col    = $colMap[$doc_type];
+
+    // Update the student's document path
+    $stmt = $conn->prepare("UPDATE students SET `{$col}` = ? WHERE id = ?");
+    $stmt->bind_param("si", $webPath, $student_id);
+    $stmt->execute();
+
+    // Check if all three documents are now uploaded (clear flag if so)
+    $stmtCheck = $conn->prepare("SELECT psa_birth_cert, sf10_document, picture_2x2 FROM students WHERE id = ?");
+    $stmtCheck->bind_param("i", $student_id);
+    $stmtCheck->execute();
+    $docs = $stmtCheck->get_result()->fetch_assoc();
+
+    // Clear documents_pending flag only when all required documents are present
+    if ($docs['psa_birth_cert'] && $docs['sf10_document'] && $docs['picture_2x2']) {
+        $stmtFlag = $conn->prepare("UPDATE enrollments SET documents_pending = 0 WHERE id = ?");
+        $stmtFlag->bind_param("i", $enrollment_id);
+        $stmtFlag->execute();
+        sendJSON(['message' => 'Document uploaded. All documents complete — flag cleared!', 'path' => $webPath, 'flag_cleared' => true]);
+    } else {
+        sendJSON(['message' => 'Document uploaded successfully.', 'path' => $webPath, 'flag_cleared' => false]);
+    }
 }
 
 
@@ -326,9 +478,12 @@ if ($action === 'add_employee') {
         sendJSON(['error' => 'Username already exists.'], 400);
     }
 
+    // Hash the password before storing (bcrypt, case-sensitive)
+    $hashedPassword = password_hash($password, PASSWORD_DEFAULT);
+
     // Insert the new employee
     $stmt = $conn->prepare("INSERT INTO admin (username, password, role_id) VALUES (?, ?, ?)");
-    $stmt->bind_param("ssi", $username, $password, $role_id);
+    $stmt->bind_param("ssi", $username, $hashedPassword, $role_id);
     $stmt->execute();
     sendJSON(['message' => "Employee account created successfully."]);
 }

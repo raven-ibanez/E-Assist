@@ -56,8 +56,15 @@
         }
 
         @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(5px); }
-            to { opacity: 1; transform: translateY(0); }
+            from {
+                opacity: 0;
+                transform: translateY(5px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
 
         /* Employee cards */
@@ -95,11 +102,21 @@
             flex-shrink: 0;
         }
 
-        .avatar-admin { background: #fef3c7; }
-        .avatar-registrar { background: #dbeafe; }
-        .avatar-cashier { background: #d1fae5; }
+        .avatar-admin {
+            background: #fef3c7;
+        }
 
-        .employee-info { flex: 1; }
+        .avatar-registrar {
+            background: #dbeafe;
+        }
+
+        .avatar-cashier {
+            background: #d1fae5;
+        }
+
+        .employee-info {
+            flex: 1;
+        }
 
         .employee-info h4 {
             font-size: 15px;
@@ -118,9 +135,20 @@
             letter-spacing: 0.5px;
         }
 
-        .role-admin { background: #fef3c7; color: #92400e; }
-        .role-registrar { background: #dbeafe; color: #1e40af; }
-        .role-cashier { background: #d1fae5; color: #065f46; }
+        .role-admin {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .role-registrar {
+            background: #dbeafe;
+            color: #1e40af;
+        }
+
+        .role-cashier {
+            background: #d1fae5;
+            color: #065f46;
+        }
 
         /* Add Employee Form */
         .add-form {
@@ -132,7 +160,9 @@
             display: none;
         }
 
-        .add-form.visible { display: block; }
+        .add-form.visible {
+            display: block;
+        }
 
         .add-form .form-row {
             display: grid;
@@ -150,10 +180,25 @@
             font-weight: 600;
         }
 
-        .payment-badge-gcash { background: #dbeafe; color: #1e40af; }
-        .payment-badge-maya { background: #e0e7ff; color: #3730a3; }
-        .payment-badge-bank { background: #fef3c7; color: #92400e; }
-        .payment-badge-none { background: var(--gray-100); color: var(--gray-500); }
+        .payment-badge-gcash {
+            background: #dbeafe;
+            color: #1e40af;
+        }
+
+        .payment-badge-maya {
+            background: #e0e7ff;
+            color: #3730a3;
+        }
+
+        .payment-badge-bank {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .payment-badge-none {
+            background: var(--gray-100);
+            color: var(--gray-500);
+        }
 
         .ref-number {
             font-family: 'Courier New', monospace;
@@ -178,9 +223,18 @@
         }
 
         @media (max-width: 640px) {
-            .tab-btn { font-size: 12px; padding: 12px 8px; }
-            .tab-btn span.tab-label { display: none; }
-            .add-form .form-row { grid-template-columns: 1fr; }
+            .tab-btn {
+                font-size: 12px;
+                padding: 12px 8px;
+            }
+
+            .tab-btn span.tab-label {
+                display: none;
+            }
+
+            .add-form .form-row {
+                grid-template-columns: 1fr;
+            }
         }
     </style>
 </head>
@@ -196,7 +250,8 @@
     <div class="v2-container">
         <!-- Header -->
         <div class="v2-header">
-            <img src="assets/logo.png" alt="Logo" class="v2-header-logo" onerror="this.src=''; this.alt='🎓'; this.style.fontSize='50px';">
+            <img src="assets/logo.png" alt="Logo" class="v2-header-logo"
+                onerror="this.src=''; this.alt='🎓'; this.style.fontSize='50px';">
             <h1 id="adminUserLabel">Admin Dashboard</h1>
             <p>Brother Sun Sister Moon Academy Inc.</p>
         </div>
@@ -233,10 +288,31 @@
                     </div>
                 </div>
                 <div class="v2-stat-card">
+                    <div class="v2-stat-icon">👀</div>
+                    <div class="v2-stat-info">
+                        <span class="v2-stat-label">For Payment Review</span>
+                        <span class="v2-stat-value" id="enrollPaymentCount">0</span>
+                    </div>
+                </div>
+                <div class="v2-stat-card">
+                    <div class="v2-stat-icon">📋</div>
+                    <div class="v2-stat-info">
+                        <span class="v2-stat-label">For Application Review</span>
+                        <span class="v2-stat-value" id="enrollAppCount">0</span>
+                    </div>
+                </div>
+                <div class="v2-stat-card">
                     <div class="v2-stat-icon">✅</div>
                     <div class="v2-stat-info">
                         <span class="v2-stat-label">Enrolled</span>
                         <span class="v2-stat-value" id="enrollSuccessCount">0</span>
+                    </div>
+                </div>
+                <div class="v2-stat-card">
+                    <div class="v2-stat-icon">🚫</div>
+                    <div class="v2-stat-info">
+                        <span class="v2-stat-label">Dropped</span>
+                        <span class="v2-stat-value" id="enrollDroppedCount">0</span>
                     </div>
                 </div>
             </div>
@@ -245,17 +321,23 @@
 
             <!-- Table -->
             <div class="v2-table-container">
-                <div class="v2-table-title" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
+                <div class="v2-table-title"
+                    style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
                     <div>Enrolled Students</div>
-                    
+
                     <div class="search-bar" style="margin-bottom:0;">
-                        <input type="text" id="enrollSearchInput" placeholder="🔍 Search name..." oninput="filterStudents()" style="padding:8px; border:1px solid var(--gray-400); border-radius:6px; background:transparent;">
+                        <input type="text" id="enrollSearchInput" placeholder="🔍 Search name..."
+                            oninput="filterStudents()"
+                            style="padding:8px; border:1px solid var(--gray-400); border-radius:6px; background:transparent;">
                         <select id="enrollFilterStatus" onchange="filterStudents()" class="v2-action-select">
                             <option value="All">All Statuses</option>
                             <option value="Pending">Pending</option>
                             <option value="For Payment Review">For Payment Review</option>
                             <option value="For Application Review">For Application Review</option>
                             <option value="Enrolled">Enrolled</option>
+                            <option value="Enrolled (Doc. Pending)">Enrolled (Doc. Pending)</option>
+                            <option value="Dropped">Dropped</option>
+                            <option value="Refunded">Refunded</option>
                             <option value="Declined">Declined</option>
                         </select>
                     </div>
@@ -266,7 +348,7 @@
                         <thead>
                             <tr>
                                 <th>Student ID</th>
-                                <th>Last Name</th>
+                                <th>Full Name</th>
                                 <th>Grade Level</th>
                                 <th>Parent</th>
                                 <th>Contact</th>
@@ -276,7 +358,9 @@
                             </tr>
                         </thead>
                         <tbody id="studentsTableBody">
-                            <tr><td colspan="8" style="text-align:center;">Loading...</td></tr>
+                            <tr>
+                                <td colspan="8" style="text-align:center;">Loading...</td>
+                            </tr>
                         </tbody>
                     </table>
                 </div>
@@ -287,16 +371,64 @@
         <div class="tab-content" id="tab-payments">
             <div id="payAlert" class="alert"></div>
 
+            <!-- Payment Summary Stats -->
+            <div class="v2-stats" id="paymentStats" style="margin-bottom: 24px;">
+                <div class="v2-stat-card">
+                    <div class="v2-stat-icon">💳</div>
+                    <div class="v2-stat-info">
+                        <span class="v2-stat-label">Total Records</span>
+                        <span class="v2-stat-value" id="payTotalCount">0</span>
+                    </div>
+                </div>
+                <div class="v2-stat-card">
+                    <div class="v2-stat-icon">✅</div>
+                    <div class="v2-stat-info">
+                        <span class="v2-stat-label">Enrolled</span>
+                        <span class="v2-stat-value" id="payEnrolledCount">0</span>
+                    </div>
+                </div>
+                <div class="v2-stat-card">
+                    <div class="v2-stat-icon">💸</div>
+                    <div class="v2-stat-info">
+                        <span class="v2-stat-label">Refunded</span>
+                        <span class="v2-stat-value" id="payRefundedCount">0</span>
+                    </div>
+                </div>
+                <div class="v2-stat-card">
+                    <div class="v2-stat-icon">📱</div>
+                    <div class="v2-stat-info">
+                        <span class="v2-stat-label">GCash</span>
+                        <span class="v2-stat-value" id="payGcashCount">0</span>
+                    </div>
+                </div>
+                <div class="v2-stat-card">
+                    <div class="v2-stat-icon">💵</div>
+                    <div class="v2-stat-info">
+                        <span class="v2-stat-label">Cash</span>
+                        <span class="v2-stat-value" id="payCashCount">0</span>
+                    </div>
+                </div>
+                <div class="v2-stat-card">
+                    <div class="v2-stat-icon">🏦</div>
+                    <div class="v2-stat-info">
+                        <span class="v2-stat-label">Bank Transfer</span>
+                        <span class="v2-stat-value" id="payBankCount">0</span>
+                    </div>
+                </div>
+            </div>
+
             <div class="v2-table-container">
-                <div class="v2-table-title" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
+                <div class="v2-table-title"
+                    style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
                     <div>Payment Records</div>
                     <div class="search-bar" style="margin-bottom:0;">
-                        <input type="text" id="paySearchInput" placeholder="🔍 Search ref..." oninput="filterPayments()" style="padding:8px; border:1px solid var(--gray-400); border-radius:6px; background:transparent;">
+                        <input type="text" id="paySearchInput" placeholder="🔍 Search ref..." oninput="filterPayments()"
+                            style="padding:8px; border:1px solid var(--gray-400); border-radius:6px; background:transparent;">
                         <select id="filterPaymentMethod" onchange="filterPayments()" class="v2-action-select">
                             <option value="All">All Methods</option>
                             <option value="GCash">GCash</option>
-                            <option value="Maya">Maya</option>
-                            <option value="Bank Transfer">Bank</option>
+                            <option value="Cash">Cash</option>
+                            <option value="Bank Transfer">Bank Transfer</option>
                             <option value="None">None</option>
                         </select>
                         <select id="payFilterStatus" onchange="filterPayments()" class="v2-action-select">
@@ -304,6 +436,8 @@
                             <option value="Pending">Pending</option>
                             <option value="For Payment Review">For Payment Review</option>
                             <option value="Enrolled">Enrolled</option>
+                            <option value="Enrolled (Doc. Pending)">Enrolled (Doc. Pending)</option>
+                            <option value="Refunded">Refunded</option>
                         </select>
                     </div>
                 </div>
@@ -313,17 +447,21 @@
                         <thead>
                             <tr>
                                 <th>Student ID</th>
-                                <th>Last Name</th>
+                                <th>Full Name</th>
                                 <th>Grade Level</th>
                                 <th>Parent</th>
                                 <th>Method</th>
+                                <th>Mode</th>
                                 <th>Ref #</th>
-                                <th>Date Applied</th>
                                 <th>Status</th>
+                                <th>Date Applied</th>
+                                <th>Actions</th>
                             </tr>
                         </thead>
                         <tbody id="paymentsTableBody">
-                            <tr><td colspan="8" style="text-align:center;">Loading...</td></tr>
+                            <tr>
+                                <td colspan="10" style="text-align:center;">Loading...</td>
+                            </tr>
                         </tbody>
                     </table>
                 </div>
@@ -335,37 +473,47 @@
             <div id="empAlert" class="alert"></div>
 
             <div class="v2-table-container">
-                <div class="v2-table-title" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
+                <div class="v2-table-title"
+                    style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
                     <div>Employee Accounts</div>
                     <div style="display:flex; gap:12px; align-items:center;">
-                        <input type="text" id="empSearchInput" placeholder="🔍 Search user..." oninput="filterEmployees()" style="padding:8px; border:1px solid var(--gray-400); border-radius:6px; background:transparent;">
+                        <input type="text" id="empSearchInput" placeholder="🔍 Search user..."
+                            oninput="filterEmployees()"
+                            style="padding:8px; border:1px solid var(--gray-400); border-radius:6px; background:transparent;">
                         <select id="empFilterRole" onchange="filterEmployees()" class="v2-action-select">
                             <option value="All">All Roles</option>
                             <option value="admin">Admin</option>
                             <option value="registrar">Registrar</option>
                             <option value="cashier">Cashier</option>
                         </select>
-                        <button class="btn btn-primary" onclick="toggleAddForm()" style="background:var(--maroon-dark); border:none; padding:8px 16px; border-radius:6px; color:white;">+ Add Employee</button>
+                        <button class="btn btn-primary" onclick="toggleAddForm()"
+                            style="background:var(--maroon-dark); border:none; padding:8px 16px; border-radius:6px; color:white;">+
+                            Add Employee</button>
                     </div>
                 </div>
 
-                <div class="add-form" id="addEmployeeForm" style="background:transparent; border:1px dashed var(--maroon-dark); margin:0 24px 24px 24px;">
+                <div class="add-form" id="addEmployeeForm"
+                    style="background:transparent; border:1px dashed var(--maroon-dark); margin:0 24px 24px 24px;">
                     <h4 style="margin-bottom:12px; color:var(--maroon-dark);">Create New Account</h4>
                     <div class="form-row">
                         <div>
                             <label style="color:var(--maroon-dark);">Username</label>
-                            <input type="text" id="newUsername" placeholder="e.g. registrar_jane" style="background:transparent; border:1px solid var(--gray-400);">
+                            <input type="text" id="newUsername" placeholder="e.g. registrar_jane"
+                                style="background:transparent; border:1px solid var(--gray-400);">
                         </div>
                         <div>
                             <label style="color:var(--maroon-dark);">Password</label>
-                            <input type="password" id="newPassword" placeholder="Strong password" style="background:transparent; border:1px solid var(--gray-400);">
+                            <input type="password" id="newPassword" placeholder="Strong password"
+                                style="background:transparent; border:1px solid var(--gray-400);">
                         </div>
                         <div>
                             <label style="color:var(--maroon-dark);">Role</label>
-                            <select id="newRole" class="v2-action-select" style="width:100%; border:1px solid var(--gray-400);"></select>
+                            <select id="newRole" class="v2-action-select"
+                                style="width:100%; border:1px solid var(--gray-400);"></select>
                         </div>
                         <div>
-                            <button class="btn btn-primary btn-full" onclick="addEmployee()" style="background:var(--maroon-dark);">Create</button>
+                            <button class="btn btn-primary btn-full" onclick="addEmployee()"
+                                style="background:var(--maroon-dark);">Create</button>
                         </div>
                     </div>
                 </div>
@@ -411,11 +559,14 @@
         // --- Helper: get a colored status badge ---
         function getStatusBadge(status) {
             const map = {
-                'Pending': 'v2-badge-salmon',
-                'For Payment Review': 'v2-badge-gray',
+                'Pending':                'v2-badge-salmon',
+                'For Payment Review':     'v2-badge-gray',
                 'For Application Review': 'v2-badge-gray',
-                'Enrolled': 'v2-badge-green',
-                'Declined': 'v2-badge-salmon'
+                'Enrolled':               'v2-badge-green',
+                'Enrolled (Doc. Pending)':'v2-badge-blue',
+                'Declined':               'v2-badge-salmon',
+                'Dropped':                'v2-badge-salmon',
+                'Refunded':               'v2-badge-gray'
             };
             const cls = map[status] || 'v2-badge-gray';
             return `<span class="${cls}">${status}</span>`;
@@ -443,16 +594,20 @@
         async function loadStudents() {
             try {
                 allStudents = await apiGet('api/registrar.php?action=students');
-                
-                // Update stats
-                document.getElementById('enrollTotalCount').textContent = allStudents.length;
-                document.getElementById('enrollPendingCount').textContent = allStudents.filter(s => s.status === 'Pending').length;
-                document.getElementById('enrollSuccessCount').textContent = allStudents.filter(s => s.status === 'Enrolled').length;
-
+                updateEnrollStats(allStudents);
                 renderStudents(allStudents);
             } catch (err) {
                 showAlert('enrollAlert', '❌ Failed to load students: ' + err.message);
             }
+        }
+
+        function updateEnrollStats(students) {
+            document.getElementById('enrollTotalCount').textContent = students.length;
+            document.getElementById('enrollPendingCount').textContent = students.filter(s => s.status === 'Pending').length;
+            document.getElementById('enrollPaymentCount').textContent = students.filter(s => s.status === 'For Payment Review').length;
+            document.getElementById('enrollAppCount').textContent = students.filter(s => s.status === 'For Application Review').length;
+            document.getElementById('enrollSuccessCount').textContent = students.filter(s => s.status === 'Enrolled' || s.status === 'Enrolled (Doc. Pending)').length;
+            document.getElementById('enrollDroppedCount').textContent = students.filter(s => s.status === 'Dropped').length;
         }
 
         function renderStudents(students) {
@@ -469,7 +624,10 @@
                     <td>${s.parent_name}</td>
                     <td>${s.parent_contact || '—'}</td>
                     <td>${formatDate(s.applied_at)}</td>
-                    <td>${getStatusBadge(s.status)}</td>
+                    <td>
+                        ${getStatusBadge(s.status)}
+                        ${s.documents_pending == 1 ? '<br><span style="font-size:10px;color:#dc2626;font-weight:700;">🔴 Doc. Pending</span>' : ''}
+                    </td>
                     <td>
                         <button class="btn" style="padding:6px 16px; border:1px solid var(--maroon-dark); color:var(--maroon-dark); background:transparent; border-radius:6px; font-size:12px;"
                                 onclick="viewStudent(${s.enrollment_id})">View Detail</button>
@@ -500,14 +658,14 @@
             try {
                 const s = await apiGet(`api/registrar.php?action=detail&id=${id}`);
                 document.getElementById('modalTitle').textContent = '🧒 Student Full Details';
-                document.getElementById('modalContent').innerHTML = `
+                        document.getElementById('modalContent').innerHTML = `
                     <div style="grid-column:1/-1;font-size:13px;font-weight:700;color:var(--blue-dark);text-transform:uppercase;letter-spacing:0.5px;border-bottom:2px solid var(--blue-light);padding-bottom:6px;margin-bottom:4px;">Student Information</div>
                     <div class="info-item"><label>Student ID</label><span>${s.student_no}</span></div>
                     <div class="info-item"><label>Full Name</label><span>${s.first_name} ${s.last_name}${s.suffix ? ' ' + s.suffix : ''}</span></div>
                     <div class="info-item"><label>Date of Birth</label><span>${s.birth_date}</span></div>
                     <div class="info-item"><label>Gender</label><span>${s.gender}</span></div>
                     <div class="info-item"><label>Grade Level</label><span>${s.grade_level}</span></div>
-                    <div class="info-item"><label>Address</label><span>${s.address}</span></div>
+                    <div class="info-item"><label>School Year</label><span>${s.school_year || '—'}</span></div>
                     <div class="info-item"><label>Previous School</label><span>${s.previous_school || '—'}</span></div>
                     <div class="info-item"><label>Session Preference</label><span>${s.session_preference || '—'}</span></div>
                     <div style="grid-column:1/-1;font-size:13px;font-weight:700;color:var(--blue-dark);text-transform:uppercase;letter-spacing:0.5px;border-bottom:2px solid var(--blue-light);padding-bottom:6px;margin-top:12px;margin-bottom:4px;">Parent / Guardian</div>
@@ -517,20 +675,33 @@
                     <div class="info-item"><label>Email</label><span>${s.email}</span></div>
                     <div class="info-item"><label>Occupation</label><span>${s.occupation || '—'}</span></div>
                     <div class="info-item"><label>Monthly Income</label><span>${s.monthly_income || '—'}</span></div>
+                    <div style="grid-column:1/-1;font-size:13px;font-weight:700;color:var(--blue-dark);text-transform:uppercase;letter-spacing:0.5px;border-bottom:2px solid var(--blue-light);padding-bottom:6px;margin-top:12px;margin-bottom:4px;">Payment</div>
+                    <div class="info-item"><label>Payment Method</label><span>${s.payment_method || '—'}</span></div>
+                    <div class="info-item"><label>Payment Mode</label><span>${s.payment_mode || '—'}${s.payment_mode === 'Monthly' ? ' (10 months)' : ''}</span></div>
+                    <div class="info-item"><label>Reference #</label><span>${s.reference_number || '—'}</span></div>
+                    <div class="info-item"><label>Tuition Fee</label><span>${s.tuition_fee ? '₱' + parseFloat(s.tuition_fee).toLocaleString() : '—'}</span></div>
+                    <div class="info-item"><label>Books Fee</label><span>${s.books_fee ? '₱' + parseFloat(s.books_fee).toLocaleString() : '—'}</span></div>
                     <div style="grid-column:1/-1;font-size:13px;font-weight:700;color:var(--blue-dark);text-transform:uppercase;letter-spacing:0.5px;border-bottom:2px solid var(--blue-light);padding-bottom:6px;margin-top:12px;margin-bottom:4px;">Documents</div>
                     <div class="info-item" style="grid-column:1/-1;">
                         <label>PSA Birth Certificate</label>
                         <span>${s.psa_birth_cert
-                            ? `<a href="${s.psa_birth_cert}" target="_blank" style="color:var(--blue-dark);font-weight:600;text-decoration:underline;">📄 View Document</a>
+                        ? `<a href="${s.psa_birth_cert}" target="_blank" style="color:var(--blue-dark);font-weight:600;text-decoration:underline;">📄 View Document</a>
                                <div style="margin-top:8px;"><img src="${s.psa_birth_cert}" style="max-width:100%;max-height:200px;border-radius:8px;border:1px solid var(--gray-300);cursor:pointer;" onclick="window.open('${s.psa_birth_cert}','_blank')" onerror="this.style.display='none'"></div>`
-                            : '❌ Not uploaded'}</span>
+                        : '❌ Not uploaded'}</span>
                     </div>
                     <div class="info-item" style="grid-column:1/-1;">
                         <label>SF10 / Form 137</label>
                         <span>${s.sf10_document
-                            ? `<a href="${s.sf10_document}" target="_blank" style="color:var(--blue-dark);font-weight:600;text-decoration:underline;">📄 View Document</a>
+                        ? `<a href="${s.sf10_document}" target="_blank" style="color:var(--blue-dark);font-weight:600;text-decoration:underline;">📄 View Document</a>
                                <div style="margin-top:8px;"><img src="${s.sf10_document}" style="max-width:100%;max-height:200px;border-radius:8px;border:1px solid var(--gray-300);cursor:pointer;" onclick="window.open('${s.sf10_document}','_blank')" onerror="this.style.display='none'"></div>`
-                            : '❌ Not uploaded'}</span>
+                        : '❌ Not uploaded'}</span>
+                    </div>
+                    <div class="info-item" style="grid-column:1/-1;">
+                        <label>2×2 Picture</label>
+                        <span>${s.picture_2x2
+                        ? `<div style="margin-top:8px;"><img src="${s.picture_2x2}" style="width:100px;height:100px;object-fit:cover;border-radius:8px;border:1px solid var(--gray-300);cursor:pointer;" onclick="window.open('${s.picture_2x2}','_blank')" onerror="this.style.display='none'"></div>
+                               <a href="${s.picture_2x2}" target="_blank" style="color:var(--blue-dark);font-weight:600;text-decoration:underline;font-size:12px;">🖼 View Full Image</a>`
+                        : '❌ Not uploaded'}</span>
                     </div>
                     <div style="grid-column:1/-1;font-size:13px;font-weight:700;color:var(--blue-dark);text-transform:uppercase;letter-spacing:0.5px;border-bottom:2px solid var(--blue-light);padding-bottom:6px;margin-top:12px;margin-bottom:4px;">Review Status</div>
                     <div class="info-item"><label>Overall Status</label><span>${getStatusBadge(s.status)}</span></div>
@@ -551,6 +722,15 @@
         async function loadPayments() {
             try {
                 allPayments = await apiGet('api/registrar.php?action=payments');
+
+                // Update payment summary stats
+                document.getElementById('payTotalCount').textContent = allPayments.length;
+                document.getElementById('payEnrolledCount').textContent = allPayments.filter(r => r.status === 'Enrolled' || r.status === 'Enrolled (Doc. Pending)').length;
+                document.getElementById('payRefundedCount').textContent = allPayments.filter(r => r.status === 'Refunded').length;
+                document.getElementById('payGcashCount').textContent = allPayments.filter(r => r.payment_method === 'GCash').length;
+                document.getElementById('payCashCount').textContent = allPayments.filter(r => r.payment_method === 'Cash').length;
+                document.getElementById('payBankCount').textContent = allPayments.filter(r => r.payment_method === 'Bank Transfer').length;
+
                 renderPayments(allPayments);
             } catch (err) {
                 showAlert('payAlert', '❌ Failed to load payments: ' + err.message);
@@ -567,7 +747,7 @@
         function renderPayments(records) {
             const tbody = document.getElementById('paymentsTableBody');
             if (records.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="8" style="text-align:center;color:var(--gray-500);padding:40px;">No records found.</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="10" style="text-align:center;color:var(--gray-500);padding:40px;">No records found.</td></tr>`;
                 return;
             }
             tbody.innerHTML = records.map(r => `
@@ -577,9 +757,17 @@
                     <td>${r.grade_level}</td>
                     <td>${r.parent_name}</td>
                     <td>${getPaymentBadge(r.payment_method)}</td>
+                    <td><span style="font-size:12px;">${r.payment_mode || '—'}${r.payment_mode === 'Monthly' ? ' <span style="color:var(--gray-500);font-size:11px;">(10 months)</span>' : ''}</span></td>
                     <td>${r.reference_number ? `<span class="ref-number">${r.reference_number}</span>` : '<span style="color:var(--gray-500);">—</span>'}</td>
-                    <td>${getStatusBadge(r.status)}</td>
+                    <td>
+                        ${getStatusBadge(r.status)}
+                        ${r.documents_pending == 1 ? '<br><span style="font-size:10px;color:#dc2626;font-weight:700;">🔴 Doc. Pending</span>' : ''}
+                    </td>
                     <td>${formatDate(r.applied_at)}</td>
+                    <td>
+                        <button class="btn" style="padding:6px 12px; border:1px solid var(--maroon-dark); color:var(--maroon-dark); background:transparent; border-radius:6px; font-size:12px;"
+                                onclick="viewStudent(${r.enrollment_id})">View Detail</button>
+                    </td>
                 </tr>
             `).join('');
         }

@@ -32,9 +32,13 @@ $suffix             = $_POST['suffix'] ?? '';
 $birth_date         = $_POST['birth_date'] ?? '';
 $gender             = $_POST['gender'] ?? '';
 $religion           = $_POST['religion'] ?? '';
-$address            = $_POST['address'] ?? '';
+$house_no_street    = $_POST['house_no_street'] ?? '';
+$barangay           = $_POST['barangay'] ?? '';
+$city_municipality  = $_POST['city_municipality'] ?? '';
+$province           = $_POST['province'] ?? '';
 $grade_level_id     = $_POST['grade_level_id'] ?? '';
 $session_id         = $_POST['session_id'] ?? '';
+$school_year_id     = $_POST['school_year_id'] ?? '';
 $relation_id        = $_POST['relation_id'] ?? '';
 $parent_first_name  = $_POST['parent_first_name'] ?? '';
 $parent_last_name   = $_POST['parent_last_name'] ?? '';
@@ -45,12 +49,15 @@ $income_range_id    = $_POST['income_range_id'] ?? '';
 $previous_school    = $_POST['previous_school'] ?? '';
 $payment_method_id  = $_POST['payment_method_id'] ?? '';
 $payment_mode       = $_POST['payment_mode'] ?? 'Monthly';
+$months_count       = ($payment_mode === 'Monthly') ? 10 : null;  // Monthly is always 10 months
+$tuition_fee        = $_POST['tuition_fee'] ?? null;
+$books_fee          = $_POST['books_fee'] ?? null;
 $reference_number   = $_POST['reference_number'] ?? '';
 $email              = $_POST['email'] ?? '';
 
 // --- STEP 2: Validate required fields ---
-if (!$first_name || !$last_name || !$email || !$address || !$payment_method_id) {
-    sendJSON(['error' => 'All required fields including Payment details must be filled.'], 400);
+if (!$first_name || !$last_name || !$email || !$house_no_street || !$barangay || !$city_municipality || !$province || !$payment_method_id || !$school_year_id) {
+    sendJSON(['error' => 'All required fields including Payment details and School Year must be filled.'], 400);
 }
 
 // --- STEP 3: Handle file uploads ---
@@ -89,15 +96,7 @@ try {
     // Start a Transaction — if anything fails, nothing gets saved (all-or-nothing).
     $conn->begin_transaction();
 
-    // A. Check if the email is already registered
-    $stmt = $conn->prepare("SELECT id FROM parents WHERE email = ?");
-    $stmt->bind_param("s", $email);
-    $stmt->execute();
-    if ($stmt->get_result()->fetch_assoc()) {
-        sendJSON(['error' => 'This email is already registered.'], 400);
-    }
-
-    // B. Insert the Parent record
+    // A. Insert the Parent record (no email uniqueness check — same parent can enroll multiple children)
     $stmt = $conn->prepare("INSERT INTO parents (first_name, last_name, middle_name, relation_id, contact_no, occupation, income_range_id, email) VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
     $stmt->bind_param("sssissss", $parent_first_name, $parent_last_name, $parent_middle_name, $relation_id, $parent_contact, $occupation, $income_range_id, $email);
     $stmt->execute();
@@ -109,20 +108,20 @@ try {
     $studentNo = date('Y') . '-' . str_pad($count, 5, '0', STR_PAD_LEFT);
 
     // D. Insert the Student record (Linking to the Parent)
-    $stmt = $conn->prepare("INSERT INTO students (parent_id, student_no, first_name, last_name, middle_name, suffix, birth_date, gender, religion, address, previous_school, psa_birth_cert, sf10_document, picture_2x2) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
-    $stmt->bind_param("isssssssssssss", $parentId, $studentNo, $first_name, $last_name, $middle_name, $suffix, $birth_date, $gender, $religion, $address, $previous_school, $psa_path, $sf10_path, $picture_2x2_path);
+    $stmt = $conn->prepare("INSERT INTO students (parent_id, student_no, first_name, last_name, middle_name, suffix, birth_date, gender, religion, house_no_street, barangay, city_municipality, province, previous_school, psa_birth_cert, sf10_document, picture_2x2) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+    $stmt->bind_param("issssssssssssssss", $parentId, $studentNo, $first_name, $last_name, $middle_name, $suffix, $birth_date, $gender, $religion, $house_no_street, $barangay, $city_municipality, $province, $previous_school, $psa_path, $sf10_path, $picture_2x2_path);
     $stmt->execute();
     $studentId = $conn->insert_id;
 
-    // E. Create the Enrollment record (linking to student only)
-    $stmt = $conn->prepare("INSERT INTO enrollments (student_id, grade_level_id, session_id) VALUES (?, ?, ?)");
-    $stmt->bind_param("iii", $studentId, $grade_level_id, $session_id);
+    // E. Create the Enrollment record (linking to student and school year)
+    $stmt = $conn->prepare("INSERT INTO enrollments (student_id, school_year_id, grade_level_id, session_id) VALUES (?, ?, ?, ?)");
+    $stmt->bind_param("iiii", $studentId, $school_year_id, $grade_level_id, $session_id);
     $stmt->execute();
     $enrollmentId = $conn->insert_id;
 
-    // F. Create the Payment record
-    $stmt = $conn->prepare("INSERT INTO payments (enrollment_id, payment_method_id, payment_mode, reference_number) VALUES (?, ?, ?, ?)");
-    $stmt->bind_param("iiss", $enrollmentId, $payment_method_id, $payment_mode, $reference_number);
+    // F. Create the Payment record (storing fees and month count)
+    $stmt = $conn->prepare("INSERT INTO payments (enrollment_id, payment_method_id, payment_mode, months_count, tuition_fee, books_fee, reference_number) VALUES (?, ?, ?, ?, ?, ?, ?)");
+    $stmt->bind_param("iissids", $enrollmentId, $payment_method_id, $payment_mode, $months_count, $tuition_fee, $books_fee, $reference_number);
     $stmt->execute();
 
     // Save everything!
