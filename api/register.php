@@ -121,8 +121,17 @@ try {
 
     // F. Create the Payment record (storing fees and month count)
     $stmt = $conn->prepare("INSERT INTO payments (enrollment_id, payment_method_id, payment_mode, months_count, tuition_fee, books_fee, reference_number) VALUES (?, ?, ?, ?, ?, ?, ?)");
-    $stmt->bind_param("iissids", $enrollmentId, $payment_method_id, $payment_mode, $months_count, $tuition_fee, $books_fee, $reference_number);
+    $stmt->bind_param("iisidds", $enrollmentId, $payment_method_id, $payment_mode, $months_count, $tuition_fee, $books_fee, $reference_number);
     $stmt->execute();
+    $paymentId = $conn->insert_id;
+
+    // G. Create the initial Payment Transaction
+    $initial_payment = $_POST['initial_payment'] ?? 0;
+    if ($initial_payment > 0) {
+        $stmt = $conn->prepare("INSERT INTO payment_transactions (payment_id, amount_paid, payment_method_id, reference_number, notes) VALUES (?, ?, ?, ?, 'Initial Payment')");
+        $stmt->bind_param("idis", $paymentId, $initial_payment, $payment_method_id, $reference_number);
+        $stmt->execute();
+    }
 
     // Save everything!
     $conn->commit();

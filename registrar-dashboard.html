@@ -504,6 +504,7 @@
             formData.append('student_id', studentId);
             formData.append('doc_type', docType);
             formData.append('document', fileInput.files[0]);
+            formData.append('admin_id', sessionStorage.getItem('adminId'));
             try {
                 const res = await fetch('api/registrar.php?action=upload_document', { method: 'POST', body: formData });
                 const result = await res.json();
@@ -557,6 +558,7 @@
             e.preventDefault();
             const form = document.getElementById('editStudentForm');
             const formData = new FormData(form);
+            formData.append('admin_id', sessionStorage.getItem('adminId'));
             try {
                 const res = await fetch('api/registrar.php?action=update_student', { method: 'POST', body: formData });
                 const result = await res.json();

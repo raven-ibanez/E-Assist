@@ -39,6 +39,17 @@ function calculateStatus($reg, $cash, $docs_pending = 0) {
     return 'Pending';
 }
 
+/**
+ * Log an administrative action to the system_logs table.
+ */
+function logAction($admin_id, $action, $target_id = null, $target_name = null, $details = null) {
+    global $conn;
+    if (!$admin_id) return; // Cannot log without admin ID
+    $stmt = $conn->prepare("INSERT INTO system_logs (admin_id, action_type, target_id, target_name, details) VALUES (?, ?, ?, ?, ?)");
+    $stmt->bind_param("isiss", $admin_id, $action, $target_id, $target_name, $details);
+    $stmt->execute();
+}
+
 // Read the "action" from the URL
 $action = $_GET['action'] ?? '';
 
@@ -139,11 +150,14 @@ if ($action === 'detail') {
             sy.label AS school_year,
             sess.name AS session_preference,
             pm.name AS payment_method,
+            pay.id AS payment_id,
             pay.payment_mode,
             pay.months_count,
             pay.tuition_fee,
             pay.books_fee,
             pay.reference_number,
+            COALESCE(pay.tuition_fee, 0) + COALESCE(pay.books_fee, 0) as total_amount,
+            COALESCE((SELECT SUM(amount_paid) FROM payment_transactions WHERE payment_id = pay.id), 0) as total_paid,
             s.id AS student_id,
             s.student_no, 
             s.first_name, 
@@ -192,6 +206,7 @@ if ($action === 'detail') {
 
     if ($result && $row = $result->fetch_assoc()) {
         $row['status'] = calculateStatus($row['registrar_status'], $row['cashier_status'], $row['documents_pending']);
+        $row['balance'] = ($row['total_amount'] ?? 0) - ($row['total_paid'] ?? 0);
         sendJSON($row);
     } else {
         sendJSON(['error' => 'Enrollment not found or query error.'], 404);
@@ -215,11 +230,14 @@ if ($action === 'payments') {
             e.documents_pending,
             sy.label AS school_year,
             pm.name AS payment_method, 
+            pay.id AS payment_id,
             pay.payment_mode,
             pay.months_count,
             pay.tuition_fee,
             pay.books_fee,
             pay.reference_number,
+            COALESCE(pay.tuition_fee, 0) + COALESCE(pay.books_fee, 0) as total_amount,
+            COALESCE((SELECT SUM(amount_paid) FROM payment_transactions WHERE payment_id = pay.id), 0) as total_paid,
             s.student_no, 
             s.first_name, 
             s.last_name,
@@ -246,6 +264,7 @@ if ($action === 'payments') {
     $rows = $result->fetch_all(MYSQLI_ASSOC);
     foreach ($rows as &$item) {
         $item['status'] = calculateStatus($item['registrar_status'], $item['cashier_status']);
+        $item['balance'] = ($item['total_amount'] ?? 0) - ($item['total_paid'] ?? 0);
     }
 
     sendJSON($rows);
@@ -281,6 +300,17 @@ if ($action === 'review_application') {
     $stmt2->bind_param("ii", $docs_pending, $enrollment_id);
     $stmt2->execute();
 
+    // Log the action
+    $stmtName = $conn->prepare("SELECT CONCAT(s.first_name, ' ', s.last_name) as name FROM enrollments e JOIN students s ON e.student_id = s.id WHERE e.id = ?");
+    $stmtName->bind_param("i", $enrollment_id);
+    $stmtName->execute();
+    $nameRes = $stmtName->get_result()->fetch_assoc();
+    $studentName = $nameRes['name'] ?? 'Unknown';
+
+    $logMsg = "Registrar review: " . ucfirst($decision);
+    if ($decision === 'approved_dtf') $logMsg = "Registrar Approved (Doc. to Follow)";
+    logAction($admin_id, "Application Review", $enrollment_id, $studentName, $logMsg);
+
     // To send back the new dynamic status, we fetch the cashier status
     $stmtCash = $conn->prepare("SELECT decision FROM enrollment_reviews WHERE enrollment_id = ? AND review_type = 'Cashier' ORDER BY created_at DESC LIMIT 1");
     $stmtCash->bind_param("i", $enrollment_id);
@@ -312,6 +342,15 @@ if ($action === 'review_payment') {
     $stmt = $conn->prepare("INSERT INTO enrollment_reviews (enrollment_id, admin_id, review_type, decision) VALUES (?, ?, 'Cashier', ?)");
     $stmt->bind_param("iis", $enrollment_id, $admin_id, $decision);
     $stmt->execute();
+
+    // Log the action
+    $stmtName = $conn->prepare("SELECT CONCAT(s.first_name, ' ', s.last_name) as name FROM enrollments e JOIN students s ON e.student_id = s.id WHERE e.id = ?");
+    $stmtName->bind_param("i", $enrollment_id);
+    $stmtName->execute();
+    $nameRes = $stmtName->get_result()->fetch_assoc();
+    $studentName = $nameRes['name'] ?? 'Unknown';
+
+    logAction($admin_id, "Payment Review", $enrollment_id, $studentName, "Cashier review: " . ucfirst($decision));
 
     // To send back the new dynamic status, fetch registrar status and documents_pending
     $stmtReg = $conn->prepare("SELECT decision FROM enrollment_reviews WHERE enrollment_id = ? AND review_type = 'Registrar' ORDER BY created_at DESC LIMIT 1");
@@ -372,6 +411,12 @@ if ($action === 'update_student') {
     $stmt2->bind_param("ssssssi", $parent_first_name, $parent_last_name, $parent_middle_name, $parent_contact, $parent_email, $parent_occupation, $parent_id);
     $stmt2->execute();
 
+    // Log the action (if admin_id is provided)
+    $admin_id = $_POST['admin_id'] ?? null;
+    if ($admin_id) {
+        logAction($admin_id, "Update Student", $student_id, "$first_name $last_name", "Updated student/parent profile information.");
+    }
+
     sendJSON(['message' => 'Student information updated successfully.']);
 }
 
@@ -416,6 +461,18 @@ if ($action === 'upload_document') {
     $stmt = $conn->prepare("UPDATE students SET `{$col}` = ? WHERE id = ?");
     $stmt->bind_param("si", $webPath, $student_id);
     $stmt->execute();
+
+    // Log the action (if admin_id is provided)
+    $admin_id = $_POST['admin_id'] ?? null;
+    if ($admin_id) {
+        $stmtName = $conn->prepare("SELECT CONCAT(first_name, ' ', last_name) as name FROM students WHERE id = ?");
+        $stmtName->bind_param("i", $student_id);
+        $stmtName->execute();
+        $nameRes = $stmtName->get_result()->fetch_assoc();
+        $studentName = $nameRes['name'] ?? 'Unknown';
+
+        logAction($admin_id, "Upload Document", $student_id, $studentName, "Uploaded missing " . strtoupper($doc_type) . " document.");
+    }
 
     // Check if all three documents are now uploaded (clear flag if so)
     $stmtCheck = $conn->prepare("SELECT psa_birth_cert, sf10_document, picture_2x2 FROM students WHERE id = ?");
@@ -485,6 +542,13 @@ if ($action === 'add_employee') {
     $stmt = $conn->prepare("INSERT INTO admin (username, password, role_id) VALUES (?, ?, ?)");
     $stmt->bind_param("ssi", $username, $hashedPassword, $role_id);
     $stmt->execute();
+
+    // Log the action (if admin_id is provided)
+    $admin_id = $data['admin_id'] ?? null;
+    if ($admin_id) {
+        logAction($admin_id, "Account Created", $conn->insert_id, $username, "Created new employee account: $username");
+    }
+
     sendJSON(['message' => "Employee account created successfully."]);
 }
 
@@ -510,7 +574,96 @@ if ($action === 'delete_employee') {
     $stmt = $conn->prepare("DELETE FROM admin WHERE id = ?");
     $stmt->bind_param("i", $id);
     $stmt->execute();
+
+    // Log the action (if admin_id is provided)
+    $admin_id = $_GET['admin_id'] ?? null;
+    if ($admin_id) {
+        logAction($admin_id, "Account Deleted", $id, $target['username'], "Deleted employee account: {$target['username']}");
+    }
+
     sendJSON(['message' => "Employee '{$target['username']}' has been deleted."]);
+}
+
+
+// =============================================================
+//  ACTION: GET SYSTEM LOGS
+//  - Used by: Admin Dashboard (Logs tab)
+// =============================================================
+if ($action === 'get_logs') {
+    $result = $conn->query("
+        SELECT l.*, a.username as employee_name, r.name as employee_role
+        FROM system_logs l
+        JOIN admin a ON l.admin_id = a.id
+        JOIN roles r ON a.role_id = r.id
+        ORDER BY l.created_at DESC
+        LIMIT 500
+    ");
+
+    if (!$result) {
+        sendJSON(['error' => 'Failed to fetch logs: ' . $conn->error], 500);
+    }
+
+    sendJSON($result->fetch_all(MYSQLI_ASSOC));
+}
+
+
+// =============================================================
+//  ACTION: ADD PAYMENT TRANSACTION (Cashier update balance)
+//  - Used by: Cashier Dashboard
+// =============================================================
+if ($action === 'add_payment') {
+    $payment_id       = $data['payment_id'] ?? '';
+    $amount           = $data['amount'] ?? 0;
+    $method_id        = $data['method_id'] ?? '';
+    $ref              = $data['reference'] ?? '';
+    $notes            = $data['notes'] ?? '';
+    $admin_id         = $data['admin_id'] ?? '';
+
+    if (!$payment_id || !$amount || !$method_id || !$admin_id) {
+        sendJSON(['error' => 'Missing required fields (Payment ID, amount, method, and Admin ID).'], 400);
+    }
+
+    $stmt = $conn->prepare("INSERT INTO payment_transactions (payment_id, amount_paid, payment_method_id, reference_number, notes) VALUES (?, ?, ?, ?, ?)");
+    $stmt->bind_param("idiss", $payment_id, $amount, $method_id, $ref, $notes);
+    $stmt->execute();
+
+    // Log the action
+    $stmtStudent = $conn->prepare("SELECT CONCAT(s.first_name, ' ', s.last_name) as name, e.id as enrollment_id FROM payments pay JOIN enrollments e ON pay.enrollment_id = e.id JOIN students s ON e.student_id = s.id WHERE pay.id = ?");
+    $stmtStudent->bind_param("i", $payment_id);
+    $stmtStudent->execute();
+    $student = $stmtStudent->get_result()->fetch_assoc();
+    $studentName = $student['name'] ?? 'Unknown';
+    $enrollment_id = $student['enrollment_id'] ?? null;
+    
+    logAction($admin_id, "Update Payment", $enrollment_id, $studentName, "Added payment of ₱" . number_format($amount, 2) . ". Ref: $ref");
+
+    sendJSON(['message' => 'Payment updated successfully.']);
+}
+
+
+// =============================================================
+//  ACTION: GET PAYMENT HISTORY
+//  - Used by: Cashier & Admin dashboards to see installment details.
+// =============================================================
+if ($action === 'payment_history') {
+    $payment_id = $_GET['payment_id'] ?? '';
+
+    if (!$payment_id) {
+        sendJSON(['error' => 'Payment ID is required.'], 400);
+    }
+
+    $stmt = $conn->prepare("
+        SELECT pt.*, pm.name as method_name
+        FROM payment_transactions pt
+        JOIN payment_methods pm ON pt.payment_method_id = pm.id
+        WHERE pt.payment_id = ?
+        ORDER BY pt.created_at DESC
+    ");
+    $stmt->bind_param("i", $payment_id);
+    $stmt->execute();
+    $result = $stmt->get_result();
+
+    sendJSON($result->fetch_all(MYSQLI_ASSOC));
 }
 
 

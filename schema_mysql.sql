@@ -205,19 +205,35 @@ CREATE TABLE IF NOT EXISTS enrollments (
 
 -- ============================================================
 --  TABLE: payments
---  Stores the specific transaction details for an enrollment.
+--  Stores the total fees and payment plan for an enrollment.
 -- ============================================================
 CREATE TABLE IF NOT EXISTS payments (
     id                INT AUTO_INCREMENT PRIMARY KEY,
     enrollment_id      INT NOT NULL,
     payment_method_id  INT NOT NULL,
     payment_mode      ENUM('Full', 'Monthly') NOT NULL DEFAULT 'Monthly',
-    months_count      INT DEFAULT NULL,             -- For Monthly mode: always 10 months
-    tuition_fee       DECIMAL(10,2) DEFAULT NULL,  -- Computed tuition amount
-    books_fee         DECIMAL(10,2) DEFAULT NULL,  -- Computed books fee
-    reference_number  VARCHAR(100) DEFAULT NULL UNIQUE,
+    months_count      INT DEFAULT NULL,             -- For Monthly mode: usually 10 months
+    tuition_fee       DECIMAL(10,2) NOT NULL,       -- TOTAL tuition amount
+    books_fee         DECIMAL(10,2) NOT NULL,       -- TOTAL books fee
+    reference_number  VARCHAR(100) DEFAULT NULL,    -- Initial payment reference
     applied_at        TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (enrollment_id)     REFERENCES enrollments(id) ON DELETE CASCADE,
+    FOREIGN KEY (payment_method_id) REFERENCES payment_methods(id)
+);
+
+-- ============================================================
+--  TABLE: payment_transactions
+--  Records each actual payment made by the student (installments).
+-- ============================================================
+CREATE TABLE IF NOT EXISTS payment_transactions (
+    id             INT AUTO_INCREMENT PRIMARY KEY,
+    payment_id     INT NOT NULL,
+    amount_paid    DECIMAL(10,2) NOT NULL,
+    payment_method_id INT NOT NULL,
+    reference_number VARCHAR(100) DEFAULT NULL,
+    notes          VARCHAR(255) DEFAULT NULL,
+    created_at     TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (payment_id) REFERENCES payments(id) ON DELETE CASCADE,
     FOREIGN KEY (payment_method_id) REFERENCES payment_methods(id)
 );
 
@@ -276,4 +292,20 @@ CREATE TABLE IF NOT EXISTS enrollment_reviews (
     created_at    TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (enrollment_id) REFERENCES enrollments(id) ON DELETE CASCADE,
     FOREIGN KEY (admin_id)      REFERENCES admin(id) ON DELETE CASCADE
+);
+
+
+-- ============================================================
+--  TABLE: system_logs
+--  Tracks all administrative actions for auditing purposes.
+-- ============================================================
+CREATE TABLE IF NOT EXISTS system_logs (
+    id          INT AUTO_INCREMENT PRIMARY KEY,
+    admin_id    INT NOT NULL,
+    action_type VARCHAR(100) NOT NULL, -- e.g., "Registrar Approved", "Cashier Refunded", "Student Update"
+    target_id   INT DEFAULT NULL,     -- Enrollment ID or Student ID
+    target_name VARCHAR(255) DEFAULT NULL, -- Student Name for quick reference
+    details     TEXT DEFAULT NULL,    -- Extra info
+    created_at  TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (admin_id) REFERENCES admin(id) ON DELETE CASCADE
 );

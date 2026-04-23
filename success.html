@@ -138,7 +138,8 @@
             <div class="rp-billing">
                 <div class="bill-row"><span>Tuition Fee</span><span id="r-tuition">—</span></div>
                 <div class="bill-row"><span>Book Fee</span><span id="r-books">—</span></div>
-                <div class="bill-total"><span>Total Amount</span><span id="r-total">—</span></div>
+                <div class="bill-row" style="background:#f0f9ff; border-top:2px solid #e5e7eb;"><span>Amount Paid Now</span><span id="r-paid" style="color:#1d4ed8;">—</span></div>
+                <div class="bill-total"><span>Full Total Amount</span><span id="r-total">—</span></div>
             </div>
             <div class="rp-sec">Reference / Transaction</div>
             <div class="rp-ref">
@@ -167,6 +168,7 @@ const payMethod   = p.get('method')  || '—';
 const payMode     = p.get('mode')    || '—';
 const refNumber   = p.get('ref')     || 'N/A (Cash)';
 const totalAmt    = p.get('total')   || '—';
+const paidAmt     = p.get('paid')    || '—';
 const tuitionAmt  = p.get('tuition') || '—';
 const booksAmt    = p.get('books')   || '—';
 const gradeLevel  = p.get('grade')   || '—';
@@ -184,6 +186,7 @@ document.getElementById('r-mode').textContent    = modeLabel;
 document.getElementById('r-date').textContent    = dateStr;
 document.getElementById('r-tuition').textContent = tuitionAmt;
 document.getElementById('r-books').textContent   = booksAmt;
+document.getElementById('r-paid').textContent    = paidAmt;
 document.getElementById('r-total').textContent   = totalAmt;
 document.getElementById('r-ref').textContent     = refNumber;
 document.getElementById('r-footer-date').textContent = now.toLocaleDateString('en-PH', { year:'numeric', month:'short', day:'numeric' });
@@ -241,8 +244,8 @@ function downloadReceipt() {
     const BAND_H  = 80;
     const GRID_ROWS = 2, CELL_H = 62, GRID_GAP = 10;
     const GRID_H  = GRID_ROWS * CELL_H + (GRID_ROWS - 1) * GRID_GAP;
-    const BILL_ROW = 46, BILL_TOT = 52;
-    const BILL_H  = BILL_ROW * 2 + BILL_TOT;
+    const BILL_ROW = 42, BILL_TOT = 52;
+    const BILL_H  = BILL_ROW * 3 + BILL_TOT;
     const REF_H   = 72;
     const BODY_B  = 32;
     const FTR_H   = 52;
@@ -334,10 +337,15 @@ function downloadReceipt() {
     txt(ctx, 'Book Fee', PAD+16, y + BILL_ROW + BILL_ROW/2 + 5, 13, '#374151');
     txt(ctx, booksAmt, W-PAD-16, y + BILL_ROW + BILL_ROW/2 + 5, 13, '#1a1a2e', 'right', true);
     ctx.fillStyle = '#e5e7eb'; ctx.fillRect(PAD, y + BILL_ROW*2, W - PAD*2, 1);
+    // row 3 (Paid Now)
+    fillRR(ctx, PAD, y + BILL_ROW*2 + 1, W - PAD*2, BILL_ROW - 1, 0, '#eff6ff');
+    txt(ctx, 'Amount Paid Now', PAD+16, y + BILL_ROW*2 + BILL_ROW/2 + 5, 13, '#1d4ed8', 'left', true);
+    txt(ctx, paidAmt, W-PAD-16, y + BILL_ROW*2 + BILL_ROW/2 + 5, 13, '#1d4ed8', 'right', true);
+    ctx.fillStyle = '#e5e7eb'; ctx.fillRect(PAD, y + BILL_ROW*3, W - PAD*2, 1);
     // total
-    fillRR(ctx, PAD, y + BILL_ROW*2 + 1, W - PAD*2, BILL_TOT - 1, [0,0,10,10], '#7a1e1e');
-    txt(ctx, 'Total Amount', PAD+16, y + BILL_ROW*2 + BILL_TOT/2 + 6, 15, '#ffffff', 'left', true);
-    txt(ctx, totalAmt, W-PAD-16, y + BILL_ROW*2 + BILL_TOT/2 + 6, 15, '#ffffff', 'right', true);
+    fillRR(ctx, PAD, y + BILL_ROW*3 + 1, W - PAD*2, BILL_TOT - 1, [0,0,10,10], '#7a1e1e');
+    txt(ctx, 'Full Total Amount', PAD+16, y + BILL_ROW*3 + BILL_TOT/2 + 6, 15, '#ffffff', 'left', true);
+    txt(ctx, totalAmt, W-PAD-16, y + BILL_ROW*3 + BILL_TOT/2 + 6, 15, '#ffffff', 'right', true);
     y += BILL_H + 16;
 
     // ── Reference ──

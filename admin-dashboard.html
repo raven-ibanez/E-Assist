@@ -267,6 +267,9 @@
             <button class="tab-btn" onclick="switchTab('employees')">
                 👥 <span class="tab-label">Employee Accounts</span>
             </button>
+            <button class="tab-btn" onclick="switchTab('logs')">
+                📜 <span class="tab-label">Transaction Logs</span>
+            </button>
         </div>
 
         <!-- ==================== TAB 1: ENROLLMENTS ==================== -->
@@ -448,13 +451,12 @@
                             <tr>
                                 <th>Student ID</th>
                                 <th>Full Name</th>
-                                <th>Grade Level</th>
-                                <th>Parent</th>
                                 <th>Method</th>
                                 <th>Mode</th>
-                                <th>Ref #</th>
+                                <th>Total Amount</th>
+                                <th>Paid</th>
+                                <th>Balance</th>
                                 <th>Status</th>
-                                <th>Date Applied</th>
                                 <th>Actions</th>
                             </tr>
                         </thead>
@@ -523,6 +525,50 @@
                 </div>
             </div>
         </div>
+
+        <!-- ==================== TAB 4: TRANSACTION LOGS ==================== -->
+        <div class="tab-content" id="tab-logs">
+            <div id="logsAlert" class="alert"></div>
+
+            <div class="v2-table-container">
+                <div class="v2-table-title"
+                    style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
+                    <div>System Transaction & Change Logs</div>
+                    <div style="display:flex; gap:12px; align-items:center;">
+                        <input type="text" id="logsSearchInput" placeholder="🔍 Search logs..."
+                            oninput="filterLogs()"
+                            style="padding:8px; border:1px solid var(--gray-400); border-radius:6px; background:transparent; width: 250px;">
+                        <select id="logsFilterAction" onchange="filterLogs()" class="v2-action-select">
+                            <option value="All">All Actions</option>
+                            <option value="Application Review">Application Review</option>
+                            <option value="Payment Review">Payment Review</option>
+                            <option value="Update Student">Update Student</option>
+                            <option value="Upload Document">Upload Document</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="v2-table-wrapper">
+                    <table class="v2-table">
+                        <thead>
+                            <tr>
+                                <th>Date & Time</th>
+                                <th>Employee</th>
+                                <th>Role</th>
+                                <th>Action Type</th>
+                                <th>Target Student</th>
+                                <th>Details</th>
+                            </tr>
+                        </thead>
+                        <tbody id="logsTableBody">
+                            <tr>
+                                <td colspan="6" style="text-align:center;">Loading...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
     </div>
 
     <!-- ===== MODAL: View Full Student Details ===== -->
@@ -548,6 +594,7 @@
         let allStudents = [];
         let allPayments = [];
         let allEmployees = [];
+        let allLogs = [];
 
         if (!sessionStorage.getItem('registrarLoggedIn')) {
             window.location.href = 'employee-login.html';
@@ -585,6 +632,9 @@
             if (tab === 'employees') {
                 if (allEmployees.length === 0) loadEmployees();
                 loadRoles();
+            }
+            if (tab === 'logs') {
+                loadLogs();
             }
         }
 
@@ -744,8 +794,31 @@
                     <div class="info-item"><label>Payment Method</label><span>${s.payment_method || 'Not provided'}</span></div>
                     <div class="info-item"><label>Payment Mode</label><span>${s.payment_mode || '—'}${s.payment_mode === 'Monthly' ? ' (10 months)' : ''}</span></div>
                     <div class="info-item"><label>Reference Number</label><span class="ref-number">${s.reference_number || '—'}</span></div>
-                    <div class="info-item"><label>Tuition Fee</label><span style="font-weight:700;color:var(--maroon-dark);">${s.tuition_fee ? '₱' + parseFloat(s.tuition_fee).toLocaleString() : '—'}</span></div>
-                    <div class="info-item"><label>Books Fee</label><span style="font-weight:700;color:var(--maroon-dark);">${s.books_fee ? '₱' + parseFloat(s.books_fee).toLocaleString() : '—'}</span></div>
+                    <div class="info-item"><label>Total Tuition</label><span style="font-weight:700;color:var(--maroon-dark);">${s.tuition_fee ? '₱' + parseFloat(s.tuition_fee).toLocaleString() : '—'}</span></div>
+                    <div class="info-item"><label>Total Books</label><span style="font-weight:700;color:var(--maroon-dark);">${s.books_fee ? '₱' + parseFloat(s.books_fee).toLocaleString() : '—'}</span></div>
+                    
+                    <div class="info-item" style="grid-column: span 2; background: #f8fafc; padding: 12px; border-radius: 8px; margin-top: 10px; display: flex; justify-content: space-around; border: 1px solid #e2e8f0;">
+                        <div style="text-align:center;">
+                            <label style="font-size:11px; color:#64748b; display:block; margin-bottom:4px;">TOTAL PAYABLE</label>
+                            <span style="font-size:18px; font-weight:800; color:#1e293b;">₱${parseFloat(s.total_amount || 0).toLocaleString()}</span>
+                        </div>
+                        <div style="text-align:center;">
+                            <label style="font-size:11px; color:#64748b; display:block; margin-bottom:4px;">TOTAL PAID</label>
+                            <span style="font-size:18px; font-weight:800; color:#16a34a;">₱${parseFloat(s.total_paid || 0).toLocaleString()}</span>
+                        </div>
+                        <div style="text-align:center;">
+                            <label style="font-size:11px; color:#64748b; display:block; margin-bottom:4px;">REMAINING BALANCE</label>
+                            <span style="font-size:18px; font-weight:800; color:#dc2626;">₱${parseFloat(s.balance || 0).toLocaleString()}</span>
+                        </div>
+                    </div>
+
+                    <div id="adminPaymentHistory" style="grid-column: span 2; margin-top: 20px;">
+                        <h4 style="margin-bottom:10px; font-size:14px; border-bottom:1px solid #eee; padding-bottom:5px;">📜 Payment History</h4>
+                        <div id="adminHistoryContainer" style="max-height: 200px; overflow-y: auto;">
+                            <p style="text-align:center; color:#999; font-size:12px;">Loading history...</p>
+                        </div>
+                    </div>
+
                     <div style="grid-column:1/-1;font-size:13px;font-weight:700;color:var(--blue-dark);text-transform:uppercase;letter-spacing:0.5px;border-bottom:2px solid var(--blue-light);padding-bottom:6px;margin-top:12px;margin-bottom:4px;">Review Status</div>
                     <div class="info-item"><label>Overall Status</label><span>${getStatusBadge(s.status)}</span></div>
                     <div class="info-item"><label>Registrar Review</label><span>${s.registrar_status}</span></div>
@@ -754,8 +827,44 @@
                 `;
                 document.getElementById('modalOverlay').classList.add('active');
                 document.body.classList.add('modal-open');
+                loadAdminPaymentHistory(s.payment_id);
             } catch (err) {
                 showAlert('payAlert', '❌ Could not load payment details.');
+            }
+        }
+
+        async function loadAdminPaymentHistory(paymentId) {
+            try {
+                const history = await apiGet(`api/registrar.php?action=payment_history&payment_id=${paymentId}`);
+                const container = document.getElementById('adminHistoryContainer');
+                if (history.length === 0) {
+                    container.innerHTML = '<p style="text-align:center; color:#999; font-size:12px;">No payments found.</p>';
+                    return;
+                }
+                container.innerHTML = `
+                    <table style="width:100%; font-size:12px; border-collapse:collapse;">
+                        <thead>
+                            <tr style="text-align:left; border-bottom:1px solid #eee;">
+                                <th style="padding:5px;">Date</th>
+                                <th style="padding:5px;">Amount</th>
+                                <th style="padding:5px;">Method</th>
+                                <th style="padding:5px;">Reference</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${history.map(h => `
+                                <tr style="border-bottom:1px solid #f9f9f9;">
+                                    <td style="padding:5px;">${formatDate(h.created_at)}</td>
+                                    <td style="padding:5px; font-weight:600;">₱${parseFloat(h.amount_paid).toLocaleString()}</td>
+                                    <td style="padding:5px;">${h.method_name}</td>
+                                    <td style="padding:5px;"><span class="ref-number">${h.reference_number || '—'}</span></td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                `;
+            } catch (err) {
+                document.getElementById('adminHistoryContainer').innerHTML = '<p style="color:red; font-size:12px;">Failed to load history.</p>';
             }
         }
 
@@ -784,32 +893,35 @@
             return `<span class="${classMap[key] || 'v2-badge-gray'}">${method}</span>`;
         }
 
-        function renderPayments(records) {
+        function renderPayments(payments) {
             const tbody = document.getElementById('paymentsTableBody');
-            if (records.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="10" style="text-align:center;color:var(--gray-500);padding:40px;">No records found.</td></tr>`;
+            if (payments.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="9" style="text-align:center;color:var(--gray-500);padding:40px;">No payment records found.</td></tr>`;
                 return;
             }
-            tbody.innerHTML = records.map(r => `
+            tbody.innerHTML = payments.map(p => {
+                const balance = parseFloat(p.balance || 0);
+                const isPaid = balance <= 0;
+                return `
                 <tr>
-                    <td><strong>${r.student_no}</strong></td>
-                    <td>${r.last_name}${r.suffix ? ' ' + r.suffix : ''}, ${r.first_name}</td>
-                    <td>${r.grade_level}</td>
-                    <td>${r.parent_name}</td>
-                    <td>${getPaymentBadge(r.payment_method)}</td>
-                    <td><span style="font-size:12px;">${r.payment_mode || '—'}${r.payment_mode === 'Monthly' ? ' <span style="color:var(--gray-500);font-size:11px;">(10 months)</span>' : ''}</span></td>
-                    <td>${r.reference_number ? `<span class="ref-number">${r.reference_number}</span>` : '<span style="color:var(--gray-500);">—</span>'}</td>
-                    <td>
-                        ${getStatusBadge(r.status)}
-                        ${r.documents_pending == 1 ? '<br><span style="font-size:10px;color:#dc2626;font-weight:700;">🔴 Doc. Pending</span>' : ''}
+                    <td><strong>${p.student_no}</strong></td>
+                    <td>${p.last_name}${p.suffix ? ' ' + p.suffix : ''}, ${p.first_name}</td>
+                    <td>${getPaymentBadge(p.payment_method)}</td>
+                    <td>${p.payment_mode}</td>
+                    <td style="font-weight:600;">₱${parseFloat(p.total_amount || 0).toLocaleString()}</td>
+                    <td style="color:#16a34a; font-weight:600;">₱${parseFloat(p.total_paid || 0).toLocaleString()}</td>
+                    <td style="color:${isPaid ? '#16a34a' : '#dc2626'}; font-weight:700;">
+                        ${isPaid ? '✅ Paid' : '₱' + balance.toLocaleString()}
                     </td>
-                    <td>${formatDate(r.applied_at)}</td>
+                    <td>${getStatusBadge(p.status)}</td>
                     <td>
-                        <button class="btn" style="padding:6px 12px; border:1px solid var(--maroon-dark); color:var(--maroon-dark); background:transparent; border-radius:6px; font-size:12px;"
-                                onclick="viewPaymentDetail(${r.enrollment_id})">💳 View Payment</button>
+                        <button class="btn" style="padding:4px 10px; border:1px solid var(--maroon-dark); color:var(--maroon-dark); background:transparent; border-radius:6px; font-size:11px;"
+                                onclick="viewPaymentDetail(${p.enrollment_id})">
+                            💳 View Payment
+                        </button>
                     </td>
                 </tr>
-            `).join('');
+            `;}).join('');
         }
 
         function filterPayments() {
@@ -917,7 +1029,10 @@
             }
 
             try {
-                const result = await apiPost('api/registrar.php?action=add_employee', { username, password, role_id });
+                const result = await apiPost('api/registrar.php?action=add_employee', { 
+                    username, password, role_id,
+                    admin_id: sessionStorage.getItem('adminId')
+                });
                 showAlert('empAlert', '✅ ' + result.message, 'success');
                 document.getElementById('newUsername').value = '';
                 document.getElementById('newPassword').value = '';
@@ -937,7 +1052,8 @@
             }
             if (!window.confirm(`Delete employee "${username}"? This cannot be undone.`)) return;
             try {
-                const result = await apiPost(`api/registrar.php?action=delete_employee&id=${id}`, {});
+                const admin_id = sessionStorage.getItem('adminId');
+                const result = await apiPost(`api/registrar.php?action=delete_employee&id=${id}&admin_id=${admin_id}`, {});
                 showAlert('empAlert', '✅ ' + result.message, 'success');
                 allEmployees = [];
                 loadEmployees();
@@ -965,6 +1081,67 @@
             if (!dateStr) return '—';
             const d = new Date(dateStr);
             return d.toLocaleDateString('en-PH', { year: 'numeric', month: 'short', day: 'numeric' });
+        }
+
+        function formatDateTime(dateStr) {
+            if (!dateStr) return '—';
+            const d = new Date(dateStr);
+            return d.toLocaleDateString('en-PH', { 
+                year: 'numeric', month: 'short', day: 'numeric',
+                hour: '2-digit', minute: '2-digit'
+            });
+        }
+
+        // ===============================================
+        // TAB 4: SYSTEM LOGS
+        // ===============================================
+        async function loadLogs() {
+            try {
+                const tbody = document.getElementById('logsTableBody');
+                tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;">⏳ Fetching logs...</td></tr>`;
+                
+                allLogs = await apiGet('api/registrar.php?action=get_logs');
+                renderLogs(allLogs);
+            } catch (err) {
+                showAlert('logsAlert', '❌ Failed to load logs: ' + err.message);
+            }
+        }
+
+        function renderLogs(logs) {
+            const tbody = document.getElementById('logsTableBody');
+            if (logs.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;color:var(--gray-500);padding:40px;">No logs found.</td></tr>`;
+                return;
+            }
+            tbody.innerHTML = logs.map(l => `
+                <tr>
+                    <td style="font-size:12px; white-space:nowrap;">${formatDateTime(l.created_at)}</td>
+                    <td><strong>${l.employee_name}</strong></td>
+                    <td><span class="role-tag role-${l.employee_role}">${l.employee_role}</span></td>
+                    <td><span style="font-weight:600;">${l.action_type}</span></td>
+                    <td>${l.target_name || '—'}</td>
+                    <td style="font-size:13px; color:var(--gray-600);">${l.details || '—'}</td>
+                </tr>
+            `).join('');
+        }
+
+        function filterLogs() {
+            const search = document.getElementById('logsSearchInput').value.toLowerCase();
+            const actionFilter = document.getElementById('logsFilterAction').value;
+
+            let filtered = allLogs;
+            if (search) {
+                filtered = filtered.filter(l =>
+                    (l.employee_name || '').toLowerCase().includes(search) ||
+                    (l.target_name || '').toLowerCase().includes(search) ||
+                    (l.details || '').toLowerCase().includes(search) ||
+                    (l.action_type || '').toLowerCase().includes(search)
+                );
+            }
+            if (actionFilter !== 'All') {
+                filtered = filtered.filter(l => l.action_type === actionFilter);
+            }
+            renderLogs(filtered);
         }
 
         // Load enrollments on page load (default tab)

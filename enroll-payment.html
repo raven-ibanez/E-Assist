@@ -64,15 +64,19 @@
                                 Summary</div>
                             <div
                                 style="display: flex; justify-content: space-between; font-size: 13px; margin-bottom: 2px;">
-                                <span>Tuition:</span> <span id="display-tuition">₱0</span>
+                                <span>Total Tuition:</span> <span id="display-tuition">₱0</span>
                             </div>
                             <div
-                                style="display: flex; justify-content: space-between; font-size: 13px; margin-bottom: 6px;">
-                                <span>Books:</span> <span id="display-books">₱0</span>
+                                style="display: flex; justify-content: space-between; font-size: 13px; margin-bottom: 2px;">
+                                <span>Books Fee:</span> <span id="display-books">₱0</span>
                             </div>
                             <div
-                                style="border-top: 1px solid rgba(255,255,255,0.2); margin-top: 4px; padding-top: 4px; display: flex; justify-content: space-between; font-size: 16px; font-weight: 900;">
-                                <span>Total:</span> <span id="display-total">₱0</span>
+                                style="display: flex; justify-content: space-between; font-size: 13px; margin-bottom: 6px; border-top: 1px solid rgba(255,255,255,0.1); padding-top:4px;">
+                                <span>Full Total:</span> <span id="display-total" style="font-weight:700;">₱0</span>
+                            </div>
+                            <div
+                                style="border-top: 1px solid rgba(255,255,255,0.3); margin-top: 6px; padding-top: 6px; display: flex; justify-content: space-between; font-size: 16px; font-weight: 900; color: #fbbf24;">
+                                <span>Pay Now:</span> <span id="display-initial">₱0</span>
                             </div>
                         </div>
                     </div>
@@ -99,6 +103,7 @@
                     <!-- Hidden fields for fee amounts (submitted with the form) -->
                     <input type="hidden" id="hidden_tuition_fee" name="tuition_fee" value="0">
                     <input type="hidden" id="hidden_books_fee" name="books_fee" value="0">
+                    <input type="hidden" id="hidden_initial_payment" name="initial_payment" value="0">
 
                     <label style="display: block; margin-bottom: 12px; font-weight: 700;">Select Payment Method
                         *</label>
@@ -227,12 +232,14 @@
             if (!currentGradeName) return;
             let tuition = 0;
             let books = 0;
+            let initial_tuition = 0;
             const modeResult = document.querySelector('input[name="payment_mode"]:checked');
             const mode = modeResult ? modeResult.value : 'Full';
 
             if (currentGradeName.includes('Kinder')) {
                 books = 5000;
-                tuition = mode === 'Full' ? 21000 : 1500;
+                tuition = 21000;
+                initial_tuition = (mode === 'Full') ? 21000 : 1500;
             } else {
                 // Grades 1-6
                 if (currentGradeName.includes('Grade 1') || currentGradeName.includes('Grade 2') || currentGradeName.includes('Grade 3')) {
@@ -242,16 +249,22 @@
                 } else {
                     books = 6500;
                 }
-                tuition = mode === 'Full' ? 23500 : 1700;
+                tuition = 23500;
+                initial_tuition = (mode === 'Full') ? 23500 : 1700;
             }
+
+            const initialPayment = initial_tuition + books;
 
             document.getElementById('display-tuition').textContent = '₱' + tuition.toLocaleString();
             document.getElementById('display-books').textContent = '₱' + books.toLocaleString();
             document.getElementById('display-total').textContent = '₱' + (tuition + books).toLocaleString();
+            document.getElementById('display-initial').textContent = '₱' + initialPayment.toLocaleString();
 
-            // Update hidden fields so fees get submitted to the server
+            // Update hidden fields so full fees get submitted to the server
+            // initial_payment is what actually gets paid now.
             document.getElementById('hidden_tuition_fee').value = tuition;
             document.getElementById('hidden_books_fee').value = books;
+            document.getElementById('hidden_initial_payment').value = initialPayment;
         }
 
         loadFees();
@@ -332,6 +345,7 @@
                 const paymentModeName   = document.querySelector('input[name="payment_mode"]:checked')?.value || '';
                 const referenceNum      = document.getElementById('reference_number')?.value || 'N/A';
                 const totalText         = document.getElementById('display-total')?.textContent || '';
+                const initialText       = document.getElementById('display-initial')?.textContent || '';
                 const tuitionText       = document.getElementById('display-tuition')?.textContent || '';
                 const booksText         = document.getElementById('display-books')?.textContent || '';
                 const gradeLevel        = currentGradeName || '';
@@ -345,6 +359,7 @@
                     mode:      paymentModeName,
                     ref:       referenceNum,
                     total:     totalText,
+                    paid:      initialText,
                     tuition:   tuitionText,
                     books:     booksText,
                     grade:     gradeLevel

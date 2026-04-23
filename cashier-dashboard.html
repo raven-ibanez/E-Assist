@@ -198,11 +198,10 @@
                         <tr>
                             <th>Student ID</th>
                             <th>Full Name</th>
-                            <th>Grade Level</th>
-                            <th>Parent</th>
                             <th>Method</th>
-                            <th>Reference No.</th>
-                            <th>Date Applied</th>
+                            <th>Total Amount</th>
+                            <th>Paid</th>
+                            <th>Balance</th>
                             <th>Status</th>
                             <th>Actions</th>
                         </tr>
@@ -226,6 +225,46 @@
             <div style="margin-top:24px; text-align:right;">
                 <button class="btn btn-outline" onclick="closeModal()">Close</button>
             </div>
+        </div>
+    </div>
+
+    <!-- ===== MODAL: Update Payment (Add Installment) ===== -->
+    <div class="modal-overlay" id="updatePaymentModal" onclick="closeUpdateModal()">
+        <div class="modal" onclick="event.stopPropagation()" style="max-width: 450px;">
+            <button class="modal-close" onclick="closeUpdateModal()">✕</button>
+            <h3>💳 Update Student Payment</h3>
+            <p style="font-size:13px; color:#666; margin-bottom:20px;">Record a new installment or balance payment.</p>
+            
+            <form id="addPaymentForm">
+                <input type="hidden" id="up-payment-id" name="payment_id">
+                
+                <div style="margin-bottom:15px;">
+                    <label style="display:block; font-size:12px; font-weight:700; margin-bottom:5px;">Amount Paid (₱) *</label>
+                    <input type="number" step="0.01" name="amount" required style="width:100%; padding:10px; border:1px solid #ddd; border-radius:6px;">
+                </div>
+
+                <div style="margin-bottom:15px;">
+                    <label style="display:block; font-size:12px; font-weight:700; margin-bottom:5px;">Payment Method *</label>
+                    <select id="up-method-id" name="method_id" required style="width:100%; padding:10px; border:1px solid #ddd; border-radius:6px;">
+                        <option value="">Loading...</option>
+                    </select>
+                </div>
+
+                <div style="margin-bottom:15px;">
+                    <label style="display:block; font-size:12px; font-weight:700; margin-bottom:5px;">Reference Number</label>
+                    <input type="text" name="reference" placeholder="Ref #" style="width:100%; padding:10px; border:1px solid #ddd; border-radius:6px;">
+                </div>
+
+                <div style="margin-bottom:20px;">
+                    <label style="display:block; font-size:12px; font-weight:700; margin-bottom:5px;">Notes</label>
+                    <input type="text" name="notes" placeholder="e.g. November Installment" style="width:100%; padding:10px; border:1px solid #ddd; border-radius:6px;">
+                </div>
+
+                <div style="text-align:right; gap:10px; display:flex; justify-content:flex-end;">
+                    <button type="button" class="btn btn-outline" onclick="closeUpdateModal()">Cancel</button>
+                    <button type="submit" class="btn btn-success" id="submitPaymentBtn">Save Payment</button>
+                </div>
+            </form>
         </div>
     </div>
 
@@ -307,18 +346,21 @@
                 return;
             }
 
-            tbody.innerHTML = records.map(r => `
+            tbody.innerHTML = records.map(r => {
+                const balance = parseFloat(r.balance || 0);
+                const isPaid = balance <= 0;
+                return `
                 <tr>
                     <td><strong>${r.student_no}</strong></td>
                     <td>${r.last_name}${r.suffix ? ' ' + r.suffix : ''}, ${r.first_name}</td>
-                    <td>${r.grade_level}</td>
-                    <td>${r.parent_name}</td>
                     <td>${getPaymentBadge(r.payment_method)}</td>
-                    <td>${r.reference_number ? `<span class="ref-number">${r.reference_number}</span>` : '<span style="color:var(--gray-500);">—</span>'}</td>
-                    <td>${formatDate(r.applied_at)}</td>
+                    <td style="font-weight:600;">₱${parseFloat(r.total_amount || 0).toLocaleString()}</td>
+                    <td style="color:#16a34a; font-weight:600;">₱${parseFloat(r.total_paid || 0).toLocaleString()}</td>
+                    <td style="color:${isPaid ? '#16a34a' : '#dc2626'}; font-weight:700;">
+                        ${isPaid ? '✅ Paid' : '₱' + balance.toLocaleString()}
+                    </td>
                     <td>
                         ${getStatusBadge(r.status)}
-                        ${r.documents_pending == 1 ? '<br><span style="font-size:10px;color:#dc2626;font-weight:700;">🔴 Doc. Pending</span>' : ''}
                     </td>
                     <td>
                         <div class="action-btns" style="display:flex; gap:6px; flex-wrap:wrap;">
@@ -326,6 +368,12 @@
                                     onclick="viewPayment(${r.enrollment_id})">
                                 👁 View
                             </button>
+                            
+                            <button class="btn btn-outline" style="padding:4px 8px;font-size:11px; border-color:#1e40af; color:#1e40af;"
+                                    onclick="openUpdatePaymentModal(${r.payment_id})">
+                                💳 Update
+                            </button>
+
                             ${r.cashier_status === 'pending' ? `
                                 <button class="btn btn-success" style="padding:4px 8px;font-size:11px;"
                                         onclick="reviewPayment(${r.enrollment_id}, 'approved')">
@@ -340,11 +388,11 @@
                                         onclick="reviewPayment(${r.enrollment_id}, 'refunded')">
                                     💸 Refund
                                 </button>
-                            ` : `<span style="font-size:11px;color:var(--gray-500);">${r.status}</span>`}
+                            ` : ''}
                         </div>
                     </td>
                 </tr>
-            `).join('');
+            `;}).join('');
         }
 
         // --- Filter payments by search text, payment method, and status ---
@@ -418,16 +466,71 @@
                 <div class="info-item"><label>Payment Method</label><span>${r.payment_method || 'Not provided'}</span></div>
                 <div class="info-item"><label>Payment Mode</label><span>${r.payment_mode || '—'}${r.payment_mode === 'Monthly' ? ' (10 months)' : ''}</span></div>
                 <div class="info-item"><label>Reference Number</label><span class="ref-number">${r.reference_number || '—'}</span></div>
-                <div class="info-item"><label>Tuition Fee</label><span style="font-weight:700;color:var(--maroon-dark);">${r.tuition_fee ? '₱' + parseFloat(r.tuition_fee).toLocaleString() : '—'}</span></div>
-                <div class="info-item"><label>Books Fee</label><span style="font-weight:700;color:var(--maroon-dark);">${r.books_fee ? '₱' + parseFloat(r.books_fee).toLocaleString() : '—'}</span></div>
+                <div class="info-item"><label>Total Tuition</label><span style="font-weight:700;color:var(--maroon-dark);">${r.tuition_fee ? '₱' + parseFloat(r.tuition_fee).toLocaleString() : '—'}</span></div>
+                <div class="info-item"><label>Total Books</label><span style="font-weight:700;color:var(--maroon-dark);">${r.books_fee ? '₱' + parseFloat(r.books_fee).toLocaleString() : '—'}</span></div>
                 <div class="info-item"><label>Overall Status</label><span>${getStatusBadge(r.status)}</span></div>
-                <div class="info-item"><label>Registrar Review</label><span>${r.registrar_status}</span></div>
-                <div class="info-item"><label>Cashier Review</label><span>${r.cashier_status}</span></div>
-                <div class="info-item"><label>Date Applied</label><span>${formatDate(r.applied_at)}</span></div>
+                <div class="info-item" style="grid-column: span 2; background: #f8fafc; padding: 12px; border-radius: 8px; margin-top: 10px; display: flex; justify-content: space-around; border: 1px solid #e2e8f0;">
+                    <div style="text-align:center;">
+                        <label style="font-size:11px; color:#64748b; display:block; margin-bottom:4px;">TOTAL PAYABLE</label>
+                        <span style="font-size:18px; font-weight:800; color:#1e293b;">₱${parseFloat(r.total_amount || 0).toLocaleString()}</span>
+                    </div>
+                    <div style="text-align:center;">
+                        <label style="font-size:11px; color:#64748b; display:block; margin-bottom:4px;">TOTAL PAID</label>
+                        <span style="font-size:18px; font-weight:800; color:#16a34a;">₱${parseFloat(r.total_paid || 0).toLocaleString()}</span>
+                    </div>
+                    <div style="text-align:center;">
+                        <label style="font-size:11px; color:#64748b; display:block; margin-bottom:4px;">REMAINING BALANCE</label>
+                        <span style="font-size:18px; font-weight:800; color:#dc2626;">₱${parseFloat(r.balance || 0).toLocaleString()}</span>
+                    </div>
+                </div>
+                <div id="paymentHistorySection" style="grid-column: span 2; margin-top: 20px;">
+                    <h4 style="margin-bottom:10px; font-size:14px; border-bottom:1px solid #eee; padding-bottom:5px;">📜 Payment History</h4>
+                    <div id="historyTableContainer" style="max-height: 200px; overflow-y: auto;">
+                        <p style="text-align:center; color:#999; font-size:12px;">Loading history...</p>
+                    </div>
+                </div>
             `;
             document.getElementById('modalOverlay').classList.add('active');
             document.body.classList.add('modal-open');
+            loadPaymentHistory(r.payment_id);
         }
+
+        async function loadPaymentHistory(paymentId) {
+            try {
+                const history = await apiGet(`api/registrar.php?action=payment_history&payment_id=${paymentId}`);
+                const container = document.getElementById('historyTableContainer');
+                if (history.length === 0) {
+                    container.innerHTML = '<p style="text-align:center; color:#999; font-size:12px;">No payments found.</p>';
+                    return;
+                }
+                container.innerHTML = `
+                    <table style="width:100%; font-size:12px; border-collapse:collapse;">
+                        <thead>
+                            <tr style="text-align:left; border-bottom:1px solid #eee;">
+                                <th style="padding:5px;">Date</th>
+                                <th style="padding:5px;">Amount</th>
+                                <th style="padding:5px;">Method</th>
+                                <th style="padding:5px;">Reference</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${history.map(h => `
+                                <tr style="border-bottom:1px solid #f9f9f9;">
+                                    <td style="padding:5px;">${formatDate(h.created_at)}</td>
+                                    <td style="padding:5px; font-weight:600;">₱${parseFloat(h.amount_paid).toLocaleString()}</td>
+                                    <td style="padding:5px;">${h.method_name}</td>
+                                    <td style="padding:5px;"><span class="ref-number">${h.reference_number || '—'}</span></td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                `;
+            } catch (err) {
+                document.getElementById('historyTableContainer').innerHTML = '<p style="color:red; font-size:12px;">Failed to load history.</p>';
+            }
+        }
+
+        // --- NEW: MODAL for Updating Payments ---
 
         function closeModal() {
             document.getElementById('modalOverlay').classList.remove('active');
@@ -448,6 +551,53 @@
             const d = new Date(dateStr);
             return d.toLocaleDateString('en-PH', { year: 'numeric', month: 'short', day: 'numeric' });
         }
+
+        // --- NEW: Logic for Updating Payments ---
+        async function openUpdatePaymentModal(paymentId) {
+            document.getElementById('up-payment-id').value = paymentId;
+            document.getElementById('updatePaymentModal').classList.add('active');
+            document.body.classList.add('modal-open');
+            
+            // Load methods if not already done
+            const methodSelect = document.getElementById('up-method-id');
+            if (methodSelect.options.length <= 1) {
+                try {
+                    const methods = await apiGet('api/lookups.php?action=payment-methods');
+                    methodSelect.innerHTML = '<option value="">Select Method...</option>';
+                    methods.forEach(m => {
+                        methodSelect.innerHTML += `<option value="${m.id}">${m.name}</option>`;
+                    });
+                } catch (e) {
+                    methodSelect.innerHTML = '<option value="">Error loading</option>';
+                }
+            }
+        }
+
+        function closeUpdateModal() {
+            document.getElementById('updatePaymentModal').classList.remove('active');
+            document.body.classList.remove('modal-open');
+            document.getElementById('addPaymentForm').reset();
+        }
+
+        document.getElementById('addPaymentForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const btn = document.getElementById('submitPaymentBtn');
+            const formData = new FormData(this);
+            const payload = Object.fromEntries(formData.entries());
+            payload.admin_id = sessionStorage.getItem('adminId');
+
+            setLoading('submitPaymentBtn', true, 'Saving...');
+            try {
+                const res = await apiPost('api/registrar.php?action=add_payment', payload);
+                showAlert('alert', '✅ ' + res.message, 'success');
+                closeUpdateModal();
+                loadPayments();
+            } catch (err) {
+                alert('Error: ' + err.message);
+            } finally {
+                setLoading('submitPaymentBtn', false, 'Save Payment');
+            }
+        });
 
         // Load payment data when the page opens
         loadPayments();
