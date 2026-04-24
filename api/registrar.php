@@ -78,6 +78,11 @@ if ($action === 'login') {
     $user = $stmt->get_result()->fetch_assoc();
 
     if ($user && password_verify($password, $user['password'])) {
+        // Check if account is active
+        if (isset($user['is_active']) && $user['is_active'] == 0) {
+            sendJSON(['error' => 'This account has been deactivated. Please contact the administrator.'], 403);
+        }
+
         // Login success — send back ID, username and the HUMAN-READABLE role name
         sendJSON([
             'message'  => 'Login successful',
@@ -107,11 +112,14 @@ if ($action === 'students') {
             s.student_no, 
             s.first_name, 
             s.last_name,
+            s.middle_name,
             s.suffix,
             gl.name AS grade_level,
             p.id AS parent_id,
+            p.first_name AS parent_first_name,
+            p.last_name AS parent_last_name,
+            p.middle_name AS parent_middle_name,
             p.contact_no AS parent_contact,
-            CONCAT(p.first_name, ' ', p.last_name) AS parent_name,
             COALESCE((SELECT decision FROM enrollment_reviews WHERE enrollment_id = e.id AND review_type = 'Registrar' ORDER BY created_at DESC LIMIT 1), 'pending') AS registrar_status,
             COALESCE((SELECT decision FROM enrollment_reviews WHERE enrollment_id = e.id AND review_type = 'Cashier' ORDER BY created_at DESC LIMIT 1), 'pending') AS cashier_status
         FROM enrollments e
@@ -181,13 +189,14 @@ if ($action === 'detail') {
             p.last_name AS parent_last_name,
             p.middle_name AS parent_middle_name,
             p.contact_no AS parent_contact,
-            CONCAT(p.first_name, ' ', p.last_name) AS parent_name,
             p.email, 
             p.occupation, 
             ir.range_label AS monthly_income,
             r.name AS parent_relation,
             COALESCE((SELECT decision FROM enrollment_reviews WHERE enrollment_id = e.id AND review_type = 'Registrar' ORDER BY created_at DESC LIMIT 1), 'pending') AS registrar_status,
-            COALESCE((SELECT decision FROM enrollment_reviews WHERE enrollment_id = e.id AND review_type = 'Cashier' ORDER BY created_at DESC LIMIT 1), 'pending') AS cashier_status
+            COALESCE((SELECT decision FROM enrollment_reviews WHERE enrollment_id = e.id AND review_type = 'Cashier' ORDER BY created_at DESC LIMIT 1), 'pending') AS cashier_status,
+            (SELECT notes FROM enrollment_reviews WHERE enrollment_id = e.id AND review_type = 'Registrar' ORDER BY created_at DESC LIMIT 1) AS registrar_notes,
+            (SELECT notes FROM enrollment_reviews WHERE enrollment_id = e.id AND review_type = 'Cashier' ORDER BY created_at DESC LIMIT 1) AS cashier_notes
         FROM enrollments e
         JOIN students s            ON e.student_id    = s.id
         JOIN parents p             ON s.parent_id     = p.id
@@ -228,6 +237,8 @@ if ($action === 'payments') {
             e.id AS enrollment_id, 
             e.applied_at,
             e.documents_pending,
+            (SELECT notes FROM enrollment_reviews WHERE enrollment_id = e.id AND review_type = 'Registrar' ORDER BY created_at DESC LIMIT 1) AS registrar_notes,
+            (SELECT notes FROM enrollment_reviews WHERE enrollment_id = e.id AND review_type = 'Cashier' ORDER BY created_at DESC LIMIT 1) AS cashier_notes,
             sy.label AS school_year,
             pm.name AS payment_method, 
             pay.id AS payment_id,
@@ -241,10 +252,13 @@ if ($action === 'payments') {
             s.student_no, 
             s.first_name, 
             s.last_name,
+            s.middle_name,
             s.suffix,
             gl.name AS grade_level,
+            p.first_name AS parent_first_name,
+            p.last_name AS parent_last_name,
+            p.middle_name AS parent_middle_name,
             p.contact_no AS parent_contact,
-            CONCAT(p.first_name, ' ', p.last_name) AS parent_name,
             COALESCE((SELECT decision FROM enrollment_reviews WHERE enrollment_id = e.id AND review_type = 'Registrar' ORDER BY created_at DESC LIMIT 1), 'pending') AS registrar_status,
             COALESCE((SELECT decision FROM enrollment_reviews WHERE enrollment_id = e.id AND review_type = 'Cashier' ORDER BY created_at DESC LIMIT 1), 'pending') AS cashier_status
         FROM enrollments e
@@ -280,6 +294,7 @@ if ($action === 'review_application') {
     $enrollment_id = $data['enrollment_id'] ?? '';
     $decision      = $data['decision'] ?? '';  // 'approved', 'declined', or 'approved_dtf'
     $admin_id      = $data['admin_id'] ?? '';
+    $reason        = $data['reason'] ?? null;
 
     if (!$enrollment_id || !$admin_id || !in_array($decision, ['approved', 'declined', 'approved_dtf', 'dropped'])) {
         sendJSON(['error' => 'Invalid request. Enrollment ID, Admin ID, and decision required.'], 400);
@@ -291,8 +306,8 @@ if ($action === 'review_application') {
     $docs_pending = ($decision === 'approved_dtf') ? 1 : 0;
 
     // Insert the new review record (The "Middle Man")
-    $stmt = $conn->prepare("INSERT INTO enrollment_reviews (enrollment_id, admin_id, review_type, decision) VALUES (?, ?, 'Registrar', ?)");
-    $stmt->bind_param("iis", $enrollment_id, $admin_id, $db_decision);
+    $stmt = $conn->prepare("INSERT INTO enrollment_reviews (enrollment_id, admin_id, review_type, decision, notes) VALUES (?, ?, 'Registrar', ?, ?)");
+    $stmt->bind_param("iiss", $enrollment_id, $admin_id, $db_decision, $reason);
     $stmt->execute();
 
     // Set the documents_pending flag on the enrollment
@@ -301,14 +316,20 @@ if ($action === 'review_application') {
     $stmt2->execute();
 
     // Log the action
-    $stmtName = $conn->prepare("SELECT CONCAT(s.first_name, ' ', s.last_name) as name FROM enrollments e JOIN students s ON e.student_id = s.id WHERE e.id = ?");
+    $stmtName = $conn->prepare("SELECT first_name, last_name, middle_name, suffix FROM enrollments e JOIN students s ON e.student_id = s.id WHERE e.id = ?");
     $stmtName->bind_param("i", $enrollment_id);
     $stmtName->execute();
     $nameRes = $stmtName->get_result()->fetch_assoc();
-    $studentName = $nameRes['name'] ?? 'Unknown';
+    $studentName = 'Unknown';
+    if ($nameRes) {
+        $suffixStr = !empty($nameRes['suffix']) ? ' ' . $nameRes['suffix'] : '';
+        $middleStr = !empty($nameRes['middle_name']) ? ' ' . $nameRes['middle_name'] : '';
+        $studentName = $nameRes['last_name'] . $suffixStr . ', ' . $nameRes['first_name'] . $middleStr;
+    }
 
     $logMsg = "Registrar review: " . ucfirst($decision);
     if ($decision === 'approved_dtf') $logMsg = "Registrar Approved (Doc. to Follow)";
+    if ($reason) $logMsg .= " | Reason: " . $reason;
     logAction($admin_id, "Application Review", $enrollment_id, $studentName, $logMsg);
 
     // To send back the new dynamic status, we fetch the cashier status
@@ -333,24 +354,32 @@ if ($action === 'review_payment') {
     $enrollment_id = $data['enrollment_id'] ?? '';
     $decision      = $data['decision'] ?? '';  // 'approved' or 'declined'
     $admin_id      = $data['admin_id'] ?? '';
+    $reason        = $data['reason'] ?? null;
 
     if (!$enrollment_id || !$admin_id || !in_array($decision, ['approved', 'declined', 'refunded'])) {
         sendJSON(['error' => 'Invalid request. Enrollment ID, Admin ID, and decision required.'], 400);
     }
 
     // Insert the new review record (The "Middle Man")
-    $stmt = $conn->prepare("INSERT INTO enrollment_reviews (enrollment_id, admin_id, review_type, decision) VALUES (?, ?, 'Cashier', ?)");
-    $stmt->bind_param("iis", $enrollment_id, $admin_id, $decision);
+    $stmt = $conn->prepare("INSERT INTO enrollment_reviews (enrollment_id, admin_id, review_type, decision, notes) VALUES (?, ?, 'Cashier', ?, ?)");
+    $stmt->bind_param("iiss", $enrollment_id, $admin_id, $decision, $reason);
     $stmt->execute();
 
     // Log the action
-    $stmtName = $conn->prepare("SELECT CONCAT(s.first_name, ' ', s.last_name) as name FROM enrollments e JOIN students s ON e.student_id = s.id WHERE e.id = ?");
+    $stmtName = $conn->prepare("SELECT first_name, last_name, middle_name, suffix FROM enrollments e JOIN students s ON e.student_id = s.id WHERE e.id = ?");
     $stmtName->bind_param("i", $enrollment_id);
     $stmtName->execute();
     $nameRes = $stmtName->get_result()->fetch_assoc();
-    $studentName = $nameRes['name'] ?? 'Unknown';
+    $studentName = 'Unknown';
+    if ($nameRes) {
+        $suffixStr = !empty($nameRes['suffix']) ? ' ' . $nameRes['suffix'] : '';
+        $middleStr = !empty($nameRes['middle_name']) ? ' ' . $nameRes['middle_name'] : '';
+        $studentName = $nameRes['last_name'] . $suffixStr . ', ' . $nameRes['first_name'] . $middleStr;
+    }
 
-    logAction($admin_id, "Payment Review", $enrollment_id, $studentName, "Cashier review: " . ucfirst($decision));
+    $logMsg = "Cashier review: " . ucfirst($decision);
+    if ($reason) $logMsg .= " | Reason: " . $reason;
+    logAction($admin_id, "Payment Review", $enrollment_id, $studentName, $logMsg);
 
     // To send back the new dynamic status, fetch registrar status and documents_pending
     $stmtReg = $conn->prepare("SELECT decision FROM enrollment_reviews WHERE enrollment_id = ? AND review_type = 'Registrar' ORDER BY created_at DESC LIMIT 1");
@@ -414,7 +443,10 @@ if ($action === 'update_student') {
     // Log the action (if admin_id is provided)
     $admin_id = $_POST['admin_id'] ?? null;
     if ($admin_id) {
-        logAction($admin_id, "Update Student", $student_id, "$first_name $last_name", "Updated student/parent profile information.");
+        $suffixStr = !empty($suffix) ? ' ' . $suffix : '';
+        $middleStr = !empty($middle_name) ? ' ' . $middle_name : '';
+        $formattedName = $last_name . $suffixStr . ', ' . $first_name . $middleStr;
+        logAction($admin_id, "Update Student", $student_id, $formattedName, "Updated student/parent profile information.");
     }
 
     sendJSON(['message' => 'Student information updated successfully.']);
@@ -465,11 +497,16 @@ if ($action === 'upload_document') {
     // Log the action (if admin_id is provided)
     $admin_id = $_POST['admin_id'] ?? null;
     if ($admin_id) {
-        $stmtName = $conn->prepare("SELECT CONCAT(first_name, ' ', last_name) as name FROM students WHERE id = ?");
+        $stmtName = $conn->prepare("SELECT first_name, last_name, middle_name, suffix FROM students WHERE id = ?");
         $stmtName->bind_param("i", $student_id);
         $stmtName->execute();
         $nameRes = $stmtName->get_result()->fetch_assoc();
-        $studentName = $nameRes['name'] ?? 'Unknown';
+        $studentName = 'Unknown';
+        if ($nameRes) {
+            $suffixStr = !empty($nameRes['suffix']) ? ' ' . $nameRes['suffix'] : '';
+            $middleStr = !empty($nameRes['middle_name']) ? ' ' . $nameRes['middle_name'] : '';
+            $studentName = $nameRes['last_name'] . $suffixStr . ', ' . $nameRes['first_name'] . $middleStr;
+        }
 
         logAction($admin_id, "Upload Document", $student_id, $studentName, "Uploaded missing " . strtoupper($doc_type) . " document.");
     }
@@ -499,10 +536,10 @@ if ($action === 'upload_document') {
 // =============================================================
 if ($action === 'employees') {
     $result = $conn->query("
-        SELECT a.id, a.username, r.name AS role 
+        SELECT a.id, a.username, a.is_active, r.name AS role 
         FROM admin a
         JOIN roles r ON a.role_id = r.id
-        ORDER BY r.name, a.username
+        ORDER BY a.is_active DESC, r.name, a.username
     ");
 
     if (!$result) {
@@ -538,8 +575,15 @@ if ($action === 'add_employee') {
     // Hash the password before storing (bcrypt, case-sensitive)
     $hashedPassword = password_hash($password, PASSWORD_DEFAULT);
 
+    // 5-Active-Employee Limit Check
+    $resCount = $conn->query("SELECT COUNT(*) as active_count FROM admin WHERE is_active = 1");
+    $countRow = $resCount->fetch_assoc();
+    if ($countRow['active_count'] >= 5) {
+        sendJSON(['error' => 'Employee limit reached. You can only have 5 active accounts. Please deactivate an existing account first.'], 403);
+    }
+
     // Insert the new employee
-    $stmt = $conn->prepare("INSERT INTO admin (username, password, role_id) VALUES (?, ?, ?)");
+    $stmt = $conn->prepare("INSERT INTO admin (username, password, role_id, is_active) VALUES (?, ?, ?, 1)");
     $stmt->bind_param("ssi", $username, $hashedPassword, $role_id);
     $stmt->execute();
 
@@ -554,14 +598,14 @@ if ($action === 'add_employee') {
 
 
 // =============================================================
-//  ACTION: DELETE AN EMPLOYEE ACCOUNT
-//  - Used by: Admin Dashboard delete button.
+//  ACTION: TOGGLE EMPLOYEE STATUS (Activate/Deactivate)
+//  - Used by: Admin Dashboard toggle button.
 // =============================================================
-if ($action === 'delete_employee') {
+if ($action === 'toggle_employee_status') {
     $id = $_GET['id'] ?? '';
 
     // Find the employee first
-    $stmt = $conn->prepare("SELECT username FROM admin WHERE id = ?");
+    $stmt = $conn->prepare("SELECT username, is_active FROM admin WHERE id = ?");
     $stmt->bind_param("i", $id);
     $stmt->execute();
     $target = $stmt->get_result()->fetch_assoc();
@@ -570,18 +614,30 @@ if ($action === 'delete_employee') {
         sendJSON(['error' => 'Employee not found.'], 404);
     }
 
-    // Delete the employee
-    $stmt = $conn->prepare("DELETE FROM admin WHERE id = ?");
-    $stmt->bind_param("i", $id);
-    $stmt->execute();
+    $new_status = ($target['is_active'] == 1) ? 0 : 1;
 
-    // Log the action (if admin_id is provided)
-    $admin_id = $_GET['admin_id'] ?? null;
-    if ($admin_id) {
-        logAction($admin_id, "Account Deleted", $id, $target['username'], "Deleted employee account: {$target['username']}");
+    // If activating, check the limit again
+    if ($new_status == 1) {
+        $resCount = $conn->query("SELECT COUNT(*) as active_count FROM admin WHERE is_active = 1");
+        $countRow = $resCount->fetch_assoc();
+        if ($countRow['active_count'] >= 5) {
+            sendJSON(['error' => 'Cannot activate. You already have 5 active accounts.'], 403);
+        }
     }
 
-    sendJSON(['message' => "Employee '{$target['username']}' has been deleted."]);
+    // Update the employee status
+    $stmt = $conn->prepare("UPDATE admin SET is_active = ? WHERE id = ?");
+    $stmt->bind_param("ii", $new_status, $id);
+    $stmt->execute();
+
+    // Log the action
+    $admin_id = $_GET['admin_id'] ?? null;
+    if ($admin_id) {
+        $actionName = ($new_status == 1) ? "Account Activated" : "Account Deactivated";
+        logAction($admin_id, $actionName, $id, $target['username'], "Toggled account status for {$target['username']} to " . ($new_status == 1 ? 'Active' : 'Inactive'));
+    }
+
+    sendJSON(['message' => "Employee '{$target['username']}' status updated successfully."]);
 }
 
 
@@ -608,6 +664,87 @@ if ($action === 'get_logs') {
 
 
 // =============================================================
+//  ACTION: UNDO DROP (Admin revert dropped status)
+//  - Used by: Admin Dashboard
+//  - Deletes the latest 'dropped' review record.
+// =============================================================
+if ($action === 'undo_drop') {
+    $enrollment_id = $data['enrollment_id'] ?? '';
+    $admin_id      = $data['admin_id'] ?? '';
+
+    if (!$enrollment_id || !$admin_id) {
+        sendJSON(['error' => 'Missing enrollment or admin ID.'], 400);
+    }
+
+    // Delete the latest 'dropped' review for this enrollment
+    // We target 'Registrar' type because 'dropped' is a registrar-level status
+    $stmt = $conn->prepare("DELETE FROM enrollment_reviews WHERE enrollment_id = ? AND decision = 'dropped' AND review_type = 'Registrar' ORDER BY created_at DESC LIMIT 1");
+    $stmt->bind_param("i", $enrollment_id);
+    $stmt->execute();
+
+    if ($stmt->affected_rows > 0) {
+        // Log the action
+        $stmtName = $conn->prepare("SELECT first_name, last_name, middle_name, suffix FROM enrollments e JOIN students s ON e.student_id = s.id WHERE e.id = ?");
+        $stmtName->bind_param("i", $enrollment_id);
+        $stmtName->execute();
+        $resName = $stmtName->get_result()->fetch_assoc();
+        $studentName = 'Unknown';
+        if ($resName) {
+            $suffixStr = !empty($resName['suffix']) ? ' ' . $resName['suffix'] : '';
+            $middleStr = !empty($resName['middle_name']) ? ' ' . $resName['middle_name'] : '';
+            $studentName = $resName['last_name'] . $suffixStr . ', ' . $resName['first_name'] . $middleStr;
+        }
+
+        logAction($admin_id, "Undo Drop", $enrollment_id, $studentName, "Administrator reverted the 'Dropped' status.");
+        
+        sendJSON(['message' => 'Dropped status undone successfully.']);
+    } else {
+        sendJSON(['error' => 'No dropped status found to undo.'], 404);
+    }
+}
+
+
+// =============================================================
+//  ACTION: UNDO REFUND (Admin revert refunded status)
+//  - Used by: Cashier Dashboard
+//  - Deletes the latest 'refunded' review record.
+// =============================================================
+if ($action === 'undo_refund') {
+    $enrollment_id = $data['enrollment_id'] ?? '';
+    $admin_id      = $data['admin_id'] ?? '';
+
+    if (!$enrollment_id || !$admin_id) {
+        sendJSON(['error' => 'Missing enrollment or admin ID.'], 400);
+    }
+
+    // Delete the latest 'refunded' review for this enrollment
+    $stmt = $conn->prepare("DELETE FROM enrollment_reviews WHERE enrollment_id = ? AND decision = 'refunded' AND review_type = 'Cashier' ORDER BY created_at DESC LIMIT 1");
+    $stmt->bind_param("i", $enrollment_id);
+    $stmt->execute();
+
+    if ($stmt->affected_rows > 0) {
+        // Log the action
+        $stmtName = $conn->prepare("SELECT first_name, last_name, middle_name, suffix FROM enrollments e JOIN students s ON e.student_id = s.id WHERE e.id = ?");
+        $stmtName->bind_param("i", $enrollment_id);
+        $stmtName->execute();
+        $resName = $stmtName->get_result()->fetch_assoc();
+        $studentName = 'Unknown';
+        if ($resName) {
+            $suffixStr = !empty($resName['suffix']) ? ' ' . $resName['suffix'] : '';
+            $middleStr = !empty($resName['middle_name']) ? ' ' . $resName['middle_name'] : '';
+            $studentName = $resName['last_name'] . $suffixStr . ', ' . $resName['first_name'] . $middleStr;
+        }
+
+        logAction($admin_id, "Undo Refund", $enrollment_id, $studentName, "Administrator reverted the 'Refunded' status.");
+        
+        sendJSON(['message' => 'Refunded status undone successfully.']);
+    } else {
+        sendJSON(['error' => 'No refunded status found to undo.'], 404);
+    }
+}
+
+
+// =============================================================
 //  ACTION: ADD PAYMENT TRANSACTION (Cashier update balance)
 //  - Used by: Cashier Dashboard
 // =============================================================
@@ -628,12 +765,18 @@ if ($action === 'add_payment') {
     $stmt->execute();
 
     // Log the action
-    $stmtStudent = $conn->prepare("SELECT CONCAT(s.first_name, ' ', s.last_name) as name, e.id as enrollment_id FROM payments pay JOIN enrollments e ON pay.enrollment_id = e.id JOIN students s ON e.student_id = s.id WHERE pay.id = ?");
+    $stmtStudent = $conn->prepare("SELECT s.first_name, s.last_name, s.middle_name, s.suffix, e.id as enrollment_id FROM payments pay JOIN enrollments e ON pay.enrollment_id = e.id JOIN students s ON e.student_id = s.id WHERE pay.id = ?");
     $stmtStudent->bind_param("i", $payment_id);
     $stmtStudent->execute();
     $student = $stmtStudent->get_result()->fetch_assoc();
-    $studentName = $student['name'] ?? 'Unknown';
-    $enrollment_id = $student['enrollment_id'] ?? null;
+    $studentName = 'Unknown';
+    $enrollment_id = null;
+    if ($student) {
+        $suffixStr = !empty($student['suffix']) ? ' ' . $student['suffix'] : '';
+        $middleStr = !empty($student['middle_name']) ? ' ' . $student['middle_name'] : '';
+        $studentName = $student['last_name'] . $suffixStr . ', ' . $student['first_name'] . $middleStr;
+        $enrollment_id = $student['enrollment_id'];
+    }
     
     logAction($admin_id, "Update Payment", $enrollment_id, $studentName, "Added payment of ₱" . number_format($amount, 2) . ". Ref: $ref");
 

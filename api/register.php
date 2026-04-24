@@ -60,6 +60,11 @@ if (!$first_name || !$last_name || !$email || !$house_no_street || !$barangay ||
     sendJSON(['error' => 'All required fields including Payment details and School Year must be filled.'], 400);
 }
 
+// Ensure 2x2 picture is uploaded
+if (!isset($_FILES['picture_2x2']) || $_FILES['picture_2x2']['error'] !== UPLOAD_ERR_OK) {
+    sendJSON(['error' => 'A 2x2 Picture is required to complete your enrollment.'], 400);
+}
+
 // --- STEP 3: Handle file uploads ---
 // Save uploaded files to the "api/uploads/" folder.
 $uploadDir = __DIR__ . '/uploads/';
@@ -140,7 +145,7 @@ try {
     sendJSON([
         'message' => 'Registration successful!',
         'student_no' => $studentNo,
-        'name' => "$first_name $last_name"
+        'name' => trim(preg_replace('/\s+/', ' ', "$last_name" . ($suffix ? " $suffix" : "") . ", $first_name $middle_name"))
     ]);
 
 } catch (Exception $e) {

@@ -259,10 +259,13 @@
         <!-- Tab Navigation -->
         <div class="tab-nav" style="border: 1px solid var(--gray-400); box-shadow: none;">
             <button class="tab-btn active" onclick="switchTab('enrollments')">
-                📋 <span class="tab-label">Enrollments</span>
+                📋 <span class="tab-label">Student Applications</span>
             </button>
             <button class="tab-btn" onclick="switchTab('payments')">
-                💳 <span class="tab-label">Payments</span>
+                💳 <span class="tab-label">Student Payments</span>
+            </button>
+            <button class="tab-btn" onclick="switchTab('enrolled')">
+                ✅ <span class="tab-label">Enrolled Students</span>
             </button>
             <button class="tab-btn" onclick="switchTab('employees')">
                 👥 <span class="tab-label">Employee Accounts</span>
@@ -272,14 +275,14 @@
             </button>
         </div>
 
-        <!-- ==================== TAB 1: ENROLLMENTS ==================== -->
+        <!-- ==================== TAB 1: APPLICATIONS ==================== -->
         <div class="tab-content active" id="tab-enrollments">
             <!-- Stats -->
             <div class="v2-stats">
                 <div class="v2-stat-card">
-                    <div class="v2-stat-icon">👥</div>
+                    <div class="v2-stat-icon">📋</div>
                     <div class="v2-stat-info">
-                        <span class="v2-stat-label">Total Enrollments</span>
+                        <span class="v2-stat-label">Total Applications</span>
                         <span class="v2-stat-value" id="enrollTotalCount">0</span>
                     </div>
                 </div>
@@ -298,17 +301,10 @@
                     </div>
                 </div>
                 <div class="v2-stat-card">
-                    <div class="v2-stat-icon">📋</div>
+                    <div class="v2-stat-icon">🔍</div>
                     <div class="v2-stat-info">
                         <span class="v2-stat-label">For Application Review</span>
                         <span class="v2-stat-value" id="enrollAppCount">0</span>
-                    </div>
-                </div>
-                <div class="v2-stat-card">
-                    <div class="v2-stat-icon">✅</div>
-                    <div class="v2-stat-info">
-                        <span class="v2-stat-label">Enrolled</span>
-                        <span class="v2-stat-value" id="enrollSuccessCount">0</span>
                     </div>
                 </div>
                 <div class="v2-stat-card">
@@ -316,6 +312,13 @@
                     <div class="v2-stat-info">
                         <span class="v2-stat-label">Dropped</span>
                         <span class="v2-stat-value" id="enrollDroppedCount">0</span>
+                    </div>
+                </div>
+                <div class="v2-stat-card">
+                    <div class="v2-stat-icon">❌</div>
+                    <div class="v2-stat-info">
+                        <span class="v2-stat-label">Declined</span>
+                        <span class="v2-stat-value" id="enrollDeclinedCount">0</span>
                     </div>
                 </div>
             </div>
@@ -326,19 +329,17 @@
             <div class="v2-table-container">
                 <div class="v2-table-title"
                     style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
-                    <div>Enrolled Students</div>
+                    <div>Active Applications & Dropped Records</div>
 
                     <div class="search-bar" style="margin-bottom:0;">
                         <input type="text" id="enrollSearchInput" placeholder="🔍 Search name..."
                             oninput="filterStudents()"
                             style="padding:8px; border:1px solid var(--gray-400); border-radius:6px; background:transparent;">
                         <select id="enrollFilterStatus" onchange="filterStudents()" class="v2-action-select">
-                            <option value="All">All Statuses</option>
+                            <option value="All">All Application Status</option>
                             <option value="Pending">Pending</option>
                             <option value="For Payment Review">For Payment Review</option>
                             <option value="For Application Review">For Application Review</option>
-                            <option value="Enrolled">Enrolled</option>
-                            <option value="Enrolled (Doc. Pending)">Enrolled (Doc. Pending)</option>
                             <option value="Dropped">Dropped</option>
                             <option value="Refunded">Refunded</option>
                             <option value="Declined">Declined</option>
@@ -361,6 +362,59 @@
                             </tr>
                         </thead>
                         <tbody id="studentsTableBody">
+                            <tr>
+                                <td colspan="8" style="text-align:center;">Loading...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- ==================== TAB 1.5: ENROLLED STUDENTS ==================== -->
+        <div class="tab-content" id="tab-enrolled">
+            <div class="v2-stats" style="margin-bottom: 24px;">
+                <div class="v2-stat-card">
+                    <div class="v2-stat-icon">✅</div>
+                    <div class="v2-stat-info">
+                        <span class="v2-stat-label">Currently Enrolled</span>
+                        <span class="v2-stat-value" id="enrolledMasterCount">0</span>
+                    </div>
+                </div>
+                <div class="v2-stat-card">
+                    <div class="v2-stat-icon">🔴</div>
+                    <div class="v2-stat-info">
+                        <span class="v2-stat-label">Documents Pending</span>
+                        <span class="v2-stat-value" id="enrolledPendingDocsCount">0</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="v2-table-container">
+                <div class="v2-table-title"
+                    style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
+                    <div>Enrolled Masterlist</div>
+                    <div class="search-bar" style="margin-bottom:0;">
+                        <input type="text" id="enrolledSearchInput" placeholder="🔍 Search name..."
+                            oninput="filterEnrolledStudents()"
+                            style="padding:8px; border:1px solid var(--gray-400); border-radius:6px; background:transparent;">
+                    </div>
+                </div>
+                <div class="v2-table-wrapper">
+                    <table class="v2-table">
+                        <thead>
+                            <tr>
+                                <th>Student ID</th>
+                                <th>Full Name</th>
+                                <th>Grade Level</th>
+                                <th>Parent</th>
+                                <th>Contact</th>
+                                <th>Date Applied</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="enrolledTableBody">
                             <tr>
                                 <td colspan="8" style="text-align:center;">Loading...</td>
                             </tr>
@@ -435,7 +489,7 @@
                             <option value="None">None</option>
                         </select>
                         <select id="payFilterStatus" onchange="filterPayments()" class="v2-action-select">
-                            <option value="All">All Statuses</option>
+                            <option value="All">All Status</option>
                             <option value="Pending">Pending</option>
                             <option value="For Payment Review">For Payment Review</option>
                             <option value="Enrolled">Enrolled</option>
@@ -488,6 +542,11 @@
                             <option value="registrar">Registrar</option>
                             <option value="cashier">Cashier</option>
                         </select>
+                        <select id="empFilterStatus" onchange="filterEmployees()" class="v2-action-select">
+                            <option value="All">All Status</option>
+                            <option value="1">Active</option>
+                            <option value="0">Inactive</option>
+                        </select>
                         <button class="btn btn-primary" onclick="toggleAddForm()"
                             style="background:var(--maroon-dark); border:none; padding:8px 16px; border-radius:6px; color:white;">+
                             Add Employee</button>
@@ -535,8 +594,7 @@
                     style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
                     <div>System Transaction & Change Logs</div>
                     <div style="display:flex; gap:12px; align-items:center;">
-                        <input type="text" id="logsSearchInput" placeholder="🔍 Search logs..."
-                            oninput="filterLogs()"
+                        <input type="text" id="logsSearchInput" placeholder="🔍 Search logs..." oninput="filterLogs()"
                             style="padding:8px; border:1px solid var(--gray-400); border-radius:6px; background:transparent; width: 250px;">
                         <select id="logsFilterAction" onchange="filterLogs()" class="v2-action-select">
                             <option value="All">All Actions</option>
@@ -606,14 +664,14 @@
         // --- Helper: get a colored status badge ---
         function getStatusBadge(status) {
             const map = {
-                'Pending':                'v2-badge-salmon',
-                'For Payment Review':     'v2-badge-gray',
+                'Pending': 'v2-badge-salmon',
+                'For Payment Review': 'v2-badge-gray',
                 'For Application Review': 'v2-badge-gray',
-                'Enrolled':               'v2-badge-green',
-                'Enrolled (Doc. Pending)':'v2-badge-blue',
-                'Declined':               'v2-badge-salmon',
-                'Dropped':                'v2-badge-salmon',
-                'Refunded':               'v2-badge-gray'
+                'Enrolled': 'v2-badge-green',
+                'Enrolled (Doc. Pending)': 'v2-badge-blue',
+                'Declined': 'v2-badge-salmon',
+                'Dropped': 'v2-badge-salmon',
+                'Refunded': 'v2-badge-gray'
             };
             const cls = map[status] || 'v2-badge-gray';
             return `<span class="${cls}">${status}</span>`;
@@ -627,7 +685,7 @@
             event.currentTarget.classList.add('active');
 
             // Load data on first switch
-            if (tab === 'enrollments' && allStudents.length === 0) loadStudents();
+            if ((tab === 'enrollments' || tab === 'enrolled') && allStudents.length === 0) loadStudents();
             if (tab === 'payments' && allPayments.length === 0) loadPayments();
             if (tab === 'employees') {
                 if (allEmployees.length === 0) loadEmployees();
@@ -645,19 +703,30 @@
             try {
                 allStudents = await apiGet('api/registrar.php?action=students');
                 updateEnrollStats(allStudents);
-                renderStudents(allStudents);
+
+                // Student Applications (Exclude Enrolled)
+                const applications = allStudents.filter(s => s.status !== 'Enrolled' && s.status !== 'Enrolled (Doc. Pending)');
+                renderStudents(applications);
+
+                // Enrolled Masterlist
+                const enrolled = allStudents.filter(s => s.status === 'Enrolled' || s.status === 'Enrolled (Doc. Pending)');
+                renderEnrolledStudents(enrolled);
             } catch (err) {
                 showAlert('enrollAlert', '❌ Failed to load students: ' + err.message);
             }
         }
 
         function updateEnrollStats(students) {
-            document.getElementById('enrollTotalCount').textContent = students.length;
+            document.getElementById('enrollTotalCount').textContent = students.filter(s => s.status !== 'Enrolled' && s.status !== 'Enrolled (Doc. Pending)').length;
             document.getElementById('enrollPendingCount').textContent = students.filter(s => s.status === 'Pending').length;
             document.getElementById('enrollPaymentCount').textContent = students.filter(s => s.status === 'For Payment Review').length;
             document.getElementById('enrollAppCount').textContent = students.filter(s => s.status === 'For Application Review').length;
-            document.getElementById('enrollSuccessCount').textContent = students.filter(s => s.status === 'Enrolled' || s.status === 'Enrolled (Doc. Pending)').length;
             document.getElementById('enrollDroppedCount').textContent = students.filter(s => s.status === 'Dropped').length;
+            document.getElementById('enrollDeclinedCount').textContent = students.filter(s => s.status === 'Declined').length;
+
+            // Master Enrolled Stats
+            document.getElementById('enrolledMasterCount').textContent = students.filter(s => s.status === 'Enrolled' || s.status === 'Enrolled (Doc. Pending)').length;
+            document.getElementById('enrolledPendingDocsCount').textContent = students.filter(s => s.status === 'Enrolled (Doc. Pending)').length;
         }
 
         function renderStudents(students) {
@@ -669,9 +738,9 @@
             tbody.innerHTML = students.map(s => `
                 <tr>
                     <td><strong>${s.student_no}</strong></td>
-                    <td>${s.last_name}${s.suffix ? ' ' + s.suffix : ''}, ${s.first_name}</td>
+                    <td>${formatStudentName(s)}</td>
                     <td>${s.grade_level}</td>
-                    <td>${s.parent_name}</td>
+                    <td>${formatParentName(s.parent_first_name, s.parent_last_name, s.parent_middle_name)}</td>
                     <td>${s.parent_contact || '—'}</td>
                     <td>${formatDate(s.applied_at)}</td>
                     <td>
@@ -679,8 +748,12 @@
                         ${s.documents_pending == 1 ? '<br><span style="font-size:10px;color:#dc2626;font-weight:700;">🔴 Doc. Pending</span>' : ''}
                     </td>
                     <td>
-                        <button class="btn" style="padding:6px 16px; border:1px solid var(--maroon-dark); color:var(--maroon-dark); background:transparent; border-radius:6px; font-size:12px;"
+                        <button class="btn" style="padding:6px 16px; border:1px solid var(--maroon-dark); color:var(--maroon-dark); background:transparent; border-radius:6px; font-size:12px; width: 100%;"
                                 onclick="viewStudent(${s.enrollment_id})">👁 View Detail</button>
+                        ${s.status === 'Dropped' ? `
+                        <button class="btn" style="padding:6px 16px; border:1px solid #16a34a; color:#16a34a; background:transparent; border-radius:6px; font-size:12px; margin-top: 4px; width: 100%;"
+                                onclick="undoDrop(${s.enrollment_id})">↩ Undo Drop</button>
+                        ` : ''}
                     </td>
                 </tr>
             `).join('');
@@ -690,18 +763,63 @@
             const search = document.getElementById('enrollSearchInput').value.toLowerCase();
             const statusFilter = document.getElementById('enrollFilterStatus').value;
 
-            let filtered = allStudents;
+            // Base list excludes enrolled
+            let baseList = allStudents.filter(s => s.status !== 'Enrolled' && s.status !== 'Enrolled (Doc. Pending)');
+            let filtered = baseList;
+
             if (search) {
                 filtered = filtered.filter(s =>
-                    (s.first_name + ' ' + s.last_name).toLowerCase().includes(search) ||
+                    nameMatches(s, search) ||
                     s.student_no.toLowerCase().includes(search) ||
-                    (s.parent_name || '').toLowerCase().includes(search)
+                    (formatParentName(s.parent_first_name, s.parent_last_name, s.parent_middle_name)).toLowerCase().includes(search)
                 );
             }
             if (statusFilter !== 'All') {
                 filtered = filtered.filter(s => s.status === statusFilter);
             }
             renderStudents(filtered);
+        }
+
+        function filterEnrolledStudents() {
+            const search = document.getElementById('enrolledSearchInput').value.toLowerCase();
+
+            // Base list only enrolled
+            let baseList = allStudents.filter(s => s.status === 'Enrolled' || s.status === 'Enrolled (Doc. Pending)');
+            let filtered = baseList;
+
+            if (search) {
+                filtered = filtered.filter(s =>
+                    nameMatches(s, search) ||
+                    s.student_no.toLowerCase().includes(search) ||
+                    (formatParentName(s.parent_first_name, s.parent_last_name, s.parent_middle_name)).toLowerCase().includes(search)
+                );
+            }
+            renderEnrolledStudents(filtered);
+        }
+
+        function renderEnrolledStudents(students) {
+            const tbody = document.getElementById('enrolledTableBody');
+            if (students.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="8" style="text-align:center;color:var(--gray-500);padding:40px;">No enrolled students found.</td></tr>`;
+                return;
+            }
+            tbody.innerHTML = students.map(s => `
+                <tr>
+                    <td><strong>${s.student_no}</strong></td>
+                    <td>${formatStudentName(s)}</td>
+                    <td>${s.grade_level}</td>
+                    <td>${formatParentName(s.parent_first_name, s.parent_last_name, s.parent_middle_name)}</td>
+                    <td>${s.parent_contact || '—'}</td>
+                    <td>${formatDate(s.applied_at)}</td>
+                    <td>
+                        ${getStatusBadge(s.status)}
+                    </td>
+                    <td>
+                        <button class="btn" style="padding:6px 16px; border:1px solid var(--maroon-dark); color:var(--maroon-dark); background:transparent; border-radius:6px; font-size:12px; width: 100%;"
+                                onclick="viewStudent(${s.enrollment_id})">👁 View Detail</button>
+                    </td>
+                </tr>
+            `).join('');
         }
 
         async function viewStudent(id) {
@@ -715,9 +833,16 @@
                         <p style="margin:6px 0 0; font-size:13px; color:#7f1d1d;">This student has missing documents. The Registrar is responsible for uploading missing files to clear this flag.</p>
                     </div>` : ''}
 
+                    ${s.registrar_notes || s.cashier_notes ? `
+                    <div style="grid-column:1/-1; background:#fff7ed; border-left:4px solid #f97316; border-radius:8px; padding:14px 16px; margin-bottom:12px;">
+                        <strong style="color:#c2410c;">📝 Reviewer Notes</strong>
+                        ${s.registrar_notes ? `<p style="margin:6px 0 0; font-size:13px; color:#9a3412;"><strong>Registrar:</strong> ${s.registrar_notes}</p>` : ''}
+                        ${s.cashier_notes ? `<p style="margin:6px 0 0; font-size:13px; color:#9a3412;"><strong>Cashier:</strong> ${s.cashier_notes}</p>` : ''}
+                    </div>` : ''}
+
                     <div style="grid-column:1/-1;font-size:13px;font-weight:700;color:var(--blue-dark);text-transform:uppercase;letter-spacing:0.5px;border-bottom:2px solid var(--blue-light);padding-bottom:6px;margin-bottom:4px;">Student Information</div>
                     <div class="info-item"><label>Student ID</label><span>${s.student_no}</span></div>
-                    <div class="info-item"><label>Full Name</label><span>${s.first_name} ${s.middle_name ? s.middle_name + ' ' : ''}${s.last_name}${s.suffix ? ' ' + s.suffix : ''}</span></div>
+                    <div class="info-item"><label>Full Name</label><span>${formatStudentName(s)}</span></div>
                     <div class="info-item"><label>Date of Birth</label><span>${s.birth_date}</span></div>
                     <div class="info-item"><label>Gender</label><span>${s.gender}</span></div>
                     <div class="info-item"><label>Religion</label><span>${s.religion || '—'}</span></div>
@@ -728,7 +853,7 @@
                     <div class="info-item"><label>Session Preference</label><span>${s.session_preference || '—'}</span></div>
 
                     <div style="grid-column:1/-1;font-size:13px;font-weight:700;color:var(--blue-dark);text-transform:uppercase;letter-spacing:0.5px;border-bottom:2px solid var(--blue-light);padding-bottom:6px;margin-top:12px;margin-bottom:4px;">Parent / Guardian</div>
-                    <div class="info-item"><label>Full Name</label><span>${s.parent_name}</span></div>
+                    <div class="info-item"><label>Full Name</label><span>${formatParentName(s.parent_first_name, s.parent_last_name, s.parent_middle_name)}</span></div>
                     <div class="info-item"><label>Relationship</label><span>${s.parent_relation}</span></div>
                     <div class="info-item"><label>Contact Number</label><span>${s.parent_contact}</span></div>
                     <div class="info-item"><label>Email</label><span>${s.email}</span></div>
@@ -739,8 +864,8 @@
                     <div class="info-item"><label>Method</label><span>${s.payment_method || '—'}</span></div>
                     <div class="info-item"><label>Mode</label><span>${s.payment_mode || '—'}${s.payment_mode === 'Monthly' ? ' (10 months)' : ''}</span></div>
                     <div class="info-item"><label>Reference #</label><span>${s.reference_number || '—'}</span></div>
-                    <div class="info-item"><label>Tuition Fee</label><span>${s.tuition_fee ? '₱' + parseFloat(s.tuition_fee).toLocaleString() : '—'}</span></div>
-                    <div class="info-item"><label>Books Fee</label><span>${s.books_fee ? '₱' + parseFloat(s.books_fee).toLocaleString() : '—'}</span></div>
+                    <div class="info-item"><label>Tuition Fee</label><span>${formatCurrency(s.tuition_fee)}</span></div>
+                    <div class="info-item"><label>Books Fee</label><span>${formatCurrency(s.books_fee)}</span></div>
 
                     <div style="grid-column:1/-1;font-size:13px;font-weight:700;color:var(--blue-dark);text-transform:uppercase;letter-spacing:0.5px;border-bottom:2px solid var(--blue-light);padding-bottom:6px;margin-top:12px;margin-bottom:4px;">Documents</div>
                     <div class="info-item" style="grid-column:1/-1;">
@@ -786,29 +911,36 @@
                 const s = await apiGet(`api/registrar.php?action=detail&id=${id}`);
                 document.getElementById('modalTitle').textContent = '💳 Payment Details';
                 document.getElementById('modalContent').innerHTML = `
+                    ${s.registrar_notes || s.cashier_notes ? `
+                    <div style="grid-column:1/-1; background:#fff7ed; border-left:4px solid #f97316; border-radius:8px; padding:14px 16px; margin-bottom:12px;">
+                        <strong style="color:#c2410c;">📝 Reviewer Notes</strong>
+                        ${s.registrar_notes ? `<p style="margin:6px 0 0; font-size:13px; color:#9a3412;"><strong>Registrar:</strong> ${s.registrar_notes}</p>` : ''}
+                        ${s.cashier_notes ? `<p style="margin:6px 0 0; font-size:13px; color:#9a3412;"><strong>Cashier:</strong> ${s.cashier_notes}</p>` : ''}
+                    </div>` : ''}
+
                     <div class="info-item"><label>Student ID</label><span>${s.student_no}</span></div>
-                    <div class="info-item"><label>Full Name</label><span>${s.first_name} ${s.middle_name ? s.middle_name + ' ' : ''}${s.last_name}${s.suffix ? ' ' + s.suffix : ''}</span></div>
+                    <div class="info-item"><label>Full Name</label><span>${formatStudentName(s)}</span></div>
                     <div class="info-item"><label>Grade Level</label><span>${s.grade_level}</span></div>
-                    <div class="info-item"><label>Parent / Guardian</label><span>${s.parent_name}</span></div>
+                    <div class="info-item"><label>Parent / Guardian</label><span>${formatParentName(s.parent_first_name, s.parent_last_name, s.parent_middle_name)}</span></div>
                     <div class="info-item"><label>Contact</label><span>${s.parent_contact || '—'}</span></div>
                     <div class="info-item"><label>Payment Method</label><span>${s.payment_method || 'Not provided'}</span></div>
                     <div class="info-item"><label>Payment Mode</label><span>${s.payment_mode || '—'}${s.payment_mode === 'Monthly' ? ' (10 months)' : ''}</span></div>
                     <div class="info-item"><label>Reference Number</label><span class="ref-number">${s.reference_number || '—'}</span></div>
-                    <div class="info-item"><label>Total Tuition</label><span style="font-weight:700;color:var(--maroon-dark);">${s.tuition_fee ? '₱' + parseFloat(s.tuition_fee).toLocaleString() : '—'}</span></div>
-                    <div class="info-item"><label>Total Books</label><span style="font-weight:700;color:var(--maroon-dark);">${s.books_fee ? '₱' + parseFloat(s.books_fee).toLocaleString() : '—'}</span></div>
+                    <div class="info-item"><label>Total Tuition</label><span style="font-weight:700;color:var(--maroon-dark);">${formatCurrency(s.tuition_fee)}</span></div>
+                    <div class="info-item"><label>Total Books</label><span style="font-weight:700;color:var(--maroon-dark);">${formatCurrency(s.books_fee)}</span></div>
                     
                     <div class="info-item" style="grid-column: span 2; background: #f8fafc; padding: 12px; border-radius: 8px; margin-top: 10px; display: flex; justify-content: space-around; border: 1px solid #e2e8f0;">
                         <div style="text-align:center;">
                             <label style="font-size:11px; color:#64748b; display:block; margin-bottom:4px;">TOTAL PAYABLE</label>
-                            <span style="font-size:18px; font-weight:800; color:#1e293b;">₱${parseFloat(s.total_amount || 0).toLocaleString()}</span>
+                            <span style="font-size:18px; font-weight:800; color:#1e293b;">${formatCurrency(s.total_amount)}</span>
                         </div>
                         <div style="text-align:center;">
                             <label style="font-size:11px; color:#64748b; display:block; margin-bottom:4px;">TOTAL PAID</label>
-                            <span style="font-size:18px; font-weight:800; color:#16a34a;">₱${parseFloat(s.total_paid || 0).toLocaleString()}</span>
+                            <span style="font-size:18px; font-weight:800; color:#16a34a;">${formatCurrency(s.total_paid)}</span>
                         </div>
                         <div style="text-align:center;">
                             <label style="font-size:11px; color:#64748b; display:block; margin-bottom:4px;">REMAINING BALANCE</label>
-                            <span style="font-size:18px; font-weight:800; color:#dc2626;">₱${parseFloat(s.balance || 0).toLocaleString()}</span>
+                            <span style="font-size:18px; font-weight:800; color:#dc2626;">${formatCurrency(s.balance)}</span>
                         </div>
                     </div>
 
@@ -855,7 +987,7 @@
                             ${history.map(h => `
                                 <tr style="border-bottom:1px solid #f9f9f9;">
                                     <td style="padding:5px;">${formatDate(h.created_at)}</td>
-                                    <td style="padding:5px; font-weight:600;">₱${parseFloat(h.amount_paid).toLocaleString()}</td>
+                                    <td style="padding:5px; font-weight:600;">${formatCurrency(h.amount_paid)}</td>
                                     <td style="padding:5px;">${h.method_name}</td>
                                     <td style="padding:5px;"><span class="ref-number">${h.reference_number || '—'}</span></td>
                                 </tr>
@@ -886,6 +1018,22 @@
             }
         }
 
+        async function undoRefund(id) {
+            if (!confirm('Are you sure you want to undo the "Refunded" status for this student?')) return;
+
+            try {
+                const res = await apiPost('api/registrar.php?action=undo_refund', {
+                    enrollment_id: id,
+                    admin_id: sessionStorage.getItem('adminId')
+                });
+
+                showAlert('payAlert', '✅ ' + res.message, 'success');
+                loadPayments();
+            } catch (err) {
+                showAlert('payAlert', '❌ ' + err.message);
+            }
+        }
+
         function getPaymentBadge(method) {
             if (!method) return '<span class="v2-badge-gray">—</span>';
             const key = method.toLowerCase().replace(' ', '');
@@ -905,13 +1053,13 @@
                 return `
                 <tr>
                     <td><strong>${p.student_no}</strong></td>
-                    <td>${p.last_name}${p.suffix ? ' ' + p.suffix : ''}, ${p.first_name}</td>
+                    <td>${formatStudentName(p)}</td>
                     <td>${getPaymentBadge(p.payment_method)}</td>
                     <td>${p.payment_mode}</td>
-                    <td style="font-weight:600;">₱${parseFloat(p.total_amount || 0).toLocaleString()}</td>
-                    <td style="color:#16a34a; font-weight:600;">₱${parseFloat(p.total_paid || 0).toLocaleString()}</td>
+                    <td style="font-weight:600;">${formatCurrency(p.total_amount || 0)}</td>
+                    <td style="color:#16a34a; font-weight:600;">${formatCurrency(p.total_paid || 0)}</td>
                     <td style="color:${isPaid ? '#16a34a' : '#dc2626'}; font-weight:700;">
-                        ${isPaid ? '✅ Paid' : '₱' + balance.toLocaleString()}
+                        ${isPaid ? '✅ Paid' : formatCurrency(balance)}
                     </td>
                     <td>${getStatusBadge(p.status)}</td>
                     <td>
@@ -919,9 +1067,14 @@
                                 onclick="viewPaymentDetail(${p.enrollment_id})">
                             💳 View Payment
                         </button>
+                        ${p.status === 'Refunded' ? `
+                        <button class="btn" style="padding:4px 10px; border:1px solid #16a34a; color:#16a34a; background:transparent; border-radius:6px; font-size:11px; margin-top: 4px; width: 100%;"
+                                onclick="undoRefund(${p.enrollment_id})">↩ Undo Refund</button>
+                        ` : ''}
                     </td>
                 </tr>
-            `;}).join('');
+            `;
+            }).join('');
         }
 
         function filterPayments() {
@@ -932,7 +1085,7 @@
             let filtered = allPayments;
             if (search) {
                 filtered = filtered.filter(r =>
-                    (r.first_name + ' ' + r.last_name).toLowerCase().includes(search) ||
+                    nameMatches(r, search) ||
                     r.student_no.toLowerCase().includes(search) ||
                     (r.reference_number || '').toLowerCase().includes(search)
                 );
@@ -972,15 +1125,18 @@
                 return;
             }
             grid.innerHTML = employees.map(e => `
-                <div class="employee-card">
+                <div class="employee-card" style="opacity: ${e.is_active == 1 ? 1 : 0.6}; transition: all 0.3s ease;">
                     <div class="employee-avatar avatar-${e.role}">${getRoleIcon(e.role)}</div>
                     <div class="employee-info">
                         <h4>${e.username}</h4>
                         <span class="role-tag role-${e.role}">${e.role}</span>
+                        <div style="font-size: 10px; color: ${e.is_active == 1 ? '#16a34a' : '#dc2626'}; font-weight: 700; margin-top: 4px;">
+                            ${e.is_active == 1 ? '● ACTIVE' : '○ INACTIVE'}
+                        </div>
                     </div>
-                    <button class="btn btn-danger" style="padding:6px 12px;font-size:11px;"
-                            onclick="deleteEmployee(${e.id}, '${e.username}')">
-                        🗑
+                    <button class="btn" style="padding:6px 10px; font-size:10px; border:1px solid ${e.is_active == 1 ? '#dc2626' : '#16a34a'}; color: ${e.is_active == 1 ? '#dc2626' : '#16a34a'}; background:transparent; border-radius:6px; cursor:pointer;"
+                            onclick="toggleEmployeeStatus(${e.id}, '${e.username}', ${e.is_active})">
+                        ${e.is_active == 1 ? 'Deactivate' : 'Activate'}
                     </button>
                 </div>
             `).join('');
@@ -989,6 +1145,7 @@
         function filterEmployees() {
             const search = document.getElementById('empSearchInput').value.toLowerCase();
             const roleFilter = document.getElementById('empFilterRole').value;
+            const statusFilter = document.getElementById('empFilterStatus').value;
 
             let filtered = allEmployees;
             if (search) {
@@ -996,6 +1153,9 @@
             }
             if (roleFilter !== 'All') {
                 filtered = filtered.filter(e => e.role === roleFilter);
+            }
+            if (statusFilter !== 'All') {
+                filtered = filtered.filter(e => e.is_active == statusFilter);
             }
             renderEmployees(filtered);
         }
@@ -1029,7 +1189,7 @@
             }
 
             try {
-                const result = await apiPost('api/registrar.php?action=add_employee', { 
+                const result = await apiPost('api/registrar.php?action=add_employee', {
                     username, password, role_id,
                     admin_id: sessionStorage.getItem('adminId')
                 });
@@ -1045,17 +1205,22 @@
             }
         }
 
-        async function deleteEmployee(id, username) {
-            if (username === adminUser) {
-                showAlert('empAlert', '❌ You cannot delete your own account.');
+        async function toggleEmployeeStatus(id, username, currentStatus) {
+            const action = currentStatus == 1 ? 'deactivate' : 'activate';
+            
+            // Prevent self-deactivation
+            const loggedInUser = sessionStorage.getItem('registrarUser');
+            if (action === 'deactivate' && username === loggedInUser) {
+                showAlert('empAlert', '❌ You cannot deactivate your own account.');
                 return;
             }
-            if (!window.confirm(`Delete employee "${username}"? This cannot be undone.`)) return;
+
+            if (!confirm(`Are you sure you want to ${action} the account for '${username}'?`)) return;
+
             try {
-                const admin_id = sessionStorage.getItem('adminId');
-                const result = await apiPost(`api/registrar.php?action=delete_employee&id=${id}&admin_id=${admin_id}`, {});
+                const adminId = sessionStorage.getItem('adminId');
+                const result = await apiGet(`api/registrar.php?action=toggle_employee_status&id=${id}&admin_id=${adminId}`);
                 showAlert('empAlert', '✅ ' + result.message, 'success');
-                allEmployees = [];
                 loadEmployees();
             } catch (err) {
                 showAlert('empAlert', '❌ ' + err.message);
@@ -1086,7 +1251,7 @@
         function formatDateTime(dateStr) {
             if (!dateStr) return '—';
             const d = new Date(dateStr);
-            return d.toLocaleDateString('en-PH', { 
+            return d.toLocaleDateString('en-PH', {
                 year: 'numeric', month: 'short', day: 'numeric',
                 hour: '2-digit', minute: '2-digit'
             });
@@ -1099,7 +1264,7 @@
             try {
                 const tbody = document.getElementById('logsTableBody');
                 tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;">⏳ Fetching logs...</td></tr>`;
-                
+
                 allLogs = await apiGet('api/registrar.php?action=get_logs');
                 renderLogs(allLogs);
             } catch (err) {
@@ -1142,6 +1307,23 @@
                 filtered = filtered.filter(l => l.action_type === actionFilter);
             }
             renderLogs(filtered);
+        }
+
+        async function undoDrop(id) {
+            if (!confirm('Are you sure you want to undo the "Dropped" status for this student?')) return;
+
+            try {
+                const adminId = sessionStorage.getItem('adminId');
+                const res = await apiPost('api/registrar.php?action=undo_drop', {
+                    enrollment_id: id,
+                    admin_id: adminId
+                });
+
+                showAlert('enrollAlert', '✅ ' + res.message, 'success');
+                loadStudents(); // Refresh the list
+            } catch (err) {
+                showAlert('enrollAlert', '❌ ' + err.message);
+            }
         }
 
         // Load enrollments on page load (default tab)

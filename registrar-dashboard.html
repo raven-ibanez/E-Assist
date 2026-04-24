@@ -129,7 +129,7 @@
                     <input type="text" id="searchInput" placeholder="🔍 Search name..." oninput="filterStudents()"
                         style="padding:8px; border:1px solid var(--gray-400); border-radius:6px; background:transparent;">
                     <select id="filterStatus" onchange="filterStudents()" class="v2-action-select">
-                        <option value="All">All Statuses</option>
+                        <option value="All">All Status</option>
                         <option value="Pending">Pending</option>
                         <option value="For Payment Review">For Payment Review</option>
                         <option value="For Application Review">For Application Review</option>
@@ -183,53 +183,125 @@
         <div class="modal" style="max-width:700px;" onclick="event.stopPropagation()">
             <button class="modal-close" onclick="closeEditModal()">✕</button>
             <h3>✏️ Edit Student Information</h3>
-            <p style="font-size:13px;color:var(--gray-500);margin-bottom:16px;">Update the student or parent details below. Only changed fields will be saved.</p>
+            <p style="font-size:13px;color:var(--gray-500);margin-bottom:16px;">Update the student or parent details
+                below. Only changed fields will be saved.</p>
             <form id="editStudentForm" onsubmit="submitEdit(event)">
                 <input type="hidden" id="edit_enrollment_id" name="enrollment_id">
-                <input type="hidden" id="edit_student_id"   name="student_id">
-                <input type="hidden" id="edit_parent_id"    name="parent_id">
+                <input type="hidden" id="edit_student_id" name="student_id">
+                <input type="hidden" id="edit_parent_id" name="parent_id">
 
                 <!-- Student Section -->
-                <div style="font-size:13px;font-weight:700;color:var(--maroon-dark);text-transform:uppercase;border-bottom:2px solid var(--maroon-light);padding-bottom:6px;margin-bottom:14px;">Student Details</div>
-                <div class="form-row" style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:12px;">
-                    <div><label style="font-size:12px;font-weight:600;display:block;margin-bottom:4px;">First Name *</label><input id="edit_first_name" name="first_name" class="form-input" required style="width:100%;padding:8px;border:1px solid var(--gray-300);border-radius:6px;font-size:13px;"></div>
-                    <div><label style="font-size:12px;font-weight:600;display:block;margin-bottom:4px;">Last Name *</label><input id="edit_last_name" name="last_name" class="form-input" required style="width:100%;padding:8px;border:1px solid var(--gray-300);border-radius:6px;font-size:13px;"></div>
-                    <div><label style="font-size:12px;font-weight:600;display:block;margin-bottom:4px;">Middle Name</label><input id="edit_middle_name" name="middle_name" class="form-input" style="width:100%;padding:8px;border:1px solid var(--gray-300);border-radius:6px;font-size:13px;"></div>
+                <div
+                    style="font-size:13px;font-weight:700;color:var(--maroon-dark);text-transform:uppercase;border-bottom:2px solid var(--maroon-light);padding-bottom:6px;margin-bottom:14px;">
+                    Student Details</div>
+                <div class="form-row"
+                    style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:12px;">
+                    <div><label style="font-size:12px;font-weight:600;display:block;margin-bottom:4px;">First Name
+                            *</label><input id="edit_first_name" name="first_name" class="form-input" required
+                            style="width:100%;padding:8px;border:1px solid var(--gray-300);border-radius:6px;font-size:13px;">
+                    </div>
+                    <div><label style="font-size:12px;font-weight:600;display:block;margin-bottom:4px;">Last Name
+                            *</label><input id="edit_last_name" name="last_name" class="form-input" required
+                            style="width:100%;padding:8px;border:1px solid var(--gray-300);border-radius:6px;font-size:13px;">
+                    </div>
+                    <div><label style="font-size:12px;font-weight:600;display:block;margin-bottom:4px;">Middle
+                            Name</label><input id="edit_middle_name" name="middle_name" class="form-input"
+                            style="width:100%;padding:8px;border:1px solid var(--gray-300);border-radius:6px;font-size:13px;">
+                    </div>
                 </div>
-                <div class="form-row" style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:12px;margin-bottom:12px;">
-                    <div><label style="font-size:12px;font-weight:600;display:block;margin-bottom:4px;">Suffix</label><input id="edit_suffix" name="suffix" class="form-input" style="width:100%;padding:8px;border:1px solid var(--gray-300);border-radius:6px;font-size:13px;"></div>
-                    <div><label style="font-size:12px;font-weight:600;display:block;margin-bottom:4px;">Birth Date</label><input id="edit_birth_date" name="birth_date" type="date" class="form-input" style="width:100%;padding:8px;border:1px solid var(--gray-300);border-radius:6px;font-size:13px;"></div>
+                <div class="form-row"
+                    style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:12px;margin-bottom:12px;">
+                    <div><label
+                            style="font-size:12px;font-weight:600;display:block;margin-bottom:4px;">Suffix</label><input
+                            id="edit_suffix" name="suffix" class="form-input"
+                            style="width:100%;padding:8px;border:1px solid var(--gray-300);border-radius:6px;font-size:13px;">
+                    </div>
+                    <div><label style="font-size:12px;font-weight:600;display:block;margin-bottom:4px;">Birth
+                            Date</label><input id="edit_birth_date" name="birth_date" type="date" class="form-input"
+                            style="width:100%;padding:8px;border:1px solid var(--gray-300);border-radius:6px;font-size:13px;">
+                    </div>
                     <div><label style="font-size:12px;font-weight:600;display:block;margin-bottom:4px;">Gender</label>
-                        <select id="edit_gender" name="gender" style="width:100%;padding:8px;border:1px solid var(--gray-300);border-radius:6px;font-size:13px;">
-                            <option value="Male">Male</option><option value="Female">Female</option>
+                        <select id="edit_gender" name="gender"
+                            style="width:100%;padding:8px;border:1px solid var(--gray-300);border-radius:6px;font-size:13px;">
+                            <option value="Male">Male</option>
+                            <option value="Female">Female</option>
                         </select>
                     </div>
-                    <div><label style="font-size:12px;font-weight:600;display:block;margin-bottom:4px;">Religion</label><input id="edit_religion" name="religion" class="form-input" style="width:100%;padding:8px;border:1px solid var(--gray-300);border-radius:6px;font-size:13px;"></div>
+                    <div><label
+                            style="font-size:12px;font-weight:600;display:block;margin-bottom:4px;">Religion</label><input
+                            id="edit_religion" name="religion" class="form-input"
+                            style="width:100%;padding:8px;border:1px solid var(--gray-300);border-radius:6px;font-size:13px;">
+                    </div>
                 </div>
-                <div class="form-row" style="display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:12px;margin-bottom:12px;">
-                    <div><label style="font-size:12px;font-weight:600;display:block;margin-bottom:4px;">House No. / Street</label><input id="edit_house_no_street" name="house_no_street" class="form-input" style="width:100%;padding:8px;border:1px solid var(--gray-300);border-radius:6px;font-size:13px;"></div>
-                    <div><label style="font-size:12px;font-weight:600;display:block;margin-bottom:4px;">Barangay</label><input id="edit_barangay" name="barangay" class="form-input" style="width:100%;padding:8px;border:1px solid var(--gray-300);border-radius:6px;font-size:13px;"></div>
-                    <div><label style="font-size:12px;font-weight:600;display:block;margin-bottom:4px;">City / Municipality</label><input id="edit_city_municipality" name="city_municipality" class="form-input" style="width:100%;padding:8px;border:1px solid var(--gray-300);border-radius:6px;font-size:13px;"></div>
-                    <div><label style="font-size:12px;font-weight:600;display:block;margin-bottom:4px;">Province</label><input id="edit_province" name="province" class="form-input" style="width:100%;padding:8px;border:1px solid var(--gray-300);border-radius:6px;font-size:13px;"></div>
+                <div class="form-row"
+                    style="display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:12px;margin-bottom:12px;">
+                    <div><label style="font-size:12px;font-weight:600;display:block;margin-bottom:4px;">House No. /
+                            Street</label><input id="edit_house_no_street" name="house_no_street" class="form-input"
+                            style="width:100%;padding:8px;border:1px solid var(--gray-300);border-radius:6px;font-size:13px;">
+                    </div>
+                    <div><label
+                            style="font-size:12px;font-weight:600;display:block;margin-bottom:4px;">Barangay</label><input
+                            id="edit_barangay" name="barangay" class="form-input"
+                            style="width:100%;padding:8px;border:1px solid var(--gray-300);border-radius:6px;font-size:13px;">
+                    </div>
+                    <div><label style="font-size:12px;font-weight:600;display:block;margin-bottom:4px;">City /
+                            Municipality</label><input id="edit_city_municipality" name="city_municipality"
+                            class="form-input"
+                            style="width:100%;padding:8px;border:1px solid var(--gray-300);border-radius:6px;font-size:13px;">
+                    </div>
+                    <div><label
+                            style="font-size:12px;font-weight:600;display:block;margin-bottom:4px;">Province</label><input
+                            id="edit_province" name="province" class="form-input"
+                            style="width:100%;padding:8px;border:1px solid var(--gray-300);border-radius:6px;font-size:13px;">
+                    </div>
                 </div>
-                <div style="margin-bottom:18px;"><label style="font-size:12px;font-weight:600;display:block;margin-bottom:4px;">Previous School</label><input id="edit_previous_school" name="previous_school" class="form-input" style="width:100%;padding:8px;border:1px solid var(--gray-300);border-radius:6px;font-size:13px;"></div>
+                <div style="margin-bottom:18px;"><label
+                        style="font-size:12px;font-weight:600;display:block;margin-bottom:4px;">Previous
+                        School</label><input id="edit_previous_school" name="previous_school" class="form-input"
+                        style="width:100%;padding:8px;border:1px solid var(--gray-300);border-radius:6px;font-size:13px;">
+                </div>
 
                 <!-- Parent Section -->
-                <div style="font-size:13px;font-weight:700;color:var(--maroon-dark);text-transform:uppercase;border-bottom:2px solid var(--maroon-light);padding-bottom:6px;margin-bottom:14px;margin-top:8px;">Parent / Guardian</div>
-                <div class="form-row" style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:12px;">
-                    <div><label style="font-size:12px;font-weight:600;display:block;margin-bottom:4px;">First Name</label><input id="edit_parent_first_name" name="parent_first_name" class="form-input" style="width:100%;padding:8px;border:1px solid var(--gray-300);border-radius:6px;font-size:13px;"></div>
-                    <div><label style="font-size:12px;font-weight:600;display:block;margin-bottom:4px;">Last Name</label><input id="edit_parent_last_name" name="parent_last_name" class="form-input" style="width:100%;padding:8px;border:1px solid var(--gray-300);border-radius:6px;font-size:13px;"></div>
-                    <div><label style="font-size:12px;font-weight:600;display:block;margin-bottom:4px;">Middle Name</label><input id="edit_parent_middle_name" name="parent_middle_name" class="form-input" style="width:100%;padding:8px;border:1px solid var(--gray-300);border-radius:6px;font-size:13px;"></div>
+                <div
+                    style="font-size:13px;font-weight:700;color:var(--maroon-dark);text-transform:uppercase;border-bottom:2px solid var(--maroon-light);padding-bottom:6px;margin-bottom:14px;margin-top:8px;">
+                    Parent / Guardian</div>
+                <div class="form-row"
+                    style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:12px;">
+                    <div><label style="font-size:12px;font-weight:600;display:block;margin-bottom:4px;">First
+                            Name</label><input id="edit_parent_first_name" name="parent_first_name" class="form-input"
+                            style="width:100%;padding:8px;border:1px solid var(--gray-300);border-radius:6px;font-size:13px;">
+                    </div>
+                    <div><label style="font-size:12px;font-weight:600;display:block;margin-bottom:4px;">Last
+                            Name</label><input id="edit_parent_last_name" name="parent_last_name" class="form-input"
+                            style="width:100%;padding:8px;border:1px solid var(--gray-300);border-radius:6px;font-size:13px;">
+                    </div>
+                    <div><label style="font-size:12px;font-weight:600;display:block;margin-bottom:4px;">Middle
+                            Name</label><input id="edit_parent_middle_name" name="parent_middle_name" class="form-input"
+                            style="width:100%;padding:8px;border:1px solid var(--gray-300);border-radius:6px;font-size:13px;">
+                    </div>
                 </div>
-                <div class="form-row" style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:20px;">
-                    <div><label style="font-size:12px;font-weight:600;display:block;margin-bottom:4px;">Contact No.</label><input id="edit_parent_contact" name="parent_contact" class="form-input" style="width:100%;padding:8px;border:1px solid var(--gray-300);border-radius:6px;font-size:13px;"></div>
-                    <div><label style="font-size:12px;font-weight:600;display:block;margin-bottom:4px;">Email</label><input id="edit_parent_email" name="parent_email" type="email" class="form-input" style="width:100%;padding:8px;border:1px solid var(--gray-300);border-radius:6px;font-size:13px;"></div>
-                    <div><label style="font-size:12px;font-weight:600;display:block;margin-bottom:4px;">Occupation</label><input id="edit_parent_occupation" name="parent_occupation" class="form-input" style="width:100%;padding:8px;border:1px solid var(--gray-300);border-radius:6px;font-size:13px;"></div>
+                <div class="form-row"
+                    style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:20px;">
+                    <div><label style="font-size:12px;font-weight:600;display:block;margin-bottom:4px;">Contact
+                            No.</label><input id="edit_parent_contact" name="parent_contact" class="form-input"
+                            style="width:100%;padding:8px;border:1px solid var(--gray-300);border-radius:6px;font-size:13px;">
+                    </div>
+                    <div><label
+                            style="font-size:12px;font-weight:600;display:block;margin-bottom:4px;">Email</label><input
+                            id="edit_parent_email" name="parent_email" type="email" class="form-input"
+                            style="width:100%;padding:8px;border:1px solid var(--gray-300);border-radius:6px;font-size:13px;">
+                    </div>
+                    <div><label
+                            style="font-size:12px;font-weight:600;display:block;margin-bottom:4px;">Occupation</label><input
+                            id="edit_parent_occupation" name="parent_occupation" class="form-input"
+                            style="width:100%;padding:8px;border:1px solid var(--gray-300);border-radius:6px;font-size:13px;">
+                    </div>
                 </div>
 
                 <div style="display:flex;gap:12px;justify-content:flex-end;">
                     <button type="button" class="btn btn-outline" onclick="closeEditModal()">Cancel</button>
-                    <button type="submit" class="btn" style="background:var(--maroon-dark);color:#fff;padding:10px 28px;">💾 Save Changes</button>
+                    <button type="submit" class="btn"
+                        style="background:var(--maroon-dark);color:#fff;padding:10px 28px;">💾 Save Changes</button>
                 </div>
             </form>
         </div>
@@ -265,14 +337,14 @@
         // --- Helper: get a colored status badge ---
         function getStatusBadge(status) {
             const map = {
-                'Pending':                'v2-badge-salmon',
-                'For Payment Review':     'v2-badge-gray',
+                'Pending': 'v2-badge-salmon',
+                'For Payment Review': 'v2-badge-gray',
                 'For Application Review': 'v2-badge-gray',
-                'Enrolled':               'v2-badge-green',
-                'Enrolled (Doc. Pending)':'v2-badge-blue',
-                'Declined':               'v2-badge-salmon',
-                'Dropped':                'v2-badge-salmon',
-                'Refunded':               'v2-badge-gray'
+                'Enrolled': 'v2-badge-green',
+                'Enrolled (Doc. Pending)': 'v2-badge-blue',
+                'Declined': 'v2-badge-salmon',
+                'Dropped': 'v2-badge-salmon',
+                'Refunded': 'v2-badge-gray'
             };
             const cls = map[status] || 'v2-badge-gray';
             return `<span class="${cls}">${status}</span>`;
@@ -314,9 +386,9 @@
             tbody.innerHTML = students.map(s => `
                 <tr>
                     <td><strong>${s.student_no}</strong></td>
-                    <td>${s.last_name}${s.suffix ? ' ' + s.suffix : ''}, ${s.first_name}</td>
+                    <td>${formatStudentName(s)}</td>
                     <td>${s.grade_level}</td>
-                    <td>${s.parent_name}</td>
+                    <td>${formatParentName(s.parent_first_name, s.parent_last_name, s.parent_middle_name)}</td>
                     <td>${s.parent_contact}</td>
                     <td>${formatDate(s.applied_at)}</td>
                     <td>
@@ -351,6 +423,11 @@
                                         onclick="reviewApplication(${s.enrollment_id}, 'dropped')">
                                     🚫 Drop Student
                                 </button>
+                            ` : s.status === 'Dropped' ? `
+                                <button class="btn" style="padding:4px 8px;font-size:11px; border:1px solid #16a34a; color:#16a34a; background:transparent; border-radius:6px;"
+                                        onclick="undoDrop(${s.enrollment_id})">
+                                    ↩ Undo Drop
+                                </button>
                             ` : `<span style="font-size:11px;color:var(--gray-500);">${s.status}</span>`}
                         </div>
                     </td>
@@ -367,9 +444,9 @@
 
             if (search) {
                 filtered = filtered.filter(s =>
-                    (s.first_name + ' ' + s.last_name).toLowerCase().includes(search) ||
+                    nameMatches(s, search) ||
                     s.student_no.toLowerCase().includes(search) ||
-                    (s.parent_name || '').toLowerCase().includes(search)
+                    (formatParentName(s.parent_first_name, s.parent_last_name, s.parent_middle_name)).toLowerCase().includes(search)
                 );
             }
 
@@ -383,17 +460,30 @@
         // --- Approve or Decline an application ---
         async function reviewApplication(enrollmentId, decision) {
             const labels = {
-                'approved':     'approve this application',
-                'declined':     'decline this application',
-                'approved_dtf': 'approve this application with DOCUMENT TO FOLLOW (student will be enrolled but flagged for missing documents)'
+                'approved': 'approve this application',
+                'declined': 'decline this application',
+                'approved_dtf': 'approve this application with DOCUMENT TO FOLLOW (student will be enrolled but flagged for missing documents)',
+                'dropped': 'mark this student as DROPPED'
             };
+            
+            let reason = '';
+            if (decision === 'declined' || decision === 'dropped') {
+                reason = prompt(`Please provide a reason for ${decision === 'declined' ? 'declining' : 'dropping'} this application:`);
+                if (reason === null) return; // User cancelled
+                if (!reason.trim()) {
+                    alert('A reason is required when declining or dropping.');
+                    return;
+                }
+            }
+
             if (!confirm(`Are you sure you want to ${labels[decision]}?`)) return;
 
             try {
                 const result = await apiPost('api/registrar.php?action=review_application', {
                     enrollment_id: enrollmentId,
                     decision: decision,
-                    admin_id: sessionStorage.getItem('adminId')
+                    admin_id: sessionStorage.getItem('adminId'),
+                    reason: reason
                 });
                 showAlert('alert', '✅ ' + result.message + ` New status: ${result.new_status}`, 'success');
                 loadStudents();
@@ -414,9 +504,16 @@
                         <p style="margin:6px 0 0; font-size:13px; color:#7f1d1d;">This student was approved with Document to Follow. Please upload the missing document(s) below to clear this flag.</p>
                     </div>` : ''}
 
+                    ${s.registrar_notes || s.cashier_notes ? `
+                    <div style="grid-column:1/-1; background:#fff7ed; border-left:4px solid #f97316; border-radius:8px; padding:14px 16px; margin-bottom:12px;">
+                        <strong style="color:#c2410c;">📝 Reviewer Notes</strong>
+                        ${s.registrar_notes ? `<p style="margin:6px 0 0; font-size:13px; color:#9a3412;"><strong>Registrar:</strong> ${s.registrar_notes}</p>` : ''}
+                        ${s.cashier_notes ? `<p style="margin:6px 0 0; font-size:13px; color:#9a3412;"><strong>Cashier:</strong> ${s.cashier_notes}</p>` : ''}
+                    </div>` : ''}
+
                     <div style="grid-column:1/-1;font-size:13px;font-weight:700;color:var(--blue-dark);text-transform:uppercase;letter-spacing:0.5px;border-bottom:2px solid var(--blue-light);padding-bottom:6px;margin-bottom:4px;">Student Information</div>
                     <div class="info-item"><label>Student ID</label><span>${s.student_no}</span></div>
-                    <div class="info-item"><label>Full Name</label><span>${s.first_name} ${s.middle_name ? s.middle_name + ' ' : ''}${s.last_name}${s.suffix ? ' ' + s.suffix : ''}</span></div>
+                    <div class="info-item"><label>Full Name</label><span>${formatStudentName(s)}</span></div>
                     <div class="info-item"><label>Date of Birth</label><span>${s.birth_date}</span></div>
                     <div class="info-item"><label>Gender</label><span>${s.gender}</span></div>
                     <div class="info-item"><label>Religion</label><span>${s.religion || '—'}</span></div>
@@ -427,7 +524,7 @@
                     <div class="info-item"><label>Session Preference</label><span>${s.session_preference || '—'}</span></div>
 
                     <div style="grid-column:1/-1;font-size:13px;font-weight:700;color:var(--blue-dark);text-transform:uppercase;letter-spacing:0.5px;border-bottom:2px solid var(--blue-light);padding-bottom:6px;margin-top:12px;margin-bottom:4px;">Parent / Guardian</div>
-                    <div class="info-item"><label>Full Name</label><span>${s.parent_name}</span></div>
+                    <div class="info-item"><label>Full Name</label><span>${formatParentName(s.parent_first_name, s.parent_last_name, s.parent_middle_name)}</span></div>
                     <div class="info-item"><label>Relationship</label><span>${s.parent_relation}</span></div>
                     <div class="info-item"><label>Contact Number</label><span>${s.parent_contact}</span></div>
                     <div class="info-item"><label>Email</label><span>${s.email}</span></div>
@@ -438,8 +535,8 @@
                     <div class="info-item"><label>Method</label><span>${s.payment_method || '—'}</span></div>
                     <div class="info-item"><label>Mode</label><span>${s.payment_mode || '—'}${s.payment_mode === 'Monthly' ? ' (10 months)' : ''}</span></div>
                     <div class="info-item"><label>Reference #</label><span>${s.reference_number || '—'}</span></div>
-                    <div class="info-item"><label>Tuition Fee</label><span>${s.tuition_fee ? '₱' + parseFloat(s.tuition_fee).toLocaleString() : '—'}</span></div>
-                    <div class="info-item"><label>Books Fee</label><span>${s.books_fee ? '₱' + parseFloat(s.books_fee).toLocaleString() : '—'}</span></div>
+                    <div class="info-item"><label>Tuition Fee</label><span>${formatCurrency(s.tuition_fee)}</span></div>
+                    <div class="info-item"><label>Books Fee</label><span>${formatCurrency(s.books_fee)}</span></div>
 
                     <div style="grid-column:1/-1;font-size:13px;font-weight:700;color:var(--blue-dark);text-transform:uppercase;letter-spacing:0.5px;border-bottom:2px solid var(--blue-light);padding-bottom:6px;margin-top:12px;margin-bottom:4px;">Documents</div>
 
@@ -523,28 +620,28 @@
                 const s = await apiGet(`api/registrar.php?action=detail&id=${enrollmentId}`);
                 // Populate hidden fields
                 document.getElementById('edit_enrollment_id').value = enrollmentId;
-                document.getElementById('edit_student_id').value   = s.student_id;
-                document.getElementById('edit_parent_id').value    = s.parent_id;
+                document.getElementById('edit_student_id').value = s.student_id;
+                document.getElementById('edit_parent_id').value = s.parent_id;
                 // Student fields
-                document.getElementById('edit_first_name').value        = s.first_name || '';
-                document.getElementById('edit_last_name').value         = s.last_name || '';
-                document.getElementById('edit_middle_name').value       = s.middle_name || '';
-                document.getElementById('edit_suffix').value            = s.suffix || '';
-                document.getElementById('edit_birth_date').value        = s.birth_date || '';
-                document.getElementById('edit_gender').value            = s.gender || '';
-                document.getElementById('edit_religion').value          = s.religion || '';
-                document.getElementById('edit_house_no_street').value   = s.house_no_street || '';
-                document.getElementById('edit_barangay').value          = s.barangay || '';
+                document.getElementById('edit_first_name').value = s.first_name || '';
+                document.getElementById('edit_last_name').value = s.last_name || '';
+                document.getElementById('edit_middle_name').value = s.middle_name || '';
+                document.getElementById('edit_suffix').value = s.suffix || '';
+                document.getElementById('edit_birth_date').value = s.birth_date || '';
+                document.getElementById('edit_gender').value = s.gender || '';
+                document.getElementById('edit_religion').value = s.religion || '';
+                document.getElementById('edit_house_no_street').value = s.house_no_street || '';
+                document.getElementById('edit_barangay').value = s.barangay || '';
                 document.getElementById('edit_city_municipality').value = s.city_municipality || '';
-                document.getElementById('edit_province').value          = s.province || '';
-                document.getElementById('edit_previous_school').value   = s.previous_school || '';
+                document.getElementById('edit_province').value = s.province || '';
+                document.getElementById('edit_previous_school').value = s.previous_school || '';
                 // Parent fields
-                document.getElementById('edit_parent_first_name').value  = s.parent_first_name || '';
-                document.getElementById('edit_parent_last_name').value   = s.parent_last_name || '';
+                document.getElementById('edit_parent_first_name').value = s.parent_first_name || '';
+                document.getElementById('edit_parent_last_name').value = s.parent_last_name || '';
                 document.getElementById('edit_parent_middle_name').value = s.parent_middle_name || '';
-                document.getElementById('edit_parent_contact').value     = s.parent_contact || '';
-                document.getElementById('edit_parent_email').value       = s.email || '';
-                document.getElementById('edit_parent_occupation').value  = s.occupation || '';
+                document.getElementById('edit_parent_contact').value = s.parent_contact || '';
+                document.getElementById('edit_parent_email').value = s.email || '';
+                document.getElementById('edit_parent_occupation').value = s.occupation || '';
 
                 document.getElementById('editModalOverlay').classList.add('active');
                 document.body.classList.add('modal-open');
@@ -594,6 +691,22 @@
             if (!dateStr) return '—';
             const d = new Date(dateStr);
             return d.toLocaleDateString('en-PH', { year: 'numeric', month: 'short', day: 'numeric' });
+        }
+
+        async function undoDrop(id) {
+            if (!confirm('Are you sure you want to undo the "Dropped" status for this student?')) return;
+
+            try {
+                const res = await apiPost('api/registrar.php?action=undo_drop', {
+                    enrollment_id: id,
+                    admin_id: sessionStorage.getItem('adminId')
+                });
+
+                showAlert('alert', '✅ ' + res.message, 'success');
+                loadStudents();
+            } catch (err) {
+                showAlert('alert', '❌ ' + err.message);
+            }
         }
 
         // Load student data when the page opens

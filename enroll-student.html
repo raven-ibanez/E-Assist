@@ -61,6 +61,13 @@
                             <label for="birth_date">Date of Birth *</label>
                             <input type="date" id="birth_date" name="birth_date" required>
                         </div>
+                        <div class="form-group" style="flex: 0.5;">
+                            <label for="age">Age</label>
+                            <input type="text" id="age" name="age" readonly style="background-color: #f3f4f6;">
+                        </div>
+                    </div>
+
+                    <div class="form-row">
                         <div class="form-group">
                             <label for="gender">Gender *</label>
                             <select id="gender" name="gender" required>
@@ -177,19 +184,36 @@
 
                 // Build the school year dropdown options
                 const sySelect = document.getElementById('school_year_id');
-                sySelect.innerHTML = '<option value="">-- Select School Year --</option>';
+                sySelect.innerHTML = '';
                 schoolYears.forEach(sy => {
-                    // Auto-select the current school year if none saved yet
-                    const isSaved = savedData.school_year_id == sy.id;
-                    const isCurrent = sy.is_current == 1 && !savedData.school_year_id;
-                    const sel = (isSaved || isCurrent) ? 'selected' : '';
-                    sySelect.innerHTML += `<option value="${sy.id}" ${sel}>${sy.label}</option>`;
+                    if (sy.is_current == 1) {
+                        sySelect.innerHTML += `<option value="${sy.id}" selected>${sy.label}</option>`;
+                    }
                 });
             } catch (err) {
                 console.warn('Failed to load grade levels, sessions, or school years');
             }
         }
         loadDropdowns();
+
+        // --- Calculate age from birthday ---
+        document.getElementById('birth_date').addEventListener('change', function () {
+            const birthDate = new Date(this.value);
+            const today = new Date();
+            let age = today.getFullYear() - birthDate.getFullYear();
+            const m = today.getMonth() - birthDate.getMonth();
+            if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) {
+                age--;
+            }
+            document.getElementById('age').value = isNaN(age) ? '' : age;
+        });
+
+        // Trigger age calculation if birth_date is already filled (from savedData)
+        if (savedData.birth_date) {
+            setTimeout(() => {
+                document.getElementById('birth_date').dispatchEvent(new Event('change'));
+            }, 100);
+        }
 
         // --- When the user selects a grade level, update the session/schedule dropdown ---
         document.getElementById('grade_level_id').addEventListener('change', function (e) {

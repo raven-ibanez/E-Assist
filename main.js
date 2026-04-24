@@ -123,3 +123,55 @@ function setLoading(buttonId, isLoading, originalText = 'Submit') {
     btn.disabled = isLoading;                                      // Disable/enable the button
     btn.textContent = isLoading ? '⏳ Please wait...' : originalText;  // Change button text
 }
+
+/**
+ * Centrally formats a student's full name: Last Suffix, First Middle
+ */
+function formatStudentName(s) {
+    if (!s) return '—';
+    const last = s.last_name || '';
+    const first = s.first_name || '';
+    const middle = s.middle_name || '';
+    const suffix = s.suffix || '';
+    
+    let name = last;
+    if (suffix) name += ` ${suffix}`;
+    name += `, ${first}`;
+    if (middle) name += ` ${middle}`;
+    return name;
+}
+
+/**
+ * Centrally formats a parent's full name: First Middle Last
+ */
+function formatParentName(p_first, p_last, p_middle = '') {
+    let name = p_first || '';
+    if (p_middle) name += ` ${p_middle}`;
+    if (p_last) name += ` ${p_last}`;
+    return name || '—';
+}
+
+/**
+ * Checks if a search term matches any part of a student's full name
+ */
+function nameMatches(s, search) {
+    if (!s || !search) return true;
+    const q = search.toLowerCase();
+    const first = (s.first_name || '').toLowerCase();
+    const last = (s.last_name || '').toLowerCase();
+    const middle = (s.middle_name || '').toLowerCase();
+    const suffix = (s.suffix || '').toLowerCase();
+    
+    return first.includes(q) || last.includes(q) || middle.includes(q) || suffix.includes(q) ||
+           (`${first} ${last}`).includes(q) || (`${last} ${first}`).includes(q);
+}
+
+/**
+ * Centrally formats currency with peso sign and .00 decimals
+ */
+function formatCurrency(amount) {
+    return '₱' + parseFloat(amount || 0).toLocaleString('en-PH', { 
+        minimumFractionDigits: 2, 
+        maximumFractionDigits: 2 
+    });
+}

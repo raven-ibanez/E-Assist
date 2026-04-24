@@ -78,6 +78,10 @@
                                 style="border-top: 1px solid rgba(255,255,255,0.3); margin-top: 6px; padding-top: 6px; display: flex; justify-content: space-between; font-size: 16px; font-weight: 900; color: #fbbf24;">
                                 <span>Pay Now:</span> <span id="display-initial">₱0</span>
                             </div>
+                            <div style="font-size:10px; opacity:0.8; margin-top: 10px; font-style: italic; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 6px; text-align: center;">
+                                * Tuition includes other fees but does NOT include uniforms.<br>
+                                * Monthly plan is fixed at 10 months only.
+                            </div>
                         </div>
                     </div>
 
@@ -96,8 +100,10 @@
                     </div>
 
                     <!-- Monthly info label — shown only when Monthly is selected -->
-                    <div id="monthly-info" style="display:none; background:#fef3c7; border-left:4px solid #f59e0b; border-radius:8px; padding:12px 16px; margin-bottom: 16px;">
-                        <p style="margin:0; font-size:13px; color:#92400e; font-weight:600;">📅 Monthly Payment Plan: <strong>10 months</strong> to pay — starting from enrollment approval.</p>
+                    <div id="monthly-info"
+                        style="display:none; background:#fef3c7; border-left:4px solid #f59e0b; border-radius:8px; padding:12px 16px; margin-bottom: 16px;">
+                        <p style="margin:0; font-size:13px; color:#92400e; font-weight:600;">📅 Fixed Installment Plan:
+                            <strong>10 months</strong> to pay only — starting from enrollment approval.</p>
                     </div>
 
                     <!-- Hidden fields for fee amounts (submitted with the form) -->
@@ -146,17 +152,17 @@
                     <div class="form-row">
                         <div class="form-group">
                             <label for="psa_birth_cert">PSA Birth Certificate</label>
-                            <input type="file" id="psa_birth_cert" name="psa_birth_cert" accept="image/*,.pdf">
+                            <input type="file" id="psa_birth_cert" name="psa_birth_cert" accept="image/png, image/jpeg, image/webp">
                             <small style="color: #666; font-size: 11px;">Optional (To follow)</small>
                         </div>
                         <div class="form-group">
                             <label for="sf10_document">SF10 (Transferees)</label>
-                            <input type="file" id="sf10_document" name="sf10_document" accept="image/*,.pdf">
+                            <input type="file" id="sf10_document" name="sf10_document" accept="image/png, image/jpeg, image/webp">
                             <small style="color: #666; font-size: 11px;">Optional (To follow)</small>
                         </div>
                         <div class="form-group">
-                            <label for="picture_2x2">2x2 Picture</label>
-                            <input type="file" id="picture_2x2" name="picture_2x2" accept="image/*">
+                            <label for="picture_2x2">2x2 Picture *</label>
+                            <input type="file" id="picture_2x2" name="picture_2x2" accept="image/png, image/jpeg, image/webp" required>
                             <small style="color: #666; font-size: 11px;">Required</small>
                         </div>
                     </div>
@@ -255,10 +261,10 @@
 
             const initialPayment = initial_tuition + books;
 
-            document.getElementById('display-tuition').textContent = '₱' + tuition.toLocaleString();
-            document.getElementById('display-books').textContent = '₱' + books.toLocaleString();
-            document.getElementById('display-total').textContent = '₱' + (tuition + books).toLocaleString();
-            document.getElementById('display-initial').textContent = '₱' + initialPayment.toLocaleString();
+            document.getElementById('display-tuition').textContent = '₱' + tuition.toLocaleString('en-PH', { minimumFractionDigits: 2 });
+            document.getElementById('display-books').textContent = '₱' + books.toLocaleString('en-PH', { minimumFractionDigits: 2 });
+            document.getElementById('display-total').textContent = '₱' + (tuition + books).toLocaleString('en-PH', { minimumFractionDigits: 2 });
+            document.getElementById('display-initial').textContent = '₱' + initialPayment.toLocaleString('en-PH', { minimumFractionDigits: 2 });
 
             // Update hidden fields so full fees get submitted to the server
             // initial_payment is what actually gets paid now.
@@ -291,7 +297,7 @@
 
             // Show the payment instructions
             instructionBox.style.display = 'block';
-            
+
             if (name === 'Cash') {
                 refGroup.style.display = 'none';
                 refInput.required = false;
@@ -300,7 +306,7 @@
             } else {
                 refGroup.style.display = 'block';
                 refInput.required = true;
-                
+
                 if (name === 'Bank Transfer') {
                     transferDetails.style.display = 'block';
                     document.getElementById('method-text').textContent = 'bank details are to be followed';
@@ -342,27 +348,27 @@
 
                 // Collect receipt data before clearing sessionStorage
                 const paymentMethodName = document.querySelector('.payment-card.selected .payment-name')?.textContent || '';
-                const paymentModeName   = document.querySelector('input[name="payment_mode"]:checked')?.value || '';
-                const referenceNum      = document.getElementById('reference_number')?.value || 'N/A';
-                const totalText         = document.getElementById('display-total')?.textContent || '';
-                const initialText       = document.getElementById('display-initial')?.textContent || '';
-                const tuitionText       = document.getElementById('display-tuition')?.textContent || '';
-                const booksText         = document.getElementById('display-books')?.textContent || '';
-                const gradeLevel        = currentGradeName || '';
+                const paymentModeName = document.querySelector('input[name="payment_mode"]:checked')?.value || '';
+                const referenceNum = document.getElementById('reference_number')?.value || 'N/A';
+                const totalText = document.getElementById('display-total')?.textContent || '';
+                const initialText = document.getElementById('display-initial')?.textContent || '';
+                const tuitionText = document.getElementById('display-tuition')?.textContent || '';
+                const booksText = document.getElementById('display-books')?.textContent || '';
+                const gradeLevel = currentGradeName || '';
 
                 // Clear saved data and go to success page with receipt params
                 sessionStorage.removeItem('enroll_data');
                 const params = new URLSearchParams({
-                    name:      result.name,
-                    id:        result.student_no,
-                    method:    paymentMethodName,
-                    mode:      paymentModeName,
-                    ref:       referenceNum,
-                    total:     totalText,
-                    paid:      initialText,
-                    tuition:   tuitionText,
-                    books:     booksText,
-                    grade:     gradeLevel
+                    name: result.name,
+                    id: result.student_no,
+                    method: paymentMethodName,
+                    mode: paymentModeName,
+                    ref: referenceNum,
+                    total: totalText,
+                    paid: initialText,
+                    tuition: tuitionText,
+                    books: booksText,
+                    grade: gradeLevel
                 });
                 window.location.href = `success.html?${params.toString()}`;
             } catch (err) {

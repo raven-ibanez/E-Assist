@@ -410,6 +410,29 @@ textarea:focus {
     width: 100%;
 }
 
+/* --- Step Navigation Buttons --- */
+.btn-next {
+    background: var(--maroon-dark);
+    color: var(--white);
+}
+
+.btn-next:hover {
+    background: #5a0d24;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(122, 18, 48, 0.3);
+}
+
+.btn-prev {
+    background: var(--gray-100);
+    color: var(--gray-700);
+    border: 1px solid var(--gray-300);
+}
+
+.btn-prev:hover {
+    background: var(--gray-300);
+    transform: translateY(-2px);
+}
+
 /* --- Enroll Now Button (as per image) --- */
 .btn-enroll {
     display: inline-block;

@@ -53,12 +53,12 @@
 
                     <div class="form-row">
                         <div class="form-group">
-                            <label for="parent_first_name">First Name *</label>
-                            <input type="text" id="parent_first_name" name="parent_first_name" required>
-                        </div>
-                        <div class="form-group">
                             <label for="parent_last_name">Last Name *</label>
                             <input type="text" id="parent_last_name" name="parent_last_name" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="parent_first_name">First Name *</label>
+                            <input type="text" id="parent_first_name" name="parent_first_name" required>
                         </div>
                         <div class="form-group">
                             <label for="parent_middle_name">Middle Name</label>
@@ -87,12 +87,16 @@
 
                     <div class="form-group">
                         <label for="parent_contact">Contact Number *</label>
-                        <input type="tel" id="parent_contact" name="parent_contact" placeholder="09XXXXXXXXX" required>
+                        <input type="tel" id="parent_contact" name="parent_contact" placeholder="09123456789" 
+                            pattern="[0-9]{11}" maxlength="11" required title="Please enter exactly 11 digits (e.g., 09123456789)">
+                        <small style="color: #666; font-size: 11px;">Must be exactly 11 digits.</small>
                     </div>
 
                     <div class="form-group">
                         <label for="email">Email Address *</label>
-                        <input type="email" id="email" name="email" placeholder="parent@email.com" required>
+                        <input type="email" id="email" name="email" placeholder="example@gmail.com" 
+                            pattern="[a-zA-Z0-9._%+-]+@(gmail\.com|GMAIL\.COM|outlook\.com|OUTLOOK\.COM|yahoo\.com|YAHOO\.COM|hotmail\.com|HOTMAIL\.COM|icloud\.com|ICLOUD\.COM)$" 
+                            required title="Please use a legitimate email provider (e.g., @gmail.com, @outlook.com, @yahoo.com)">
                         <div style="background: #fef3c7; padding: 10px 14px; border-radius: 8px; border-left: 4px solid #f59e0b; margin-top: 8px;">
                             <p style="font-size: 12px; color: #92400e; font-weight: 600; margin: 0;">⚠️ Please make sure this email is correct — your enrollment status will be sent to this email.</p>
                         </div>
@@ -142,9 +146,33 @@
         }
         loadDropdowns();
 
+        // --- Restrict Contact Number to digits only ---
+        document.getElementById('parent_contact').addEventListener('input', function(e) {
+            this.value = this.value.replace(/[^0-9]/g, '');
+        });
+
         // --- When the form is submitted, save data and go to Step 3 ---
         document.getElementById('step2Form').addEventListener('submit', function(e) {
             e.preventDefault();
+
+            // Manual check for email domain (Double-check for security and clarity)
+            const emailInput = document.getElementById('email');
+            const emailValue = emailInput.value.toLowerCase();
+            const allowedDomains = ['gmail.com', 'outlook.com', 'yahoo.com', 'hotmail.com', 'icloud.com'];
+            const domain = emailValue.split('@')[1];
+
+            if (!allowedDomains.includes(domain)) {
+                showAlert('Error: Please use a legitimate email provider (@gmail.com, @outlook.com, etc.)', 'error');
+                emailInput.style.borderColor = 'var(--red)';
+                emailInput.focus();
+                return;
+            }
+
+            // Also check general form validity (pattern, required, etc.)
+            if (!this.checkValidity()) {
+                return;
+            }
+
             const formData = new FormData(e.target);
             const data = JSON.parse(sessionStorage.getItem('enroll_data') || '{}');
             formData.forEach((value, key) => data[key] = value);
