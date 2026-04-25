@@ -7,16 +7,10 @@
     <title>Admin Dashboard — Enrollment System</title>
     <link rel="stylesheet" href="style.css">
     <style>
-        /* Tab Navigation */
-        .tab-nav {
-            display: flex;
-            gap: 0;
-            margin-bottom: 28px;
-            background: var(--white);
-            border-radius: var(--radius);
-            box-shadow: var(--shadow);
-            overflow: hidden;
-        }
+        /* Legacy tab compat kept for JS */
+        .tab-nav { display:none; }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; animation: fadeInTab 0.25s ease; }
 
         .tab-btn {
             flex: 1;
@@ -235,108 +229,119 @@
             .add-form .form-row {
                 grid-template-columns: 1fr;
             }
+            
+            .employee-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .employee-card {
+                flex-wrap: wrap;
+            }
         }
     </style>
 </head>
 
-<body class="theme-v2">
+<body style="margin:0;padding:0;background:#f4f6fa;font-family:'Inter',sans-serif;">
 
-    <!-- Navbar -->
-    <nav class="v2-nav">
-        <a href="index.html" class="btn-v2-nav">← Back to Home</a>
-        <button onclick="logout()" class="btn-v2-nav">[→ Logout</button>
-    </nav>
+<div class="dash-layout">
 
-    <div class="v2-container">
-        <!-- Header -->
-        <div class="v2-header">
-            <img src="assets/logo.png" alt="Logo" class="v2-header-logo"
-                onerror="this.src=''; this.alt='🎓'; this.style.fontSize='50px';">
-            <h1 id="adminUserLabel">Admin Dashboard</h1>
-            <p>Brother Sun Sister Moon Academy Inc.</p>
+    <!-- SIDEBAR -->
+    <aside class="dash-sidebar" id="dashSidebar">
+        <img src="logo.png" alt="Logo" class="dash-sidebar-logo" onerror="this.style.display='none';document.getElementById('sidebarLogoFallback').style.display='block';">
+        <span id="sidebarLogoFallback" style="display:none;font-size:24px;margin-bottom:28px;">🎓</span>
+
+        <div class="dash-nav-items">
+            <button class="dash-nav-item active" id="nav-enrollments" onclick="switchTab('enrollments')">
+                <span class="dash-nav-icon">📋</span>
+                <span class="dash-nav-label">Applications</span>
+            </button>
+            <button class="dash-nav-item" id="nav-payments" onclick="switchTab('payments')">
+                <span class="dash-nav-icon">💳</span>
+                <span class="dash-nav-label">Payments</span>
+            </button>
+            <button class="dash-nav-item" id="nav-enrolled" onclick="switchTab('enrolled')">
+                <span class="dash-nav-icon">✅</span>
+                <span class="dash-nav-label">Enrolled</span>
+            </button>
+            <button class="dash-nav-item" id="nav-employees" onclick="switchTab('employees')">
+                <span class="dash-nav-icon">👥</span>
+                <span class="dash-nav-label">Employees</span>
+            </button>
+            <button class="dash-nav-item" id="nav-logs" onclick="switchTab('logs')">
+                <span class="dash-nav-icon">📜</span>
+                <span class="dash-nav-label">Logs</span>
+            </button>
         </div>
 
-        <!-- Tab Navigation -->
-        <div class="tab-nav" style="border: 1px solid var(--gray-400); box-shadow: none;">
-            <button class="tab-btn active" onclick="switchTab('enrollments')">
-                📋 <span class="tab-label">Student Applications</span>
-            </button>
-            <button class="tab-btn" onclick="switchTab('payments')">
-                💳 <span class="tab-label">Student Payments</span>
-            </button>
-            <button class="tab-btn" onclick="switchTab('enrolled')">
-                ✅ <span class="tab-label">Enrolled Students</span>
-            </button>
-            <button class="tab-btn" onclick="switchTab('employees')">
-                👥 <span class="tab-label">Employee Accounts</span>
-            </button>
-            <button class="tab-btn" onclick="switchTab('logs')">
-                📜 <span class="tab-label">Transaction Logs</span>
+        <div class="dash-sidebar-bottom">
+            <a href="index.html" class="dash-nav-item">
+                <span class="dash-nav-icon">🏠</span>
+                <span class="dash-nav-label">Home</span>
+            </a>
+            <button class="dash-nav-item" onclick="logout()" style="color:#f87171;">
+                <span class="dash-nav-icon">🚪</span>
+                <span class="dash-nav-label">Logout</span>
             </button>
         </div>
+    </aside>
+
+    <!-- MAIN -->
+    <div class="dash-main">
+        <!-- Top Bar -->
+        <header class="dash-topbar">
+            <div class="dash-topbar-left">
+                <span class="dash-topbar-title" id="adminUserLabel">Admin Dashboard</span>
+                <span class="dash-topbar-sub">Brother Sun Sister Moon Academy Inc.</span>
+            </div>
+            <div class="dash-topbar-right">
+                <div class="dash-user-chip">
+                    <div class="dash-user-avatar" id="adminAvatarInitial">A</div>
+                    <span id="adminUserChip">Admin</span>
+                </div>
+            </div>
+        </header>
+
+        <!-- Content -->
+        <main class="dash-content">
 
         <!-- ==================== TAB 1: APPLICATIONS ==================== -->
         <div class="tab-content active" id="tab-enrollments">
-            <!-- Stats -->
-            <div class="v2-stats">
-                <div class="v2-stat-card">
-                    <div class="v2-stat-icon">📋</div>
-                    <div class="v2-stat-info">
-                        <span class="v2-stat-label">Total Applications</span>
-                        <span class="v2-stat-value" id="enrollTotalCount">0</span>
-                    </div>
+            <div class="dash-stats">
+                <div class="dash-stat-card">
+                    <div class="dash-stat-icon-wrap blue">📋</div>
+                    <div class="dash-stat-body"><span class="dash-stat-label">Total Applications</span><span class="dash-stat-value" id="enrollTotalCount">0</span></div>
                 </div>
-                <div class="v2-stat-card">
-                    <div class="v2-stat-icon">📝</div>
-                    <div class="v2-stat-info">
-                        <span class="v2-stat-label">Pending</span>
-                        <span class="v2-stat-value" id="enrollPendingCount">0</span>
-                    </div>
+                <div class="dash-stat-card">
+                    <div class="dash-stat-icon-wrap yellow">📝</div>
+                    <div class="dash-stat-body"><span class="dash-stat-label">Pending</span><span class="dash-stat-value" id="enrollPendingCount">0</span></div>
                 </div>
-                <div class="v2-stat-card">
-                    <div class="v2-stat-icon">👀</div>
-                    <div class="v2-stat-info">
-                        <span class="v2-stat-label">For Payment Review</span>
-                        <span class="v2-stat-value" id="enrollPaymentCount">0</span>
-                    </div>
+                <div class="dash-stat-card">
+                    <div class="dash-stat-icon-wrap purple">👀</div>
+                    <div class="dash-stat-body"><span class="dash-stat-label">For Payment Review</span><span class="dash-stat-value" id="enrollPaymentCount">0</span></div>
                 </div>
-                <div class="v2-stat-card">
-                    <div class="v2-stat-icon">🔍</div>
-                    <div class="v2-stat-info">
-                        <span class="v2-stat-label">For Application Review</span>
-                        <span class="v2-stat-value" id="enrollAppCount">0</span>
-                    </div>
+                <div class="dash-stat-card">
+                    <div class="dash-stat-icon-wrap purple">🔍</div>
+                    <div class="dash-stat-body"><span class="dash-stat-label">For App Review</span><span class="dash-stat-value" id="enrollAppCount">0</span></div>
                 </div>
-                <div class="v2-stat-card">
-                    <div class="v2-stat-icon">🚫</div>
-                    <div class="v2-stat-info">
-                        <span class="v2-stat-label">Dropped</span>
-                        <span class="v2-stat-value" id="enrollDroppedCount">0</span>
-                    </div>
+                <div class="dash-stat-card">
+                    <div class="dash-stat-icon-wrap orange">🚫</div>
+                    <div class="dash-stat-body"><span class="dash-stat-label">Dropped</span><span class="dash-stat-value" id="enrollDroppedCount">0</span></div>
                 </div>
-                <div class="v2-stat-card">
-                    <div class="v2-stat-icon">❌</div>
-                    <div class="v2-stat-info">
-                        <span class="v2-stat-label">Declined</span>
-                        <span class="v2-stat-value" id="enrollDeclinedCount">0</span>
-                    </div>
+                <div class="dash-stat-card">
+                    <div class="dash-stat-icon-wrap red">❌</div>
+                    <div class="dash-stat-body"><span class="dash-stat-label">Declined</span><span class="dash-stat-value" id="enrollDeclinedCount">0</span></div>
                 </div>
             </div>
 
             <div id="enrollAlert" class="alert"></div>
 
-            <!-- Table -->
-            <div class="v2-table-container">
-                <div class="v2-table-title"
-                    style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
-                    <div>Active Applications & Dropped Records</div>
-
-                    <div class="search-bar" style="margin-bottom:0;">
-                        <input type="text" id="enrollSearchInput" placeholder="🔍 Search name..."
-                            oninput="filterStudents()"
-                            style="padding:8px; border:1px solid var(--gray-400); border-radius:6px; background:transparent;">
-                        <select id="enrollFilterStatus" onchange="filterStudents()" class="v2-action-select">
-                            <option value="All">All Application Status</option>
+            <div class="dash-table-card">
+                <div class="dash-table-header">
+                    <span class="dash-table-title">Active Applications &amp; Dropped Records</span>
+                    <div class="dash-filter-row">
+                        <input type="text" id="enrollSearchInput" placeholder="🔍 Search name..." oninput="filterStudents()">
+                        <select id="enrollFilterStatus" onchange="filterStudents()">
+                            <option value="All">All Status</option>
                             <option value="Pending">Pending</option>
                             <option value="For Payment Review">For Payment Review</option>
                             <option value="For Application Review">For Application Review</option>
@@ -346,26 +351,14 @@
                         </select>
                     </div>
                 </div>
-
-                <div class="v2-table-wrapper">
-                    <table class="v2-table">
-                        <thead>
-                            <tr>
-                                <th>Student ID</th>
-                                <th>Full Name</th>
-                                <th>Grade Level</th>
-                                <th>Parent</th>
-                                <th>Contact</th>
-                                <th>Date Applied</th>
-                                <th>Status</th>
-                                <th>Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody id="studentsTableBody">
-                            <tr>
-                                <td colspan="8" style="text-align:center;">Loading...</td>
-                            </tr>
-                        </tbody>
+                <div class="dash-table-scroll">
+                    <table class="dash-table">
+                        <thead><tr>
+                            <th>Student ID</th><th>Full Name</th><th>Grade</th>
+                            <th>Parent</th><th>Contact</th><th>Date Applied</th>
+                            <th>Status</th><th>Actions</th>
+                        </tr></thead>
+                        <tbody id="studentsTableBody"><tr><td colspan="8" style="text-align:center;padding:40px;">Loading...</td></tr></tbody>
                     </table>
                 </div>
             </div>
@@ -373,52 +366,27 @@
 
         <!-- ==================== TAB 1.5: ENROLLED STUDENTS ==================== -->
         <div class="tab-content" id="tab-enrolled">
-            <div class="v2-stats" style="margin-bottom: 24px;">
-                <div class="v2-stat-card">
-                    <div class="v2-stat-icon">✅</div>
-                    <div class="v2-stat-info">
-                        <span class="v2-stat-label">Currently Enrolled</span>
-                        <span class="v2-stat-value" id="enrolledMasterCount">0</span>
-                    </div>
+            <div class="dash-stats" style="margin-bottom:24px;">
+                <div class="dash-stat-card">
+                    <div class="dash-stat-icon-wrap green">✅</div>
+                    <div class="dash-stat-body"><span class="dash-stat-label">Currently Enrolled</span><span class="dash-stat-value" id="enrolledMasterCount">0</span></div>
                 </div>
-                <div class="v2-stat-card">
-                    <div class="v2-stat-icon">🔴</div>
-                    <div class="v2-stat-info">
-                        <span class="v2-stat-label">Documents Pending</span>
-                        <span class="v2-stat-value" id="enrolledPendingDocsCount">0</span>
-                    </div>
+                <div class="dash-stat-card">
+                    <div class="dash-stat-icon-wrap red">🔴</div>
+                    <div class="dash-stat-body"><span class="dash-stat-label">Documents Pending</span><span class="dash-stat-value" id="enrolledPendingDocsCount">0</span></div>
                 </div>
             </div>
-
-            <div class="v2-table-container">
-                <div class="v2-table-title"
-                    style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
-                    <div>Enrolled Masterlist</div>
-                    <div class="search-bar" style="margin-bottom:0;">
-                        <input type="text" id="enrolledSearchInput" placeholder="🔍 Search name..."
-                            oninput="filterEnrolledStudents()"
-                            style="padding:8px; border:1px solid var(--gray-400); border-radius:6px; background:transparent;">
+            <div class="dash-table-card">
+                <div class="dash-table-header">
+                    <span class="dash-table-title">Enrolled Masterlist</span>
+                    <div class="dash-filter-row">
+                        <input type="text" id="enrolledSearchInput" placeholder="🔍 Search name..." oninput="filterEnrolledStudents()">
                     </div>
                 </div>
-                <div class="v2-table-wrapper">
-                    <table class="v2-table">
-                        <thead>
-                            <tr>
-                                <th>Student ID</th>
-                                <th>Full Name</th>
-                                <th>Grade Level</th>
-                                <th>Parent</th>
-                                <th>Contact</th>
-                                <th>Date Applied</th>
-                                <th>Status</th>
-                                <th>Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody id="enrolledTableBody">
-                            <tr>
-                                <td colspan="8" style="text-align:center;">Loading...</td>
-                            </tr>
-                        </tbody>
+                <div class="dash-table-scroll">
+                    <table class="dash-table">
+                        <thead><tr><th>Student ID</th><th>Full Name</th><th>Grade</th><th>Parent</th><th>Contact</th><th>Date Applied</th><th>Status</th><th>Actions</th></tr></thead>
+                        <tbody id="enrolledTableBody"><tr><td colspan="8" style="text-align:center;padding:40px;">Loading...</td></tr></tbody>
                     </table>
                 </div>
             </div>
@@ -427,98 +395,27 @@
         <!-- ==================== TAB 2: PAYMENTS ==================== -->
         <div class="tab-content" id="tab-payments">
             <div id="payAlert" class="alert"></div>
-
-            <!-- Payment Summary Stats -->
-            <div class="v2-stats" id="paymentStats" style="margin-bottom: 24px;">
-                <div class="v2-stat-card">
-                    <div class="v2-stat-icon">💳</div>
-                    <div class="v2-stat-info">
-                        <span class="v2-stat-label">Total Records</span>
-                        <span class="v2-stat-value" id="payTotalCount">0</span>
-                    </div>
-                </div>
-                <div class="v2-stat-card">
-                    <div class="v2-stat-icon">✅</div>
-                    <div class="v2-stat-info">
-                        <span class="v2-stat-label">Enrolled</span>
-                        <span class="v2-stat-value" id="payEnrolledCount">0</span>
-                    </div>
-                </div>
-                <div class="v2-stat-card">
-                    <div class="v2-stat-icon">💸</div>
-                    <div class="v2-stat-info">
-                        <span class="v2-stat-label">Refunded</span>
-                        <span class="v2-stat-value" id="payRefundedCount">0</span>
-                    </div>
-                </div>
-                <div class="v2-stat-card">
-                    <div class="v2-stat-icon">📱</div>
-                    <div class="v2-stat-info">
-                        <span class="v2-stat-label">GCash</span>
-                        <span class="v2-stat-value" id="payGcashCount">0</span>
-                    </div>
-                </div>
-                <div class="v2-stat-card">
-                    <div class="v2-stat-icon">💵</div>
-                    <div class="v2-stat-info">
-                        <span class="v2-stat-label">Cash</span>
-                        <span class="v2-stat-value" id="payCashCount">0</span>
-                    </div>
-                </div>
-                <div class="v2-stat-card">
-                    <div class="v2-stat-icon">🏦</div>
-                    <div class="v2-stat-info">
-                        <span class="v2-stat-label">Bank Transfer</span>
-                        <span class="v2-stat-value" id="payBankCount">0</span>
-                    </div>
-                </div>
+            <div class="dash-stats" id="paymentStats" style="margin-bottom:24px;">
+                <div class="dash-stat-card"><div class="dash-stat-icon-wrap blue">💳</div><div class="dash-stat-body"><span class="dash-stat-label">Total Records</span><span class="dash-stat-value" id="payTotalCount">0</span></div></div>
+                <div class="dash-stat-card"><div class="dash-stat-icon-wrap green">✅</div><div class="dash-stat-body"><span class="dash-stat-label">Enrolled</span><span class="dash-stat-value" id="payEnrolledCount">0</span></div></div>
+                <div class="dash-stat-card"><div class="dash-stat-icon-wrap purple">💸</div><div class="dash-stat-body"><span class="dash-stat-label">Refunded</span><span class="dash-stat-value" id="payRefundedCount">0</span></div></div>
+                <div class="dash-stat-card"><div class="dash-stat-icon-wrap blue">📱</div><div class="dash-stat-body"><span class="dash-stat-label">GCash</span><span class="dash-stat-value" id="payGcashCount">0</span></div></div>
+                <div class="dash-stat-card"><div class="dash-stat-icon-wrap green">💵</div><div class="dash-stat-body"><span class="dash-stat-label">Cash</span><span class="dash-stat-value" id="payCashCount">0</span></div></div>
+                <div class="dash-stat-card"><div class="dash-stat-icon-wrap yellow">🏦</div><div class="dash-stat-body"><span class="dash-stat-label">Bank Transfer</span><span class="dash-stat-value" id="payBankCount">0</span></div></div>
             </div>
-
-            <div class="v2-table-container">
-                <div class="v2-table-title"
-                    style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
-                    <div>Payment Records</div>
-                    <div class="search-bar" style="margin-bottom:0;">
-                        <input type="text" id="paySearchInput" placeholder="🔍 Search ref..." oninput="filterPayments()"
-                            style="padding:8px; border:1px solid var(--gray-400); border-radius:6px; background:transparent;">
-                        <select id="filterPaymentMethod" onchange="filterPayments()" class="v2-action-select">
-                            <option value="All">All Methods</option>
-                            <option value="GCash">GCash</option>
-                            <option value="Cash">Cash</option>
-                            <option value="Bank Transfer">Bank Transfer</option>
-                            <option value="None">None</option>
-                        </select>
-                        <select id="payFilterStatus" onchange="filterPayments()" class="v2-action-select">
-                            <option value="All">All Status</option>
-                            <option value="Pending">Pending</option>
-                            <option value="For Payment Review">For Payment Review</option>
-                            <option value="Enrolled">Enrolled</option>
-                            <option value="Enrolled (Doc. Pending)">Enrolled (Doc. Pending)</option>
-                            <option value="Refunded">Refunded</option>
-                        </select>
+            <div class="dash-table-card">
+                <div class="dash-table-header">
+                    <span class="dash-table-title">Payment Records</span>
+                    <div class="dash-filter-row">
+                        <input type="text" id="paySearchInput" placeholder="🔍 Search ref..." oninput="filterPayments()">
+                        <select id="filterPaymentMethod" onchange="filterPayments()"><option value="All">All Methods</option><option value="GCash">GCash</option><option value="Cash">Cash</option><option value="Bank Transfer">Bank Transfer</option><option value="None">None</option></select>
+                        <select id="payFilterStatus" onchange="filterPayments()"><option value="All">All Status</option><option value="Pending">Pending</option><option value="For Payment Review">For Payment Review</option><option value="Enrolled">Enrolled</option><option value="Enrolled (Doc. Pending)">Enrolled (Doc. Pending)</option><option value="Refunded">Refunded</option></select>
                     </div>
                 </div>
-
-                <div class="v2-table-wrapper">
-                    <table class="v2-table">
-                        <thead>
-                            <tr>
-                                <th>Student ID</th>
-                                <th>Full Name</th>
-                                <th>Method</th>
-                                <th>Mode</th>
-                                <th>Total Amount</th>
-                                <th>Paid</th>
-                                <th>Balance</th>
-                                <th>Status</th>
-                                <th>Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody id="paymentsTableBody">
-                            <tr>
-                                <td colspan="10" style="text-align:center;">Loading...</td>
-                            </tr>
-                        </tbody>
+                <div class="dash-table-scroll">
+                    <table class="dash-table">
+                        <thead><tr><th>Student ID</th><th>Full Name</th><th>Method</th><th>Mode</th><th>Total</th><th>Paid</th><th>Balance</th><th>Status</th><th>Actions</th></tr></thead>
+                        <tbody id="paymentsTableBody"><tr><td colspan="9" style="text-align:center;padding:40px;">Loading...</td></tr></tbody>
                     </table>
                 </div>
             </div>
@@ -527,107 +424,53 @@
         <!-- ==================== TAB 3: EMPLOYEE ACCOUNTS ==================== -->
         <div class="tab-content" id="tab-employees">
             <div id="empAlert" class="alert"></div>
-
-            <div class="v2-table-container">
-                <div class="v2-table-title"
-                    style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
-                    <div>Employee Accounts</div>
-                    <div style="display:flex; gap:12px; align-items:center;">
-                        <input type="text" id="empSearchInput" placeholder="🔍 Search user..."
-                            oninput="filterEmployees()"
-                            style="padding:8px; border:1px solid var(--gray-400); border-radius:6px; background:transparent;">
-                        <select id="empFilterRole" onchange="filterEmployees()" class="v2-action-select">
-                            <option value="All">All Roles</option>
-                            <option value="admin">Admin</option>
-                            <option value="registrar">Registrar</option>
-                            <option value="cashier">Cashier</option>
-                        </select>
-                        <select id="empFilterStatus" onchange="filterEmployees()" class="v2-action-select">
-                            <option value="All">All Status</option>
-                            <option value="1">Active</option>
-                            <option value="0">Inactive</option>
-                        </select>
-                        <button class="btn btn-primary" onclick="toggleAddForm()"
-                            style="background:var(--maroon-dark); border:none; padding:8px 16px; border-radius:6px; color:white;">+
-                            Add Employee</button>
+            <div class="dash-table-card">
+                <div class="dash-table-header">
+                    <span class="dash-table-title">Employee Accounts</span>
+                    <div class="dash-filter-row">
+                        <input type="text" id="empSearchInput" placeholder="🔍 Search user..." oninput="filterEmployees()">
+                        <select id="empFilterRole" onchange="filterEmployees()"><option value="All">All Roles</option><option value="admin">Admin</option><option value="registrar">Registrar</option><option value="cashier">Cashier</option></select>
+                        <select id="empFilterStatus" onchange="filterEmployees()"><option value="All">All Status</option><option value="1">Active</option><option value="0">Inactive</option></select>
+                        <button class="btn-dash-primary" onclick="toggleAddForm()">+ Add Employee</button>
                     </div>
                 </div>
-
-                <div class="add-form" id="addEmployeeForm"
-                    style="background:transparent; border:1px dashed var(--maroon-dark); margin:0 24px 24px 24px;">
-                    <h4 style="margin-bottom:12px; color:var(--maroon-dark);">Create New Account</h4>
-                    <div class="form-row">
-                        <div>
-                            <label style="color:var(--maroon-dark);">Username</label>
-                            <input type="text" id="newUsername" placeholder="e.g. registrar_jane"
-                                style="background:transparent; border:1px solid var(--gray-400);">
-                        </div>
-                        <div>
-                            <label style="color:var(--maroon-dark);">Password</label>
-                            <input type="password" id="newPassword" placeholder="Strong password"
-                                style="background:transparent; border:1px solid var(--gray-400);">
-                        </div>
-                        <div>
-                            <label style="color:var(--maroon-dark);">Role</label>
-                            <select id="newRole" class="v2-action-select"
-                                style="width:100%; border:1px solid var(--gray-400);"></select>
-                        </div>
-                        <div>
-                            <button class="btn btn-primary btn-full" onclick="addEmployee()"
-                                style="background:var(--maroon-dark);">Create</button>
-                        </div>
+                <div class="dash-add-form" id="addEmployeeForm">
+                    <h4 style="margin-bottom:12px;font-size:14px;font-weight:700;">Create New Account</h4>
+                    <div class="dash-add-form-row">
+                        <div><label style="font-size:12px;font-weight:600;display:block;margin-bottom:4px;">Username</label><input type="text" id="newUsername" placeholder="e.g. registrar_jane"></div>
+                        <div><label style="font-size:12px;font-weight:600;display:block;margin-bottom:4px;">Password</label><input type="password" id="newPassword" placeholder="Strong password"></div>
+                        <div><label style="font-size:12px;font-weight:600;display:block;margin-bottom:4px;">Role</label><select id="newRole" style="width:100%;"></select></div>
+                        <div><button class="btn-dash-primary" onclick="addEmployee()" style="width:100%;">Create</button></div>
                     </div>
                 </div>
-
-                <div class="employee-grid" id="employeeGrid" style="padding:0 24px;">
-                    <p style="text-align:center;">Loading...</p>
-                </div>
+                <div class="dash-employee-grid" id="employeeGrid"><p style="text-align:center;padding:20px;">Loading...</p></div>
             </div>
         </div>
 
         <!-- ==================== TAB 4: TRANSACTION LOGS ==================== -->
         <div class="tab-content" id="tab-logs">
             <div id="logsAlert" class="alert"></div>
-
-            <div class="v2-table-container">
-                <div class="v2-table-title"
-                    style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
-                    <div>System Transaction & Change Logs</div>
-                    <div style="display:flex; gap:12px; align-items:center;">
-                        <input type="text" id="logsSearchInput" placeholder="🔍 Search logs..." oninput="filterLogs()"
-                            style="padding:8px; border:1px solid var(--gray-400); border-radius:6px; background:transparent; width: 250px;">
-                        <select id="logsFilterAction" onchange="filterLogs()" class="v2-action-select">
-                            <option value="All">All Actions</option>
-                            <option value="Application Review">Application Review</option>
-                            <option value="Payment Review">Payment Review</option>
-                            <option value="Update Student">Update Student</option>
-                            <option value="Upload Document">Upload Document</option>
-                        </select>
+            <div class="dash-table-card">
+                <div class="dash-table-header">
+                    <span class="dash-table-title">System Transaction &amp; Change Logs</span>
+                    <div class="dash-filter-row">
+                        <input type="text" id="logsSearchInput" placeholder="🔍 Search logs..." oninput="filterLogs()">
+                        <select id="logsFilterAction" onchange="filterLogs()"><option value="All">All Actions</option><option value="Application Review">Application Review</option><option value="Payment Review">Payment Review</option><option value="Update Student">Update Student</option><option value="Upload Document">Upload Document</option></select>
                     </div>
                 </div>
-
-                <div class="v2-table-wrapper">
-                    <table class="v2-table">
-                        <thead>
-                            <tr>
-                                <th>Date & Time</th>
-                                <th>Employee</th>
-                                <th>Role</th>
-                                <th>Action Type</th>
-                                <th>Target Student</th>
-                                <th>Details</th>
-                            </tr>
-                        </thead>
-                        <tbody id="logsTableBody">
-                            <tr>
-                                <td colspan="6" style="text-align:center;">Loading...</td>
-                            </tr>
-                        </tbody>
+                <div class="dash-table-scroll">
+                    <table class="dash-table">
+                        <thead><tr><th>Date &amp; Time</th><th>Employee</th><th>Role</th><th>Action Type</th><th>Target Student</th><th>Details</th></tr></thead>
+                        <tbody id="logsTableBody"><tr><td colspan="6" style="text-align:center;padding:40px;">Loading...</td></tr></tbody>
                     </table>
                 </div>
             </div>
         </div>
-    </div>
+
+        </main>
+    </div><!-- /.dash-main -->
+</div><!-- /.dash-layout -->
+
 
     <!-- ===== MODAL: View Full Student Details ===== -->
     <div class="modal-overlay" id="modalOverlay" onclick="closeModal()">
@@ -660,29 +503,44 @@
 
         const adminUser = sessionStorage.getItem('registrarUser') || 'Admin';
         document.getElementById('adminUserLabel').textContent = `Admin: ${adminUser}`;
+        document.getElementById('adminUserChip').textContent = adminUser;
+        document.getElementById('adminAvatarInitial').textContent = adminUser.charAt(0).toUpperCase();
+
+        // Close dot menus when clicking outside
+        document.addEventListener('click', function(e) {
+            if (!e.target.closest('.dot-menu-wrapper')) {
+                document.querySelectorAll('.dot-dropdown.open').forEach(d => d.classList.remove('open'));
+            }
+        });
+        function toggleDotMenu(id) {
+            const menu = document.getElementById(id);
+            document.querySelectorAll('.dot-dropdown.open').forEach(d => { if (d.id !== id) d.classList.remove('open'); });
+            menu.classList.toggle('open');
+        }
 
         // --- Helper: get a colored status badge ---
         function getStatusBadge(status) {
             const map = {
-                'Pending': 'v2-badge-salmon',
-                'For Payment Review': 'v2-badge-gray',
-                'For Application Review': 'v2-badge-gray',
-                'Enrolled': 'v2-badge-green',
-                'Enrolled (Doc. Pending)': 'v2-badge-blue',
-                'Declined': 'v2-badge-salmon',
-                'Dropped': 'v2-badge-salmon',
-                'Refunded': 'v2-badge-gray'
+                'Pending': 'pending',
+                'For Payment Review': 'review',
+                'For Application Review': 'review',
+                'Enrolled': 'enrolled',
+                'Enrolled (Doc. Pending)': 'doc-pending',
+                'Declined': 'declined',
+                'Dropped': 'dropped',
+                'Refunded': 'refunded'
             };
-            const cls = map[status] || 'v2-badge-gray';
-            return `<span class="${cls}">${status}</span>`;
+            const cls = map[status] || 'review';
+            return `<span class="status-badge ${cls}">${status}</span>`;
         }
 
         // --- TAB SWITCHING ---
         function switchTab(tab) {
             document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
-            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            document.querySelectorAll('.dash-nav-item').forEach(b => b.classList.remove('active'));
             document.getElementById('tab-' + tab).classList.add('active');
-            event.currentTarget.classList.add('active');
+            const navEl = document.getElementById('nav-' + tab);
+            if (navEl) navEl.classList.add('active');
 
             // Load data on first switch
             if ((tab === 'enrollments' || tab === 'enrolled') && allStudents.length === 0) loadStudents();
@@ -691,9 +549,7 @@
                 if (allEmployees.length === 0) loadEmployees();
                 loadRoles();
             }
-            if (tab === 'logs') {
-                loadLogs();
-            }
+            if (tab === 'logs') loadLogs();
         }
 
         // ===============================================
@@ -737,23 +593,27 @@
             }
             tbody.innerHTML = students.map(s => `
                 <tr>
-                    <td><strong>${s.student_no}</strong></td>
+                    <td><strong style="font-family:'Courier New',monospace;">${s.student_no}</strong></td>
                     <td>${formatStudentName(s)}</td>
                     <td>${s.grade_level}</td>
                     <td>${formatParentName(s.parent_first_name, s.parent_last_name, s.parent_middle_name)}</td>
                     <td>${s.parent_contact || '—'}</td>
-                    <td>${formatDate(s.applied_at)}</td>
+                    <td style="white-space:nowrap;">${formatDate(s.applied_at)}</td>
                     <td>
                         ${getStatusBadge(s.status)}
-                        ${s.documents_pending == 1 ? '<br><span style="font-size:10px;color:#dc2626;font-weight:700;">🔴 Doc. Pending</span>' : ''}
+                        ${s.documents_pending == 1 ? '<span class="doc-pending-badge">🔴 Doc. Pending</span>' : ''}
                     </td>
                     <td>
-                        <button class="btn" style="padding:6px 16px; border:1px solid var(--maroon-dark); color:var(--maroon-dark); background:transparent; border-radius:6px; font-size:12px; width: 100%;"
-                                onclick="viewStudent(${s.enrollment_id})">👁 View Detail</button>
-                        ${s.status === 'Dropped' ? `
-                        <button class="btn" style="padding:6px 16px; border:1px solid #16a34a; color:#16a34a; background:transparent; border-radius:6px; font-size:12px; margin-top: 4px; width: 100%;"
-                                onclick="undoDrop(${s.enrollment_id})">↩ Undo Drop</button>
-                        ` : ''}
+                        <div class="dash-action-group">
+                            <button class="btn-view" onclick="viewStudent(${s.enrollment_id})">👁 View</button>
+                            ${s.status === 'Dropped' ? `
+                            <div class="dot-menu-wrapper">
+                                <button class="btn-dots" onclick="toggleDotMenu('dm-s-${s.enrollment_id}')">⋮</button>
+                                <div class="dot-dropdown" id="dm-s-${s.enrollment_id}">
+                                    <button class="success" onclick="undoDrop(${s.enrollment_id})">↩ Undo Drop</button>
+                                </div>
+                            </div>` : ''}
+                        </div>
                     </td>
                 </tr>
             `).join('');
@@ -805,19 +665,14 @@
             }
             tbody.innerHTML = students.map(s => `
                 <tr>
-                    <td><strong>${s.student_no}</strong></td>
+                    <td><strong style="font-family:'Courier New',monospace;">${s.student_no}</strong></td>
                     <td>${formatStudentName(s)}</td>
                     <td>${s.grade_level}</td>
                     <td>${formatParentName(s.parent_first_name, s.parent_last_name, s.parent_middle_name)}</td>
                     <td>${s.parent_contact || '—'}</td>
-                    <td>${formatDate(s.applied_at)}</td>
-                    <td>
-                        ${getStatusBadge(s.status)}
-                    </td>
-                    <td>
-                        <button class="btn" style="padding:6px 16px; border:1px solid var(--maroon-dark); color:var(--maroon-dark); background:transparent; border-radius:6px; font-size:12px; width: 100%;"
-                                onclick="viewStudent(${s.enrollment_id})">👁 View Detail</button>
-                    </td>
+                    <td style="white-space:nowrap;">${formatDate(s.applied_at)}</td>
+                    <td>${getStatusBadge(s.status)}</td>
+                    <td><button class="btn-view" onclick="viewStudent(${s.enrollment_id})">👁 View</button></td>
                 </tr>
             `).join('');
         }

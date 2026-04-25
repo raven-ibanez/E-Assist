@@ -4,109 +4,88 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Employee Login — Enrollment System</title>
+    <title>Employee Login — BSSMAI</title>
     <link rel="stylesheet" href="style.css">
 </head>
 
-<body
-    style="background-color: var(--maroon-dark); margin: 0; min-height: 100vh; display: flex; flex-direction: column; font-family: 'Inter', system-ui, sans-serif;">
+<body class="login-page">
 
     <!-- Top Navigation -->
-    <div style="padding: 24px 32px;">
-        <a href="index.html"
-            style="color: white; text-decoration: none; font-size: 16px; font-weight: 500; display: inline-flex; align-items: center; gap: 8px;">
-            <svg fill="currentColor" width="24" height="24" viewBox="0 0 24 24">
+    <div class="login-nav">
+        <a href="index.html" class="login-back-btn">
+            <svg fill="currentColor" width="20" height="20" viewBox="0 0 24 24">
                 <path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z" />
             </svg>
             Back to Home
         </a>
     </div>
 
-    <!-- Center Card Section -->
-    <div style="flex: 1; display: flex; align-items: center; justify-content: center; padding: 24px;">
-        <div
-            style="background: white; border-radius: 24px; padding: 48px 64px; width: 100%; max-width: 800px; box-shadow: 0 10px 25px rgba(0,0,0,0.1);">
+    <!-- Center Card -->
+    <div class="login-wrapper">
+        <div class="login-card">
 
-            <div style="text-align: center; margin-bottom: 40px;">
-                <!-- Profile Icon -->
-                <div
-                    style="width: 88px; height: 88px; border-radius: 50%; border: 3px solid black; margin: 0 auto 16px; display: flex; align-items: center; justify-content: center;">
-                    <svg width="64" height="64" viewBox="0 0 24 24" fill="black">
-                        <path
-                            d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" />
-                    </svg>
+            <!-- Logo & Title -->
+            <div class="login-header">
+                <div class="login-logo-circle">
+                    <img src="logo.png" alt="BSSMAI Logo" class="login-logo-img">
                 </div>
-                <h1 style="color: var(--maroon-dark); font-size: 32px; margin: 0 0 8px; font-weight: 700;">Employee
-                    Login</h1>
-                <p style="color: var(--maroon-dark); margin: 0; font-size: 16px; font-weight: 500;">Enter your
-                    credentials to access the system</p>
+                <h1 class="login-title">Employee Login</h1>
+                <p class="login-subtitle">Enter your credentials to access the system</p>
             </div>
 
             <div id="alert" class="alert"></div>
 
-            <form id="employeeLoginForm">
-                <div style="display: flex; gap: 40px; flex-wrap: wrap;">
+            <form id="employeeLoginForm" class="login-form">
+                <div class="login-fields">
 
-                    <!-- Username Column -->
-                    <div style="flex: 1; min-width: 250px;">
-                        <label
-                            style="display: block; color: var(--maroon-dark); font-weight: 600; font-size: 14px; margin-bottom: 8px;">Username</label>
-                        <input type="text" id="username" name="username" placeholder="Enter username"
-                            style="width: 100%; padding: 14px 16px; border: 1px solid #e0e7ff; border-radius: 8px; background: #f8fafc; font-size: 15px; box-sizing: border-box; outline: none;"
+                    <!-- Username -->
+                    <div class="login-field">
+                        <label class="login-label">Username</label>
+                        <input type="text" id="username" name="username"
+                            placeholder="Enter username"
+                            class="login-input"
                             required autofocus>
                     </div>
 
-                    <!-- Password Column -->
-                    <div style="flex: 1; min-width: 250px;">
-                        <label
-                            style="display: block; color: var(--maroon-dark); font-weight: 600; font-size: 14px; margin-bottom: 8px;">Password</label>
-                        <input type="password" id="password" name="password" placeholder="Enter password"
-                            style="width: 100%; padding: 14px 16px; border: 1px solid #f1f5f9; border-radius: 8px; background: #f8fafc; font-size: 15px; box-sizing: border-box; outline: none;"
+                    <!-- Password -->
+                    <div class="login-field">
+                        <label class="login-label">Password</label>
+                        <input type="password" id="password" name="password"
+                            placeholder="Enter password"
+                            class="login-input"
                             required>
-
-                        <!-- Actions -->
-                        <div style="display: flex; justify-content: flex-end; margin-top: 24px;">
-                            <button type="submit" id="loginBtn"
-                                style="background: var(--maroon-dark); color: white; border: none; padding: 12px 32px; border-radius: 8px; font-size: 16px; font-weight: 600; cursor: pointer;">Login</button>
-                        </div>
                     </div>
 
                 </div>
+
+                <!-- Login Button -->
+                <div class="login-actions">
+                    <button type="submit" id="loginBtn" class="btn-login">Login</button>
+                </div>
             </form>
+
         </div>
     </div>
 
     <script src="main.js"></script>
     <script>
-        /*
-         * TUTORIAL: Employee Login Flow
-         * 1. User enters username and password.
-         * 2. We send credentials to registrar.php?action=login.
-         * 3. If valid, the server returns the user's role (admin/registrar/cashier).
-         * 4. We save the login status in sessionStorage.
-         * 5. We redirect to the correct dashboard based on the role.
-         */
         document.getElementById('employeeLoginForm').addEventListener('submit', async function (e) {
             e.preventDefault();
             hideAlert('alert');
 
-            // Get the values from the form
             const username = document.getElementById('username').value.trim();
             const password = document.getElementById('password').value;
 
             setLoading('loginBtn', true, 'Login');
 
             try {
-                // Send username & password to the server
                 const result = await apiPost('api/registrar.php?action=login', { username, password });
 
-                // Save login status in sessionStorage
                 sessionStorage.setItem('registrarLoggedIn', 'yes');
                 sessionStorage.setItem('registrarUser', username);
                 sessionStorage.setItem('adminId', result.id);
                 sessionStorage.setItem('userRole', result.role);
 
-                // Redirect to the correct dashboard based on role
                 if (result.role === 'cashier') {
                     window.location.href = 'cashier-dashboard.html';
                 } else if (result.role === 'admin') {

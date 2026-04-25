@@ -54,6 +54,7 @@ body {
     background: var(--off-white);
     color: var(--gray-900);
     min-height: 100vh;
+    -webkit-overflow-scrolling: touch;
 }
 
 /* --- HEADER --- */
@@ -450,7 +451,8 @@ textarea:focus {
 }
 
 .btn-enroll:hover {
-    background: #5a0d24; /* Slightly darker maroon */
+    background: #5a0d24;
+    /* Slightly darker maroon */
     transform: translateY(-2px);
     box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25);
 }
@@ -693,7 +695,7 @@ tbody td {
     margin: 40px auto;
     max-width: 900px;
     text-align: left;
-    box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
 }
 
 .submission-icon-wrapper {
@@ -710,9 +712,10 @@ tbody td {
     display: flex;
     align-items: center;
     justify-content: center;
-    border-radius: 8px 30px 8px 8px; /* Folded corner feel */
+    border-radius: 8px 30px 8px 8px;
+    /* Folded corner feel */
     position: relative;
-    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
 }
 
 .submission-icon-doc::after {
@@ -740,7 +743,7 @@ tbody td {
     justify-content: center;
     font-size: 24px;
     border: 3px solid var(--maroon-dark);
-    box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
 }
 
 .submission-content h2 {
@@ -1578,4 +1581,1802 @@ body.theme-v2 {
     background-repeat: no-repeat;
     background-position-x: 100%;
     background-position-y: 50%;
+}
+
+/* =========================================================
+   HOMEPAGE IMPROVEMENTS — Add these to the END of style.css
+   ========================================================= */
+
+/* --- NAVBAR NAV LINKS --- */
+.header-nav {
+    display: flex;
+    align-items: center;
+    gap: 2rem;
+}
+
+.nav-link {
+    color: rgba(255, 255, 255, 0.85);
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 500;
+    transition: color 0.2s;
+    letter-spacing: 0.3px;
+}
+
+.nav-link:hover {
+    color: var(--white);
+}
+
+/* --- HERO SECTION IMPROVEMENTS --- */
+.hero-section {
+    padding: 80px 5%;
+    background: #fdf4f6;
+}
+
+.hero-badge {
+    display: inline-block;
+    background: #f5dde3;
+    color: var(--maroon-dark);
+    font-size: 12px;
+    font-weight: 600;
+    padding: 5px 14px;
+    border-radius: 50px;
+    margin-bottom: 1.25rem;
+    letter-spacing: 0.3px;
+}
+
+.hero-title {
+    font-size: 48px;
+    color: var(--maroon-dark);
+    line-height: 1.15;
+    font-weight: 800;
+    margin-bottom: 1.25rem;
+    text-transform: none;
+}
+
+.hero-description {
+    font-size: 16px;
+    color: #666;
+    line-height: 1.75;
+    font-style: normal;
+    font-weight: 400;
+    max-width: 480px;
+    margin-bottom: 2rem;
+}
+
+.hero-actions {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.btn-enroll {
+    display: inline-block;
+    background: var(--maroon-dark);
+    color: var(--white);
+    padding: 12px 28px;
+    border-radius: 8px;
+    text-decoration: none;
+    font-size: 15px;
+    font-weight: 600;
+    transition: all 0.2s ease;
+    letter-spacing: 0.3px;
+}
+
+.btn-enroll:hover {
+    background: #5a0c22;
+    transform: translateY(-2px);
+}
+
+.btn-learn {
+    display: inline-block;
+    background: var(--white);
+    color: var(--maroon-dark);
+    padding: 12px 28px;
+    border-radius: 8px;
+    text-decoration: none;
+    font-size: 15px;
+    font-weight: 600;
+    border: 1.5px solid var(--maroon-dark);
+    transition: all 0.2s ease;
+}
+
+.btn-learn:hover {
+    background: #fdf4f6;
+    transform: translateY(-2px);
+}
+
+/* --- FEATURES SECTION --- */
+.features-section {
+    background: var(--white);
+    padding: 4rem 5%;
+}
+
+.features-container {
+    max-width: 1100px;
+    margin: 0 auto;
+}
+
+.features-label {
+    font-size: 11px;
+    color: var(--maroon-dark);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    margin-bottom: 6px;
+}
+
+.features-title {
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--gray-900);
+    margin-bottom: 2rem;
+}
+
+.features-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.25rem;
+}
+
+.feature-card {
+    background: #fdf4f6;
+    border-radius: 14px;
+    padding: 1.5rem;
+}
+
+.feature-icon {
+    width: 38px;
+    height: 38px;
+    border-radius: 10px;
+    background: var(--maroon-dark);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 12px;
+}
+
+.feature-title {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--gray-900);
+    margin-bottom: 6px;
+}
+
+.feature-desc {
+    font-size: 13px;
+    color: var(--gray-500);
+    line-height: 1.65;
+}
+
+/* --- ENROLLMENT BANNER --- */
+.enroll-banner {
+    background: var(--maroon-dark);
+    padding: 2.5rem 5%;
+}
+
+.enroll-banner-content {
+    max-width: 1100px;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1.5rem;
+    flex-wrap: wrap;
+}
+
+.enroll-banner-text {
+    color: var(--white);
+}
+
+.enroll-banner-title {
+    font-size: 18px;
+    font-weight: 700;
+    margin-bottom: 4px;
+}
+
+.enroll-banner-desc {
+    font-size: 13px;
+    opacity: 0.8;
+    line-height: 1.5;
+}
+
+.btn-enroll-banner {
+    display: inline-block;
+    background: var(--white);
+    color: var(--maroon-dark);
+    padding: 12px 28px;
+    border-radius: 8px;
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 700;
+    white-space: nowrap;
+    flex-shrink: 0;
+    transition: all 0.2s ease;
+}
+
+.btn-enroll-banner:hover {
+    background: #f5dde3;
+    transform: translateY(-1px);
+}
+
+/* --- FOOTER IMPROVEMENTS --- */
+.footer-logo-circle {
+    background: var(--white);
+    width: 65px;
+    height: 65px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 6px;
+}
+
+.footer-socials {
+    display: flex;
+    gap: 10px;
+    margin-top: 10px;
+}
+
+.social-btn {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.15);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+    transition: background 0.2s;
+}
+
+.social-btn:hover {
+    background: rgba(255, 255, 255, 0.25);
+}
+
+/* =========================================================
+   LOGIN PAGE — Add these to the END of style.css
+   (after the homepage additions)
+   ========================================================= */
+
+/* --- LOGIN PAGE BODY --- */
+body.login-page {
+    background: var(--maroon-dark);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    font-family: 'Inter', system-ui, sans-serif;
+    margin: 0;
+}
+
+/* --- LOGIN NAV --- */
+.login-nav {
+    padding: 24px 32px;
+}
+
+.login-back-btn {
+    color: rgba(255, 255, 255, 0.85);
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 500;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    transition: color 0.2s;
+}
+
+.login-back-btn:hover {
+    color: var(--white);
+}
+
+/* --- LOGIN WRAPPER --- */
+.login-wrapper {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+}
+
+/* --- LOGIN CARD --- */
+.login-card {
+    background: var(--white);
+    border-radius: 20px;
+    padding: 48px 56px;
+    width: 100%;
+    max-width: 560px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
+}
+
+/* --- LOGIN HEADER --- */
+.login-header {
+    text-align: center;
+    margin-bottom: 2rem;
+}
+
+.login-logo-circle {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    background: #fdf4f6;
+    border: 3px solid #f5dde3;
+    margin: 0 auto 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 8px;
+}
+
+.login-logo-img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+}
+
+.login-title {
+    color: var(--maroon-dark);
+    font-size: 26px;
+    font-weight: 700;
+    margin: 0 0 6px;
+}
+
+.login-subtitle {
+    color: var(--gray-500);
+    font-size: 14px;
+    margin: 0;
+}
+
+/* --- LOGIN FORM --- */
+.login-form {
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+}
+
+.login-fields {
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+}
+
+.login-field {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.login-label {
+    color: var(--maroon-dark);
+    font-weight: 600;
+    font-size: 13px;
+}
+
+.login-input {
+    width: 100%;
+    padding: 12px 16px;
+    border: 1.5px solid var(--gray-300);
+    border-radius: 8px;
+    background: var(--gray-50);
+    font-size: 14px;
+    font-family: inherit;
+    color: var(--gray-900);
+    transition: border-color 0.2s, box-shadow 0.2s;
+    box-sizing: border-box;
+    outline: none;
+}
+
+.login-input:focus {
+    border-color: var(--maroon-dark);
+    box-shadow: 0 0 0 3px rgba(122, 18, 48, 0.1);
+    background: var(--white);
+}
+
+/* --- LOGIN BUTTON --- */
+.login-actions {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 8px;
+}
+
+.btn-login {
+    background: var(--maroon-dark);
+    color: var(--white);
+    border: none;
+    padding: 12px 36px;
+    border-radius: 8px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-family: inherit;
+}
+
+.btn-login:hover {
+    background: #5a0c22;
+    transform: translateY(-1px);
+}
+
+/* =========================================================
+   DASHBOARD REDESIGN — Modern SaaS Layout
+   Shared across Admin, Cashier, Registrar dashboards
+   ========================================================= */
+
+/* --- Dashboard Layout --- */
+.dash-layout {
+    display: flex;
+    min-height: 100vh;
+    background: #f4f6fa;
+    width: 100%;
+    overflow-x: hidden;
+}
+
+/* --- Sidebar --- */
+.dash-sidebar {
+    width: 220px;
+    background: #4a0818;
+    display: flex;
+    flex-direction: column;
+    padding: 20px 0;
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 100vh;
+    z-index: 200;
+    overflow: hidden;
+    box-shadow: 4px 0 20px rgba(0, 0, 0, 0.15);
+}
+
+.dash-sidebar-logo {
+    width: 36px;
+    height: 36px;
+    object-fit: contain;
+    margin: 0 auto 28px;
+    border-radius: 8px;
+    flex-shrink: 0;
+    display: block;
+}
+
+.dash-sidebar-logo-fallback {
+    font-size: 24px;
+    margin: 0 auto 28px;
+    flex-shrink: 0;
+    display: block;
+    text-align: center;
+}
+
+.dash-nav-items {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    width: 100%;
+    padding: 0 8px;
+    flex: 1;
+}
+
+.dash-nav-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 12px;
+    border-radius: 10px;
+    color: rgba(255, 255, 255, 0.6);
+    cursor: pointer;
+    transition: all 0.2s;
+    white-space: nowrap;
+    border: none;
+    background: transparent;
+    width: 100%;
+    font-size: 14px;
+    font-weight: 500;
+    font-family: inherit;
+    text-decoration: none;
+}
+
+.dash-nav-item:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: #fff;
+}
+
+.dash-nav-item.active {
+    background: rgba(122, 18, 48, 0.85);
+    color: #fff;
+    box-shadow: 0 2px 8px rgba(122, 18, 48, 0.4);
+}
+
+.dash-nav-icon {
+    font-size: 18px;
+    flex-shrink: 0;
+    width: 24px;
+    text-align: center;
+    line-height: 1;
+}
+
+.dash-nav-label {
+    font-size: 13px;
+    font-weight: 600;
+    opacity: 1;
+    pointer-events: none;
+    overflow: hidden;
+}
+
+.dash-sidebar-bottom {
+    padding: 0 8px;
+    width: 100%;
+    margin-top: auto;
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+    padding-top: 12px;
+}
+
+/* --- Main Content --- */
+.dash-main {
+    margin-left: 220px;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+}
+
+/* --- Top Bar --- */
+.dash-topbar {
+    background: #fff;
+    border-bottom: 1px solid #e5e7eb;
+    padding: 0 32px;
+    height: 64px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    box-shadow: 0 1px 8px rgba(0, 0, 0, 0.05);
+}
+
+.dash-topbar-left {
+    display: flex;
+    flex-direction: column;
+}
+
+.dash-topbar-title {
+    font-size: 18px;
+    font-weight: 700;
+    color: #1a1a2e;
+    line-height: 1.2;
+}
+
+.dash-topbar-sub {
+    font-size: 12px;
+    color: var(--gray-500);
+}
+
+.dash-topbar-right {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.dash-user-chip {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: #f4f6fa;
+    border: 1px solid #e5e7eb;
+    padding: 6px 14px 6px 6px;
+    border-radius: 999px;
+    font-size: 13px;
+    font-weight: 600;
+    color: #1a1a2e;
+}
+
+.dash-user-avatar {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: var(--maroon-dark);
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    font-weight: 700;
+}
+
+/* --- Page Content --- */
+.dash-content {
+    padding: 28px 32px;
+    flex: 1;
+}
+
+/* --- Section Header --- */
+.dash-section-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
+.dash-section-title {
+    font-size: 16px;
+    font-weight: 700;
+    color: #1a1a2e;
+}
+
+/* --- Modern Stat Cards --- */
+.dash-stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+    gap: 16px;
+    margin-bottom: 28px;
+}
+
+.dash-stat-card {
+    background: #fff;
+    border-radius: 14px;
+    padding: 20px 22px;
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
+    border: 1px solid #f0f0f4;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.dash-stat-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.10);
+}
+
+.dash-stat-icon-wrap {
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    flex-shrink: 0;
+}
+
+.dash-stat-icon-wrap.yellow {
+    background: #f9e9ed;
+}
+
+.dash-stat-icon-wrap.blue {
+    background: #f5e9ed;
+}
+
+.dash-stat-icon-wrap.green {
+    background: #f9e9ed;
+}
+
+.dash-stat-icon-wrap.red {
+    background: #f5e9ed;
+}
+
+.dash-stat-icon-wrap.purple {
+    background: #f9e9ed;
+}
+
+.dash-stat-icon-wrap.gray {
+    background: #f5e9ed;
+}
+
+.dash-stat-icon-wrap.orange {
+    background: #f9e9ed;
+}
+
+.dash-stat-body {
+    display: flex;
+    flex-direction: column;
+}
+
+.dash-stat-label {
+    font-size: 12px;
+    color: var(--gray-500);
+    font-weight: 500;
+    margin-bottom: 4px;
+    line-height: 1.4;
+}
+
+.dash-stat-value {
+    font-size: 28px;
+    font-weight: 800;
+    color: #1a1a2e;
+    line-height: 1;
+}
+
+.dash-stat-value.currency {
+    font-size: 22px;
+}
+
+/* --- Filter Row --- */
+.dash-filter-row {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.dash-filter-row input[type="text"],
+.dash-filter-row select {
+    padding: 8px 12px;
+    border: 1.5px solid #e5e7eb;
+    border-radius: 8px;
+    font-size: 13px;
+    background: #fff;
+    color: #374151;
+    font-family: inherit;
+    width: auto;
+    transition: border-color 0.2s;
+}
+
+.dash-filter-row input[type="text"] {
+    min-width: 200px;
+    flex: 1;
+}
+
+.dash-filter-row input[type="text"]:focus,
+.dash-filter-row select:focus {
+    outline: none;
+    border-color: var(--maroon-dark);
+    box-shadow: 0 0 0 3px rgba(122, 18, 48, 0.08);
+}
+
+/* --- Table Container --- */
+.dash-table-card {
+    background: #fff;
+    border-radius: 14px;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
+    border: 1px solid #f0f0f4;
+    overflow: hidden;
+    margin-bottom: 28px;
+}
+
+.dash-table-header {
+    padding: 18px 24px;
+    border-bottom: 1px solid #f0f0f4;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
+.dash-table-title {
+    font-size: 15px;
+    font-weight: 700;
+    color: #1a1a2e;
+}
+
+.dash-table-scroll {
+    overflow-x: auto;
+}
+
+/* --- Table Styling --- */
+.dash-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13.5px;
+}
+
+.dash-table thead th {
+    background: var(--maroon-dark);
+    color: #fff;
+    padding: 12px 16px;
+    text-align: left;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    white-space: nowrap;
+}
+
+.dash-table tbody tr {
+    border-bottom: 1px solid #f3f4f6;
+    transition: background 0.12s;
+}
+
+.dash-table tbody tr:nth-child(even) {
+    background: #fafafa;
+}
+
+.dash-table tbody tr:hover {
+    background: #f0f4ff;
+}
+
+.dash-table tbody td {
+    padding: 12px 16px;
+    color: #374151;
+    vertical-align: middle;
+}
+
+.dash-table tbody tr:last-child {
+    border-bottom: none;
+}
+
+/* --- Status Badges (Redesigned) --- */
+.status-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 4px 10px;
+    border-radius: 999px;
+    font-size: 11.5px;
+    font-weight: 700;
+    white-space: nowrap;
+}
+
+.status-badge::before {
+    content: '';
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+
+.status-badge.pending {
+    background: #fef9c3;
+    color: #854d0e;
+}
+
+.status-badge.pending::before {
+    background: #ca8a04;
+}
+
+.status-badge.approved,
+.status-badge.enrolled {
+    background: #dcfce7;
+    color: #166534;
+}
+
+.status-badge.approved::before,
+.status-badge.enrolled::before {
+    background: #16a34a;
+}
+
+.status-badge.declined {
+    background: #fee2e2;
+    color: #991b1b;
+}
+
+.status-badge.declined::before {
+    background: #dc2626;
+}
+
+.status-badge.refunded {
+    background: #dbeafe;
+    color: #1e40af;
+}
+
+.status-badge.refunded::before {
+    background: #3b82f6;
+}
+
+.status-badge.review {
+    background: #e0e7ff;
+    color: #3730a3;
+}
+
+.status-badge.review::before {
+    background: #6366f1;
+}
+
+.status-badge.dropped {
+    background: #ffedd5;
+    color: #9a3412;
+}
+
+.status-badge.dropped::before {
+    background: #ea580c;
+}
+
+.status-badge.doc-pending {
+    background: #fce7f3;
+    color: #9d174d;
+}
+
+.status-badge.doc-pending::before {
+    background: #ec4899;
+}
+
+/* --- Action Buttons --- */
+.dash-action-group {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.btn-view {
+    padding: 5px 14px;
+    border: 1.5px solid #d1d5db;
+    border-radius: 7px;
+    background: #fff;
+    color: #374151;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: inherit;
+    transition: all 0.15s;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.btn-view:hover {
+    border-color: #9ca3af;
+    background: #f9fafb;
+}
+
+/* --- Three-dot Dropdown --- */
+.dot-menu-wrapper {
+    position: relative;
+    display: inline-block;
+}
+
+.btn-dots {
+    width: 30px;
+    height: 30px;
+    border: 1.5px solid #d1d5db;
+    border-radius: 7px;
+    background: #fff;
+    cursor: pointer;
+    font-size: 16px;
+    color: #6b7280;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.15s;
+    font-family: inherit;
+}
+
+.btn-dots:hover {
+    border-color: #9ca3af;
+    background: #f9fafb;
+    color: #374151;
+}
+
+.dot-dropdown {
+    display: none;
+    position: absolute;
+    right: 0;
+    top: calc(100% + 4px);
+    background: #fff;
+    border: 1px solid #e5e7eb;
+    border-radius: 10px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+    z-index: 500;
+    min-width: 170px;
+    overflow: hidden;
+    animation: dropFadeIn 0.15s ease;
+}
+
+@keyframes dropFadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-6px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.dot-dropdown.open {
+    display: block;
+}
+
+.dot-dropdown button,
+.dot-dropdown a {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    width: 100%;
+    padding: 9px 16px;
+    border: none;
+    background: transparent;
+    text-align: left;
+    font-size: 13px;
+    font-weight: 500;
+    color: #374151;
+    cursor: pointer;
+    font-family: inherit;
+    text-decoration: none;
+    transition: background 0.12s;
+}
+
+.dot-dropdown button:hover,
+.dot-dropdown a:hover {
+    background: #f9fafb;
+}
+
+.dot-dropdown button.danger {
+    color: #dc2626;
+}
+
+.dot-dropdown button.danger:hover {
+    background: #fef2f2;
+}
+
+.dot-dropdown button.success {
+    color: #16a34a;
+}
+
+.dot-dropdown button.success:hover {
+    background: #f0fdf4;
+}
+
+.dot-dropdown button.warning {
+    color: #d97706;
+}
+
+.dot-dropdown button.warning:hover {
+    background: #fffbeb;
+}
+
+.dot-dropdown hr {
+    border: none;
+    border-top: 1px solid #f3f4f6;
+    margin: 4px 0;
+}
+
+/* --- Payment Progress Bar (Cashier) --- */
+.pay-progress-wrap {
+    width: 100%;
+    min-width: 80px;
+}
+
+.pay-progress-bar {
+    height: 6px;
+    background: #e5e7eb;
+    border-radius: 999px;
+    overflow: hidden;
+    margin-bottom: 3px;
+}
+
+.pay-progress-fill {
+    height: 100%;
+    border-radius: 999px;
+    background: #16a34a;
+    transition: width 0.4s ease;
+}
+
+.pay-progress-fill.danger {
+    background: #dc2626;
+}
+
+.pay-progress-fill.warn {
+    background: #f59e0b;
+}
+
+.pay-progress-text {
+    font-size: 11px;
+    color: var(--gray-500);
+    white-space: nowrap;
+}
+
+/* --- Alert in Dash --- */
+.dash-alert {
+    padding: 12px 18px;
+    border-radius: 10px;
+    font-size: 13.5px;
+    font-weight: 500;
+    margin-bottom: 18px;
+    display: none;
+    border: 1px solid transparent;
+}
+
+.dash-alert.error {
+    background: #fee2e2;
+    color: #991b1b;
+    border-color: #fca5a5;
+    display: block;
+}
+
+.dash-alert.success {
+    background: #dcfce7;
+    color: #166534;
+    border-color: #86efac;
+    display: block;
+}
+
+/* --- Tab Nav (inside content) --- */
+.dash-tab-nav {
+    display: flex;
+    gap: 0;
+    background: #fff;
+    border-radius: 12px 12px 0 0;
+    border: 1px solid #f0f0f4;
+    border-bottom: none;
+    overflow: hidden;
+    margin-bottom: 0;
+}
+
+.dash-tab-btn {
+    flex: 1;
+    padding: 14px 16px;
+    border: none;
+    background: transparent;
+    color: var(--gray-500);
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    border-bottom: 3px solid transparent;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    font-family: inherit;
+    white-space: nowrap;
+}
+
+.dash-tab-btn:hover {
+    background: #f9fafb;
+    color: #374151;
+}
+
+.dash-tab-btn.active {
+    color: var(--maroon-dark);
+    border-bottom-color: var(--maroon-dark);
+    background: #fff5f6;
+}
+
+.dash-tab-content {
+    display: none;
+}
+
+.dash-tab-content.active {
+    display: block;
+    animation: fadeInTab 0.25s ease;
+}
+
+@keyframes fadeInTab {
+    from {
+        opacity: 0;
+        transform: translateY(4px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* --- Employee Cards --- */
+.dash-employee-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 14px;
+    padding: 20px 24px;
+}
+
+.dash-employee-card {
+    background: #fff;
+    border: 1.5px solid #f0f0f4;
+    border-radius: 12px;
+    padding: 18px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    transition: all 0.2s;
+}
+
+.dash-employee-card:hover {
+    border-color: #d1d5db;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.06);
+}
+
+.dash-emp-avatar {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    flex-shrink: 0;
+}
+
+.dash-emp-avatar.admin {
+    background: #fef9c3;
+}
+
+.dash-emp-avatar.registrar {
+    background: #dbeafe;
+}
+
+.dash-emp-avatar.cashier {
+    background: #dcfce7;
+}
+
+.dash-emp-info {
+    flex: 1;
+}
+
+.dash-emp-info h4 {
+    font-size: 14px;
+    font-weight: 700;
+    color: #1a1a2e;
+    margin-bottom: 2px;
+}
+
+.dash-role-tag {
+    display: inline-block;
+    padding: 2px 10px;
+    border-radius: 999px;
+    font-size: 10.5px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+}
+
+.dash-role-tag.admin {
+    background: #fef9c3;
+    color: #854d0e;
+}
+
+.dash-role-tag.registrar {
+    background: #dbeafe;
+    color: #1e40af;
+}
+
+.dash-role-tag.cashier {
+    background: #dcfce7;
+    color: #166534;
+}
+
+.dash-emp-status {
+    font-size: 10px;
+    font-weight: 700;
+    margin-top: 3px;
+}
+
+.dash-emp-status.active {
+    color: #16a34a;
+}
+
+.dash-emp-status.inactive {
+    color: #dc2626;
+}
+
+/* --- Add Employee Form --- */
+.dash-add-form {
+    background: #f9fafb;
+    border: 1.5px dashed #d1d5db;
+    border-radius: 12px;
+    padding: 22px;
+    margin: 0 24px 20px;
+    display: none;
+}
+
+.dash-add-form.visible {
+    display: block;
+}
+
+.dash-add-form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr auto;
+    gap: 12px;
+    align-items: end;
+}
+
+@media (max-width: 768px) {
+    .dash-add-form-row {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* --- Ref Number Badge --- */
+.ref-badge {
+    font-family: 'Courier New', monospace;
+    font-size: 12.5px;
+    font-weight: 600;
+    color: #374151;
+    background: #f3f4f6;
+    padding: 3px 8px;
+    border-radius: 5px;
+    border: 1px solid #e5e7eb;
+}
+
+/* --- Pay Method Badge --- */
+.pay-method-badge {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 6px;
+    font-size: 11.5px;
+    font-weight: 700;
+}
+
+.pay-method-badge.gcash {
+    background: #dbeafe;
+    color: #1e40af;
+}
+
+.pay-method-badge.maya {
+    background: #ede9fe;
+    color: #4c1d95;
+}
+
+.pay-method-badge.bank {
+    background: #fef9c3;
+    color: #854d0e;
+}
+
+.pay-method-badge.cash {
+    background: #dcfce7;
+    color: #166534;
+}
+
+.pay-method-badge.none {
+    background: #f3f4f6;
+    color: #6b7280;
+}
+
+/* --- Currency Display --- */
+.currency-amount {
+    font-weight: 700;
+    font-size: 14px;
+}
+
+.currency-amount.paid {
+    color: #16a34a;
+}
+
+.currency-amount.balance {
+    color: #dc2626;
+}
+
+.currency-amount.neutral {
+    color: #374151;
+}
+
+/* --- Logs Action Badge --- */
+.log-action-badge {
+    display: inline-block;
+    padding: 2px 10px;
+    border-radius: 6px;
+    font-size: 11.5px;
+    font-weight: 700;
+    background: #e0e7ff;
+    color: #3730a3;
+}
+
+/* --- Scrollbar for tables --- */
+.dash-table-scroll::-webkit-scrollbar {
+    height: 6px;
+}
+
+.dash-table-scroll::-webkit-scrollbar-track {
+    background: #f3f4f6;
+    border-radius: 3px;
+}
+
+.dash-table-scroll::-webkit-scrollbar-thumb {
+    background: #d1d5db;
+    border-radius: 3px;
+}
+
+/* --- Responsive Design --- */
+
+/* Tablet and smaller screens (768px and below) */
+@media (max-width: 768px) {
+    .dash-sidebar {
+        display: none;
+    }
+
+    .dash-main {
+        margin-left: 0;
+        flex: 1;
+    }
+
+    .dash-content {
+        padding: 16px 12px;
+    }
+
+    .dash-topbar {
+        padding: 0 12px;
+        height: auto;
+        flex-wrap: wrap;
+        gap: 12px;
+    }
+
+    .dash-topbar-left {
+        width: 100%;
+    }
+
+    .dash-topbar-right {
+        width: 100%;
+        justify-content: flex-start;
+    }
+
+    .dash-stats {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 12px;
+    }
+
+    .dash-stat-card {
+        padding: 16px;
+        gap: 10px;
+    }
+
+    .dash-stat-label {
+        font-size: 11px;
+    }
+
+    .dash-stat-value {
+        font-size: 24px;
+    }
+
+    .dash-table-card {
+        border-radius: 10px;
+    }
+
+    .dash-table-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+        padding: 12px 16px;
+    }
+
+    .dash-filter-row {
+        width: 100%;
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .dash-filter-row input[type="text"],
+    .dash-filter-row select {
+        width: 100%;
+        padding: 10px;
+        font-size: 14px;
+    }
+
+    .dash-table {
+        font-size: 12px;
+    }
+
+    .dash-table thead th {
+        padding: 10px 8px;
+        font-size: 10px;
+    }
+
+    .dash-table tbody td {
+        padding: 10px 8px;
+    }
+
+    .dash-user-chip {
+        padding: 6px 10px;
+        font-size: 12px;
+    }
+
+    .btn-view {
+        padding: 4px 10px;
+        font-size: 11px;
+    }
+
+    .btn-dots {
+        width: 28px;
+        height: 28px;
+        font-size: 14px;
+    }
+}
+
+/* Mobile phones (480px and below) */
+@media (max-width: 480px) {
+    .dash-content {
+        padding: 12px 10px;
+    }
+
+    .dash-topbar {
+        padding: 10px;
+        height: auto;
+    }
+
+    .dash-topbar-title {
+        font-size: 16px;
+    }
+
+    .dash-topbar-sub {
+        font-size: 11px;
+    }
+
+    .dash-stats {
+        grid-template-columns: 1fr;
+        gap: 10px;
+    }
+
+    .dash-stat-card {
+        padding: 12px 14px;
+        gap: 8px;
+    }
+
+    .dash-stat-icon-wrap {
+        width: 38px;
+        height: 38px;
+        font-size: 18px;
+    }
+
+    .dash-stat-label {
+        font-size: 10px;
+    }
+
+    .dash-stat-value {
+        font-size: 20px;
+    }
+
+    .dash-table-title {
+        font-size: 13px;
+    }
+
+    .dash-filter-row {
+        width: 100%;
+        gap: 8px;
+    }
+
+    .dash-filter-row input[type="text"],
+    .dash-filter-row select {
+        width: 100%;
+        padding: 8px;
+        font-size: 13px;
+    }
+
+    .dash-table {
+        font-size: 11px;
+    }
+
+    .dash-table thead th {
+        padding: 8px 6px;
+        font-size: 9px;
+    }
+
+    .dash-table tbody td {
+        padding: 8px 6px;
+    }
+
+    .dash-table tbody tr:hover {
+        background: #fff;
+    }
+
+    .action-btns {
+        flex-wrap: wrap;
+        gap: 4px;
+    }
+
+    .btn-view {
+        padding: 3px 8px;
+        font-size: 10px;
+    }
+
+    .btn-dots {
+        width: 26px;
+        height: 26px;
+        font-size: 12px;
+    }
+
+    .status-badge {
+        font-size: 10px;
+        padding: 3px 8px;
+    }
+
+    .dot-dropdown {
+        min-width: 140px;
+        top: calc(100% + 2px);
+    }
+
+    .dot-dropdown button,
+    .dot-dropdown a {
+        padding: 8px 12px;
+        font-size: 12px;
+    }
+
+    .modal {
+        width: 90%;
+        max-width: 500px;
+        max-height: 90vh;
+        margin: auto;
+    }
+}
+
+/* Extra small phones (below 360px) */
+@media (max-width: 359px) {
+    .dash-stat-value {
+        font-size: 18px;
+    }
+
+    .dash-table thead th {
+        padding: 6px 4px;
+        font-size: 8px;
+    }
+
+    .dash-table tbody td {
+        padding: 6px 4px;
+    }
+}
+
+/* Improve table visibility on very small screens - add horizontal scroll indicator */
+@media (max-width: 480px) {
+    .dash-table-scroll {
+        -webkit-overflow-scrolling: touch;
+        overflow-x: auto;
+        display: block;
+        width: 100%;
+    }
+
+    /* Show that table is scrollable */
+    .dash-table-scroll::after {
+        content: '';
+        display: block;
+        height: 4px;
+        background: linear-gradient(to right, transparent, #d1d5db, transparent);
+        position: sticky;
+        bottom: 0;
+    }
+}
+
+/* Adjust modal sizes for different screens */
+@media (max-width: 640px) {
+    .modal {
+        width: 95%;
+        margin: 20px auto;
+    }
+}
+
+@media (max-width: 480px) {
+    .modal {
+        width: 98%;
+        margin: 10px auto;
+        padding: 20px 16px;
+    }
+
+    .modal h3 {
+        font-size: 16px;
+    }
+
+    .info-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* --- Doc Pending Inline Badge --- */
+.doc-pending-badge {
+    font-size: 10px;
+    color: #dc2626;
+    font-weight: 700;
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+    margin-left: 6px;
+}
+
+/* --- Empty State --- */
+.dash-empty {
+    text-align: center;
+    padding: 48px 20px;
+    color: var(--gray-500);
+}
+
+.dash-empty-icon {
+    font-size: 40px;
+    margin-bottom: 10px;
+}
+
+/* --- Btn Primary Dash --- */
+.btn-dash-primary {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 16px;
+    background: var(--maroon-dark);
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: inherit;
+    transition: all 0.15s;
+}
+
+.btn-dash-primary:hover {
+    background: #5a0c22;
+    transform: translateY(-1px);
+}
+
+/* Prevent body scroll when sidebar is expanded — no need, handled by overflow:hidden on sidebar */
+
+/* --- Tooltip label on sidebar item --- */
+/* Sidebar labels are always visible now */
+
+/* =========================================================
+   ENROLLMENT FORM IMPROVEMENTS
+   Add these to the END of style.css
+   ========================================================= */
+
+/* --- Replace emoji logo with actual logo --- */
+.biodata-logo {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background: #fdf4f6;
+    border: 3px solid #f5dde3;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 6px;
+    margin: 0 auto 8px;
+}
+
+/* --- Form step hint text --- */
+.form-step-hint {
+    font-size: 13px;
+    color: var(--gray-500);
+    margin-bottom: 20px;
+}
+
+/* --- Form note (small helper text) --- */
+.form-note {
+    color: var(--maroon-dark);
+    font-size: 12px;
+    font-weight: 500;
+    margin-top: 4px;
+}
+
+/* --- Readonly input --- */
+.input-readonly {
+    background-color: var(--gray-100) !important;
+    cursor: not-allowed;
+}
+
+/* --- Warning box (email warning) --- */
+.form-warning-box {
+    background: #fef3c7;
+    padding: 10px 14px;
+    border-radius: 8px;
+    border-left: 4px solid #f59e0b;
+    margin-top: 8px;
+    font-size: 12px;
+    color: #92400e;
+    font-weight: 600;
+}
+
+/* --- Info box (blue note box) --- */
+.form-info-box {
+    background: var(--blue-light);
+    padding: 14px 16px;
+    border-radius: 8px;
+    border-left: 4px solid var(--blue-dark);
+    margin-top: 20px;
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+}
+
+.form-info-box p {
+    font-size: 13px;
+    color: var(--blue-dark);
+    font-weight: 600;
+    margin: 0;
+}
+
+/* --- Form section header — maroon instead of blue --- */
+.form-section h3 {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--maroon-dark);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 16px;
+    padding-bottom: 8px;
+    border-bottom: 2px solid #f5dde3;
+}
+
+/* --- Input focus — maroon instead of blue --- */
+input:focus,
+select:focus,
+textarea:focus {
+    outline: none;
+    border-color: var(--maroon-dark);
+    box-shadow: 0 0 0 3px rgba(122, 18, 48, 0.1);
 }

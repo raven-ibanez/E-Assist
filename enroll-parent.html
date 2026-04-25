@@ -1,55 +1,39 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Step 2: Parent Information — Enrollment System</title>
+    <title>Step 2: Parent Information — BSSMAI</title>
     <link rel="stylesheet" href="style.css">
 </head>
-
 <body class="biodata-page">
-
     <div class="page">
-        <!-- Header -->
         <div class="biodata-header">
             <a href="enroll-student.html" class="biodata-back-link">
                 <svg viewBox="0 0 24 24"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg>
                 Back to Student Info
             </a>
-            <div class="biodata-logo" style="display:flex;align-items:center;justify-content:center;font-size:32px;background:#fff;">🏫</div>
+            <div class="biodata-logo">
+                <img src="logo.png" alt="BSSMAI Logo" style="width:100%;height:100%;object-fit:contain;border-radius:50%;">
+            </div>
             <h1>ENROLLMENT FORM</h1>
             <p>Parent / Guardian Information</p>
         </div>
 
-        <!-- Step Tracker (4 Steps) -->
         <div class="step-tracker">
-            <div class="step-item completed" id="step-1-indicator">
-                <div class="step-number">1</div>
-                <div class="step-label">Student</div>
-            </div>
-            <div class="step-item active" id="step-2-indicator">
-                <div class="step-number">2</div>
-                <div class="step-label">Parent</div>
-            </div>
-            <div class="step-item" id="step-3-indicator">
-                <div class="step-number">3</div>
-                <div class="step-label">Docs</div>
-            </div>
-            <div class="step-item" id="step-4-indicator">
-                <div class="step-number">4</div>
-                <div class="step-label">Payment</div>
-            </div>
+            <div class="step-item completed"><div class="step-number">1</div><div class="step-label">Student</div></div>
+            <div class="step-item active"><div class="step-number">2</div><div class="step-label">Parent</div></div>
+            <div class="step-item"><div class="step-number">3</div><div class="step-label">Docs</div></div>
+            <div class="step-item"><div class="step-number">4</div><div class="step-label">Payment</div></div>
         </div>
 
-        <div id="alert" class="alert" style="max-width: 800px; margin: 0 auto 20px;"></div>
+        <div id="alert" class="alert" style="max-width:800px;margin:0 auto 20px;"></div>
 
-        <!-- MODULE 2 Card -->
         <div class="biodata-card">
             <form id="step2Form">
                 <div class="form-section">
                     <h3>2. Parent / Guardian</h3>
-                    <p style="font-size: 13px; color: #666; margin-bottom: 20px;">Step 2 of 4: Information of the person responsible for the student.</p>
+                    <p class="form-step-hint">Step 2 of 4: Information of the person responsible for the student.</p>
 
                     <div class="form-row">
                         <div class="form-group">
@@ -87,18 +71,18 @@
 
                     <div class="form-group">
                         <label for="parent_contact">Contact Number *</label>
-                        <input type="tel" id="parent_contact" name="parent_contact" placeholder="09123456789" 
+                        <input type="tel" id="parent_contact" name="parent_contact" placeholder="09123456789"
                             pattern="[0-9]{11}" maxlength="11" required title="Please enter exactly 11 digits (e.g., 09123456789)">
-                        <small style="color: #666; font-size: 11px;">Must be exactly 11 digits.</small>
+                        <small class="form-note">Must be exactly 11 digits.</small>
                     </div>
 
                     <div class="form-group">
                         <label for="email">Email Address *</label>
-                        <input type="email" id="email" name="email" placeholder="example@gmail.com" 
-                            pattern="[a-zA-Z0-9._%+-]+@(gmail\.com|GMAIL\.COM|outlook\.com|OUTLOOK\.COM|yahoo\.com|YAHOO\.COM|hotmail\.com|HOTMAIL\.COM|icloud\.com|ICLOUD\.COM)$" 
+                        <input type="email" id="email" name="email" placeholder="example@gmail.com"
+                            pattern="[a-zA-Z0-9._%+-]+@(gmail\.com|GMAIL\.COM|outlook\.com|OUTLOOK\.COM|yahoo\.com|YAHOO\.COM|hotmail\.com|HOTMAIL\.COM|icloud\.com|ICLOUD\.COM)$"
                             required title="Please use a legitimate email provider (e.g., @gmail.com, @outlook.com, @yahoo.com)">
-                        <div style="background: #fef3c7; padding: 10px 14px; border-radius: 8px; border-left: 4px solid #f59e0b; margin-top: 8px;">
-                            <p style="font-size: 12px; color: #92400e; font-weight: 600; margin: 0;">⚠️ Please make sure this email is correct — your enrollment status will be sent to this email.</p>
+                        <div class="form-warning-box">
+                            ⚠️ Please make sure this email is correct — your enrollment status will be sent to this email.
                         </div>
                     </div>
                 </div>
@@ -113,17 +97,14 @@
 
     <script src="main.js"></script>
     <script>
-        // Load any previously saved data from sessionStorage
         const savedData = JSON.parse(sessionStorage.getItem('enroll_data') || '{}');
         Object.keys(savedData).forEach(key => {
             const input = document.getElementById(key);
             if (input) input.value = savedData[key];
         });
 
-        // --- Load dropdowns from the database ---
         async function loadDropdowns() {
             try {
-                // Load Relationships
                 const relations = await apiGet('api/lookups.php?action=relations');
                 const relSelect = document.getElementById('relation_id');
                 relSelect.innerHTML = '<option value="">-- Select --</option>';
@@ -131,8 +112,6 @@
                     const sel = (savedData.relation_id == r.id) ? 'selected' : '';
                     relSelect.innerHTML += `<option value="${r.id}" ${sel}>${r.name}</option>`;
                 });
-
-                // Load Income Ranges
                 const incomes = await apiGet('api/lookups.php?action=income-ranges');
                 const incSelect = document.getElementById('income_range_id');
                 incSelect.innerHTML = '<option value="">-- Select --</option>';
@@ -140,39 +119,27 @@
                     const sel = (savedData.income_range_id == i.id) ? 'selected' : '';
                     incSelect.innerHTML += `<option value="${i.id}" ${sel}>${i.range_label}</option>`;
                 });
-            } catch (err) {
-                console.warn('Failed to load dropdowns');
-            }
+            } catch (err) { console.warn('Failed to load dropdowns'); }
         }
         loadDropdowns();
 
-        // --- Restrict Contact Number to digits only ---
-        document.getElementById('parent_contact').addEventListener('input', function(e) {
+        document.getElementById('parent_contact').addEventListener('input', function () {
             this.value = this.value.replace(/[^0-9]/g, '');
         });
 
-        // --- When the form is submitted, save data and go to Step 3 ---
-        document.getElementById('step2Form').addEventListener('submit', function(e) {
+        document.getElementById('step2Form').addEventListener('submit', function (e) {
             e.preventDefault();
-
-            // Manual check for email domain (Double-check for security and clarity)
             const emailInput = document.getElementById('email');
             const emailValue = emailInput.value.toLowerCase();
             const allowedDomains = ['gmail.com', 'outlook.com', 'yahoo.com', 'hotmail.com', 'icloud.com'];
             const domain = emailValue.split('@')[1];
-
             if (!allowedDomains.includes(domain)) {
-                showAlert('Error: Please use a legitimate email provider (@gmail.com, @outlook.com, etc.)', 'error');
+                showAlert('alert', 'Error: Please use a legitimate email provider (@gmail.com, @outlook.com, etc.)');
                 emailInput.style.borderColor = 'var(--red)';
                 emailInput.focus();
                 return;
             }
-
-            // Also check general form validity (pattern, required, etc.)
-            if (!this.checkValidity()) {
-                return;
-            }
-
+            if (!this.checkValidity()) return;
             const formData = new FormData(e.target);
             const data = JSON.parse(sessionStorage.getItem('enroll_data') || '{}');
             formData.forEach((value, key) => data[key] = value);

@@ -1,41 +1,52 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Step 1: Student Information — Enrollment System</title>
+    <title>Step 1: Student Information — BSSMAI</title>
     <link rel="stylesheet" href="style.css">
 </head>
-
 <body class="biodata-page">
-
     <div class="page">
-        <!-- Header -->
         <div class="biodata-header">
             <a href="index.html" class="biodata-back-link">
-                <svg viewBox="0 0 24 24">
-                    <path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z" />
-                </svg>
+                <svg viewBox="0 0 24 24"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg>
                 Back to Home
             </a>
-            <div class="biodata-logo"
-                style="display:flex;align-items:center;justify-content:center;font-size:32px;background:#fff;">🏫</div>
+            <div class="biodata-logo">
+                <img src="logo.png" alt="BSSMAI Logo" style="width:100%;height:100%;object-fit:contain;border-radius:50%;">
+            </div>
             <h1>ENROLLMENT FORM</h1>
             <p>Nursery to Grade 6</p>
         </div>
 
+        <!-- Step Tracker added to Step 1 -->
+        <div class="step-tracker">
+            <div class="step-item active">
+                <div class="step-number">1</div>
+                <div class="step-label">Student</div>
+            </div>
+            <div class="step-item">
+                <div class="step-number">2</div>
+                <div class="step-label">Parent</div>
+            </div>
+            <div class="step-item">
+                <div class="step-number">3</div>
+                <div class="step-label">Docs</div>
+            </div>
+            <div class="step-item">
+                <div class="step-number">4</div>
+                <div class="step-label">Payment</div>
+            </div>
+        </div>
 
+        <div id="alert" class="alert" style="max-width:800px;margin:0 auto 20px;"></div>
 
-        <div id="alert" class="alert" style="max-width: 800px; margin: 0 auto 20px;"></div>
-
-        <!-- MODULE 1 Card -->
         <div class="biodata-card">
             <form id="step1Form">
                 <div class="form-section">
                     <h3>1. Student Information</h3>
-                    <p style="font-size: 13px; color: #666; margin-bottom: 20px;">Step 1 of 4: Please provide the
-                        student's basic details.</p>
+                    <p class="form-step-hint">Step 1 of 4: Please provide the student's basic details.</p>
 
                     <div class="form-row">
                         <div class="form-group">
@@ -46,11 +57,11 @@
                             <label for="first_name">First Name *</label>
                             <input type="text" id="first_name" name="first_name" required>
                         </div>
-                        <div class="form-group" style="flex: 1.5;">
+                        <div class="form-group" style="flex:1.5;">
                             <label for="middle_name">Middle Name</label>
                             <input type="text" id="middle_name" name="middle_name">
                         </div>
-                        <div class="form-group" style="flex: 0.5;">
+                        <div class="form-group" style="flex:0.5;">
                             <label for="suffix">Suffix</label>
                             <input type="text" id="suffix" name="suffix" placeholder="e.g. Jr.">
                         </div>
@@ -61,9 +72,9 @@
                             <label for="birth_date">Date of Birth *</label>
                             <input type="date" id="birth_date" name="birth_date" required>
                         </div>
-                        <div class="form-group" style="flex: 0.5;">
+                        <div class="form-group" style="flex:0.5;">
                             <label for="age">Age</label>
-                            <input type="text" id="age" name="age" readonly style="background-color: #f3f4f6;">
+                            <input type="text" id="age" name="age" readonly class="input-readonly">
                         </div>
                     </div>
 
@@ -94,8 +105,7 @@
                             <select id="session_id" name="session_id" required disabled>
                                 <option value="">-- Select Grade Level First --</option>
                             </select>
-                            <small id="schedule_note"
-                                style="color: var(--maroon-dark); display: none; margin-top: 4px; font-size: 12px; font-weight: 500;"></small>
+                            <small id="schedule_note" class="form-note" style="display:none;"></small>
                         </div>
                         <div class="form-group">
                             <label for="school_year_id">School Year *</label>
@@ -106,7 +116,7 @@
                     </div>
 
                     <div class="form-row">
-                        <div class="form-group" style="flex: 2;">
+                        <div class="form-group" style="flex:2;">
                             <label for="house_no_street">House No. / Street *</label>
                             <input type="text" id="house_no_street" name="house_no_street" placeholder="Unit/House No., Street Name" required>
                         </div>
@@ -128,28 +138,16 @@
                 </div>
 
                 <div class="step-actions">
-                    <button type="button" class="btn btn-cancel"
-                        onclick="window.location.href='index.html'">Cancel</button>
+                    <button type="button" class="btn btn-cancel" onclick="window.location.href='index.html'">Cancel</button>
                     <button type="submit" class="btn btn-next">Next: Parent Information</button>
                 </div>
             </form>
         </div>
     </div>
 
-    <!-- Include the shared JavaScript functions (apiGet, showAlert, etc.) -->
     <script src="main.js"></script>
     <script>
-        /*
-         * TUTORIAL: sessionStorage
-         * sessionStorage is like a temporary notepad in the browser.
-         * We use it to save form data as the user moves between steps.
-         * When the browser tab is closed, sessionStorage is cleared automatically.
-         */
-
-        // Load any previously saved data (if user clicked "Back" from Step 2)
         const savedData = JSON.parse(sessionStorage.getItem('enroll_data') || '{}');
-
-        // Fill in the form fields with the saved data
         Object.keys(savedData).forEach(key => {
             const input = document.getElementById(key);
             if (input) input.value = savedData[key];
@@ -157,75 +155,48 @@
 
         let allSessions = [];
 
-        // --- Load the Grade Level dropdown from the database ---
         async function loadDropdowns() {
             try {
-                // Fetch grade levels, sessions, and school years from the server
                 const [grades, sessions, schoolYears] = await Promise.all([
                     apiGet('api/lookups.php?action=grade-levels'),
                     apiGet('api/lookups.php?action=sessions'),
                     apiGet('api/lookups.php?action=school-years')
                 ]);
-                
                 allSessions = sessions;
                 const gradeSelect = document.getElementById('grade_level_id');
-
-                // Build the grade level dropdown options
                 gradeSelect.innerHTML = '<option value="">-- Select Grade Level --</option>';
                 grades.forEach(g => {
                     const sel = (savedData.grade_level_id == g.id) ? 'selected' : '';
                     gradeSelect.innerHTML += `<option value="${g.id}" ${sel}>${g.name}</option>`;
                 });
-
-                // If a grade was already selected, trigger the schedule update
-                if (savedData.grade_level_id) {
-                    gradeSelect.dispatchEvent(new Event('change'));
-                }
-
-                // Build the school year dropdown options
+                if (savedData.grade_level_id) gradeSelect.dispatchEvent(new Event('change'));
                 const sySelect = document.getElementById('school_year_id');
                 sySelect.innerHTML = '';
                 schoolYears.forEach(sy => {
-                    if (sy.is_current == 1) {
-                        sySelect.innerHTML += `<option value="${sy.id}" selected>${sy.label}</option>`;
-                    }
+                    if (sy.is_current == 1) sySelect.innerHTML += `<option value="${sy.id}" selected>${sy.label}</option>`;
                 });
-            } catch (err) {
-                console.warn('Failed to load grade levels, sessions, or school years');
-            }
+            } catch (err) { console.warn('Failed to load dropdowns'); }
         }
         loadDropdowns();
 
-        // --- Calculate age from birthday ---
         document.getElementById('birth_date').addEventListener('change', function () {
             const birthDate = new Date(this.value);
             const today = new Date();
             let age = today.getFullYear() - birthDate.getFullYear();
             const m = today.getMonth() - birthDate.getMonth();
-            if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) {
-                age--;
-            }
+            if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) age--;
             document.getElementById('age').value = isNaN(age) ? '' : age;
         });
 
-        // Trigger age calculation if birth_date is already filled (from savedData)
-        if (savedData.birth_date) {
-            setTimeout(() => {
-                document.getElementById('birth_date').dispatchEvent(new Event('change'));
-            }, 100);
-        }
+        if (savedData.birth_date) setTimeout(() => document.getElementById('birth_date').dispatchEvent(new Event('change')), 100);
 
-        // --- When the user selects a grade level, update the session/schedule dropdown ---
         document.getElementById('grade_level_id').addEventListener('change', function (e) {
             const gradeName = e.target.options[e.target.selectedIndex].text;
             const schedSelect = document.getElementById('session_id');
             const note = document.getElementById('schedule_note');
-
-            // Reset the schedule dropdown
             schedSelect.innerHTML = '';
             schedSelect.disabled = false;
             note.style.display = 'none';
-
             const addOption = (name) => {
                 const session = allSessions.find(s => s.name === name);
                 if (session) {
@@ -233,8 +204,6 @@
                     schedSelect.innerHTML += `<option value="${session.id}" ${sel}>${session.name}</option>`;
                 }
             };
-
-            // Set schedule options based on the selected grade level
             if (gradeName.includes('Kinder')) {
                 schedSelect.innerHTML += `<option value="">-- Select Session --</option>`;
                 addOption('Kinder 1 (2.5 hrs)');
@@ -258,22 +227,14 @@
             }
         });
 
-        // --- When the form is submitted, save data and go to Step 2 ---
         document.getElementById('step1Form').addEventListener('submit', function (e) {
-            e.preventDefault();  // Prevent the page from reloading
-
-            // Collect all form values
+            e.preventDefault();
             const formData = new FormData(e.target);
             const data = JSON.parse(sessionStorage.getItem('enroll_data') || '{}');
-
-            // Save each field to sessionStorage
             formData.forEach((value, key) => data[key] = value);
             sessionStorage.setItem('enroll_data', JSON.stringify(data));
-
-            // Go to the next step
             window.location.href = 'enroll-parent.html';
         });
     </script>
 </body>
-
 </html>
