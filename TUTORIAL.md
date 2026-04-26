@@ -281,7 +281,36 @@ CREATE TABLE IF NOT EXISTS enrollment_reviews (
 - **Why a separate table?** This keeps administrative decisions separate from student data (3NF). It also creates an audit trail — you can see the full history of decisions.
 - The **overall status** of an enrollment is calculated dynamically from the latest `Registrar` and `Cashier` rows in this table (see `calculateStatus()` in `registrar.php`)
 
----
+### Table: payment_transactions
+```sql
+CREATE TABLE IF NOT EXISTS payment_transactions (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    payment_id INT NOT NULL,
+    amount_paid DECIMAL(10,2) NOT NULL,
+    method_id INT DEFAULT NULL,
+    reference_number VARCHAR(100) DEFAULT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (payment_id) REFERENCES payments(id) ON DELETE CASCADE
+);
+```
+- Tracks all individual payments and refunds for a student's enrollment.
+- Instead of a single "amount_paid" column, we sum these transactions. Positive values are payments, negative values are refunds (e.g., "Refund Excess").
+
+### Table: system_logs
+```sql
+CREATE TABLE IF NOT EXISTS system_logs (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    admin_id INT NOT NULL,
+    action_type VARCHAR(100) NOT NULL,
+    target_enrollment_id INT DEFAULT NULL,
+    target_student_id INT DEFAULT NULL,
+    details TEXT DEFAULT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (admin_id) REFERENCES admin(id) ON DELETE CASCADE
+);
+```
+- Provides an **Audit Trail** for everything employees do (e.g., "Registrar approved application", "Admin deactivated cashier").
+- It is visible in the Admin Dashboard under the "Logs" tab.
 
 # CHAPTER 2: db.php
 **What is this?** Connects PHP to your MySQL database. Every PHP file includes this.
@@ -770,7 +799,13 @@ function calculateStatus($reg, $cash) {
   - Both approved → `Enrolled`
   - Either declined → `Declined`
 
-### The Review Actions (approve/decline):
+### The Review Actions (approve/decline/drop/refund):
+- **Approve**: Standard approval.
+- **Appr. DTF (Document to Follow)**: Approves the student but flags them as `documents_pending = 1` until missing files are uploaded.
+- **Drop / Undo Drop**: The Registrar can mark an enrolled student as "Dropped", and can undo this action later.
+- **Refund Excess**: The Cashier can record a negative transaction to zero out a student's refundable amount if they overpaid, keeping the student "Enrolled".
+- **Audit Logging**: Every action (approve, drop, update, upload document) calls a `logAction()` helper to insert a record into `system_logs`.
+
 ```php
 // REGISTRAR reviews an application:
 if ($action === 'review_application') {
@@ -779,13 +814,12 @@ if ($action === 'review_application') {
         "INSERT INTO enrollment_reviews (enrollment_id, admin_id, review_type, decision)
          VALUES (?, ?, 'Registrar', ?)"
     );
-    // Then fetches the cashier's latest status and recalculates overall status
-    sendJSON(['message' => 'Registrar review saved.', 'new_status' => $newOverallStatus]);
+    // ...
+    logAction($admin_id, "Application Review", $enrollment_id, null, "Registrar decision: $decision");
 }
 ```
-- Every click of "Approve" or "Decline" **adds a new row** to `enrollment_reviews` — it does not update existing data
-- This creates a full history (audit trail) of all decisions
-- The frontend receives `new_status` and immediately updates the badge in the table without reloading the page
+- Every click of an action button **adds a new row** — it does not overwrite existing history.
+- The frontend receives `new_status` and immediately updates the badge in the table without reloading the page.
 
 ### Key pattern:
 ```php
@@ -880,22 +914,28 @@ The system follows a high-end educational aesthetic:
 - **Glassmorphism**: Employee buttons and navigation use subtle blur effects for a modern, transparent feel.
 - **Rounded UI**: A standard 12px radius (`--radius`) is applied to all cards and inputs to create a softened, friendly look.
 
+### The Dashboard UI Pattern
+- **Flattened Actions**: Action buttons (View, Approve, Decline, Drop, Refund) are displayed directly in the table row for one-click access (no hidden menus).
+- **Modals**: Detailed views and update forms slide in smoothly over the screen without redirecting to a new page.
+
 ### Registrar Dashboard (registrar-dashboard.html):
-- Shows ALL enrollment applications in a table
-- Can click "View Detail" to see full info in a modal popup
-- Controls actions like approving academic docs (or rejecting)
+- Shows ALL enrollment applications in a table.
+- Can click "View" to see full info in a modal popup and upload missing documents.
+- Controls actions like approving (with or without DTF), declining, dropping, and undoing drops.
 
 ### Cashier Dashboard (cashier-dashboard.html):
-- Shows ALL enrollments with **payment info** (method, reference number)
-- Can search by name, student ID, or reference number
-- Can filter by payment method (GCash, Maya, Bank Transfer)
-- Can click "View Detail" to verify receipts and approve/decline payments
+- Shows ALL enrollments with **payment info** (Total, Paid, Balance, Refundable).
+- Can update payment balances by recording new transactions.
+- Can "Refund Excess" if a student overpaid.
+- Can filter by payment method and status.
 
 ### Admin Dashboard (admin-dashboard.html):
-- Has **3 sections** mapped dynamically:
-  1. **Enrollments** — same as Registrar (can view applications)
-  2. **Payments** — same as Cashier (can view payments)
-  3. **Employee Accounts** — can create and delete employee accounts
+- The ultimate super-user view with **5 dynamic tabs**:
+  1. **Applications** — same as Registrar, but view-only.
+  2. **Enrolled** — a dedicated Masterlist of all active students.
+  3. **Payments** — same as Cashier, but view-only, including full payment history logs.
+  4. **Employees** — can create, activate, and deactivate employee accounts.
+  5. **Logs** — a read-only audit trail showing every action taken by any employee across the system.
 
 ---
 

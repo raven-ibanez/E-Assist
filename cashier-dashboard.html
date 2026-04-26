@@ -132,11 +132,6 @@
                                 class="dash-stat-value" id="enrolledCount">0</span></div>
                     </div>
                     <div class="dash-stat-card">
-                        <div class="dash-stat-icon-wrap purple">💸</div>
-                        <div class="dash-stat-body"><span class="dash-stat-label">Refunded</span><span
-                                class="dash-stat-value" id="refundedCount">0</span></div>
-                    </div>
-                    <div class="dash-stat-card">
                         <div class="dash-stat-icon-wrap blue">📱</div>
                         <div class="dash-stat-body"><span class="dash-stat-label">GCash</span><span
                                 class="dash-stat-value" id="gcashCount">0</span></div>
@@ -176,7 +171,6 @@
                                 <option value="Enrolled">Enrolled</option>
                                 <option value="Enrolled (Doc. Pending)">Enrolled (Doc. Pending)</option>
                                 <option value="Declined">Declined</option>
-                                <option value="Refunded">Refunded</option>
                             </select>
                         </div>
                     </div>
@@ -194,6 +188,7 @@
                                     <th>Total</th>
                                     <th>Paid</th>
                                     <th>Balance</th>
+                                    <th>Refundable</th>
                                     <th>Status</th>
                                     <th>Actions</th>
                                 </tr>
@@ -286,18 +281,6 @@
         const cashierUser = sessionStorage.getItem('registrarUser') || 'Cashier';
         document.getElementById('cashierUserLabel').textContent = `Cashier: ${cashierUser}`;
 
-        // Close dot menus when clicking outside
-        document.addEventListener('click', function (e) {
-            if (!e.target.closest('.dot-menu-wrapper')) {
-                document.querySelectorAll('.dot-dropdown.open').forEach(d => d.classList.remove('open'));
-            }
-        });
-        function toggleDotMenu(id) {
-            const menu = document.getElementById(id);
-            document.querySelectorAll('.dot-dropdown.open').forEach(d => { if (d.id !== id) d.classList.remove('open'); });
-            menu.classList.toggle('open');
-        }
-
         // --- Helper: get a colored status badge ---
         function getStatusBadge(status) {
             const map = {
@@ -307,8 +290,7 @@
                 'Enrolled': 'enrolled',
                 'Enrolled (Doc. Pending)': 'doc-pending',
                 'Declined': 'declined',
-                'Dropped': 'dropped',
-                'Refunded': 'refunded'
+                'Dropped': 'dropped'
             };
             const cls = map[status] || 'review';
             return `<span class="status-badge ${cls}">${status}</span>`;
@@ -329,7 +311,6 @@
         function updateStats(records) {
             document.getElementById('totalCount').textContent = records.length;
             document.getElementById('enrolledCount').textContent = records.filter(r => r.status === 'Enrolled' || r.status === 'Enrolled (Doc. Pending)').length;
-            document.getElementById('refundedCount').textContent = records.filter(r => r.status === 'Refunded').length;
             document.getElementById('gcashCount').textContent = records.filter(r => r.payment_method === 'GCash').length;
             document.getElementById('cashCount').textContent = records.filter(r => r.payment_method === 'Cash').length;
             document.getElementById('bankCount').textContent = records.filter(r => r.payment_method === 'Bank Transfer').length;
@@ -355,7 +336,12 @@
             }
 
             tbody.innerHTML = records.map(r => {
-                const balance = parseFloat(r.balance || 0);
+                const total = parseFloat(r.total_amount || 0);
+                const paid = parseFloat(r.total_paid || 0);
+                const balanceVal = total - paid;
+                const balance = Math.max(0, balanceVal);
+                const refundable = Math.max(0, -balanceVal);
+
                 const isPaid = balance <= 0;
                 return `
                 <tr>
@@ -364,31 +350,31 @@
                     <td>${r.grade_level}</td>
                     <td>${getPaymentBadge(r.payment_method)}</td>
                     <td>${r.payment_mode || '—'}</td>
-                    <td style="font-weight:600;">${formatCurrency(r.total_amount || 0)}</td>
-                    <td style="color:#16a34a; font-weight:600;">${formatCurrency(r.total_paid || 0)}</td>
+                    <td style="font-weight:600;">${formatCurrency(total)}</td>
+                    <td style="color:#16a34a; font-weight:600;">${formatCurrency(paid)}</td>
                     <td style="color:${isPaid ? '#16a34a' : '#dc2626'}; font-weight:700;">
                         ${isPaid ? '✅ Paid' : formatCurrency(balance)}
                     </td>
+                    <td style="color:${refundable > 0 ? '#8b5cf6' : '#64748b'}; font-weight:700;">
+                        ${formatCurrency(refundable)}
+                    </td>
                     <td>${getStatusBadge(r.status)}</td>
                     <td>
-                        <div class="dash-action-group">
+                        <div class="dash-action-group" style="flex-wrap:wrap; gap:8px;">
                             <button class="btn-view" onclick="viewPayment(${r.enrollment_id})">👁 View</button>
                             <button class="btn-view" style="border-color:#1e40af; color:#1e40af;" onclick="openUpdatePaymentModal(${r.payment_id})">💳 Update</button>
                             
-                            ${r.cashier_status === 'pending' || (r.cashier_status === 'approved' && r.status !== 'Refunded') || r.cashier_status === 'refunded' ? `
-                                <div class="dot-menu-wrapper">
-                                    <button class="btn-dots" onclick="toggleDotMenu('dm-p-${r.enrollment_id}')">⋮</button>
-                                    <div class="dot-dropdown" id="dm-p-${r.enrollment_id}">
-                                        ${r.cashier_status === 'pending' ? `
-                                            <button class="success" onclick="reviewPayment(${r.enrollment_id}, 'approved')">✅ Approve</button>
-                                            <button class="danger" onclick="reviewPayment(${r.enrollment_id}, 'declined')">❌ Decline</button>
-                                        ` : r.cashier_status === 'approved' && r.status !== 'Refunded' ? `
-                                            <button class="danger" onclick="reviewPayment(${r.enrollment_id}, 'refunded')">💸 Refund</button>
-                                        ` : r.cashier_status === 'refunded' ? `
-                                            <button class="success" onclick="undoRefund(${r.enrollment_id})">↩ Undo Refund</button>
-                                        ` : ''}
-                                    </div>
-                                </div>
+                            ${r.cashier_status === 'pending' ? `
+                                <button class="btn-view" style="background:#dcfce7; border-color:#16a34a; color:#166534;" onclick="reviewPayment(${r.enrollment_id}, 'approved')">✅ Approve</button>
+                                <button class="btn-view" style="background:#fee2e2; border-color:#dc2626; color:#991b1b;" onclick="reviewPayment(${r.enrollment_id}, 'declined')">❌ Decline</button>
+                            ` : ''}
+                            
+                            ${refundable > 0 ? `
+                                <button class="btn-view" style="background:#fef2f2; border-color:#b91c1c; color:#b91c1c;" onclick="refundExcess(${r.enrollment_id})">💸 Refund Excess</button>
+                            ` : ''}
+
+                            ${r.has_refund == 1 ? `
+                                <button class="btn-view" style="background:#f0fdf4; border-color:#22c55e; color:#166534;" onclick="undoRefund(${r.enrollment_id})">↩ Undo Refund</button>
                             ` : ''}
                         </div>
                     </td>
@@ -466,11 +452,27 @@
             }
         }
 
-        async function undoRefund(id) {
-            if (!confirm('Are you sure you want to undo the "Refunded" status for this student?')) return;
+        async function refundExcess(id) {
+            if (!confirm('Are you sure you want to refund the excess payment for this student?')) return;
 
             try {
-                const res = await apiPost('api/registrar.php?action=undo_refund', {
+                const res = await apiPost('api/registrar.php?action=refund_excess', {
+                    enrollment_id: id,
+                    admin_id: sessionStorage.getItem('adminId')
+                });
+
+                showAlert('alert', '✅ ' + res.message, 'success');
+                loadPayments();
+            } catch (err) {
+                showAlert('alert', '❌ ' + err.message);
+            }
+        }
+
+        async function undoRefund(id) {
+            if (!confirm('Are you sure you want to undo the excess refund for this student?')) return;
+
+            try {
+                const res = await apiPost('api/registrar.php?action=undo_excess_refund', {
                     enrollment_id: id,
                     admin_id: sessionStorage.getItem('adminId')
                 });

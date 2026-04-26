@@ -17,7 +17,8 @@ USE enrollment_db;
 --  CLEAN START: Remove old tables if they exist
 -- ============================================================
 SET FOREIGN_KEY_CHECKS = 0;
-DROP TABLE IF EXISTS admin_logs;
+DROP TABLE IF EXISTS system_logs;
+DROP TABLE IF EXISTS payment_transactions;
 DROP TABLE IF EXISTS enrollment_reviews;
 DROP TABLE IF EXISTS payments;
 DROP TABLE IF EXISTS enrollments;

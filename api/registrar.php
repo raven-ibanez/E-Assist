@@ -29,7 +29,7 @@ require_once '../db.php';
  */
 function calculateStatus($reg, $cash, $docs_pending = 0) {
     if ($reg === 'dropped') return 'Dropped';
-    if ($cash === 'refunded') return 'Refunded';
+    if ($reg === 'declined' || $cash === 'declined') return 'Declined';
     if ($reg === 'declined' || $cash === 'declined') return 'Declined';
     if ($reg === 'approved' && $cash === 'approved') {
         return $docs_pending ? 'Enrolled (Doc. Pending)' : 'Enrolled';
@@ -259,6 +259,7 @@ if ($action === 'payments') {
             p.last_name AS parent_last_name,
             p.middle_name AS parent_middle_name,
             p.contact_no AS parent_contact,
+            COALESCE((SELECT 1 FROM payment_transactions WHERE payment_id = pay.id AND amount_paid < 0 LIMIT 1), 0) AS has_refund,
             COALESCE((SELECT decision FROM enrollment_reviews WHERE enrollment_id = e.id AND review_type = 'Registrar' ORDER BY created_at DESC LIMIT 1), 'pending') AS registrar_status,
             COALESCE((SELECT decision FROM enrollment_reviews WHERE enrollment_id = e.id AND review_type = 'Cashier' ORDER BY created_at DESC LIMIT 1), 'pending') AS cashier_status
         FROM enrollments e
@@ -741,6 +742,111 @@ if ($action === 'undo_refund') {
     } else {
         sendJSON(['error' => 'No refunded status found to undo.'], 404);
     }
+}
+
+
+// =============================================================
+//  ACTION: REFUND EXCESS (Cashier refund excess payment)
+//  - Used by: Cashier Dashboard
+//  - Calculates Paid - Total and adds a negative transaction.
+// =============================================================
+if ($action === 'refund_excess') {
+    $enrollment_id = $data['enrollment_id'] ?? '';
+    $admin_id      = $data['admin_id'] ?? '';
+
+    if (!$enrollment_id || !$admin_id) {
+        sendJSON(['error' => 'Enrollment ID and Admin ID are required.'], 400);
+    }
+
+    // Get current payment info
+    $stmt = $conn->prepare("
+        SELECT 
+            pay.id as payment_id,
+            (COALESCE(pay.tuition_fee, 0) + COALESCE(pay.books_fee, 0)) as total_fee,
+            (SELECT SUM(amount_paid) FROM payment_transactions WHERE payment_id = pay.id) as total_paid,
+            s.first_name, s.last_name, s.middle_name, s.suffix
+        FROM payments pay
+        JOIN enrollments e ON pay.enrollment_id = e.id
+        JOIN students s ON e.student_id = s.id
+        WHERE e.id = ?
+    ");
+    $stmt->bind_param("i", $enrollment_id);
+    $stmt->execute();
+    $payInfo = $stmt->get_result()->fetch_assoc();
+
+    if (!$payInfo) {
+        sendJSON(['error' => 'Payment record not found.'], 404);
+    }
+
+    $excess = ($payInfo['total_paid'] ?? 0) - ($payInfo['total_fee'] ?? 0);
+
+    if ($excess <= 0) {
+        sendJSON(['error' => 'No excess payment found to refund.'], 400);
+    }
+
+    // Add negative transaction
+    $negExcess = -$excess;
+    $notes = "Excess payment refund";
+    $method_id = 2; // Default to Cash (ID 2 in seeds) or use a "Refund" method if exists
+
+    $stmtInsert = $conn->prepare("INSERT INTO payment_transactions (payment_id, amount_paid, payment_method_id, notes) VALUES (?, ?, ?, ?)");
+    $stmtInsert->bind_param("idis", $payInfo['payment_id'], $negExcess, $method_id, $notes);
+    $stmtInsert->execute();
+
+    // Log the action
+    $suffixStr = !empty($payInfo['suffix']) ? ' ' . $payInfo['suffix'] : '';
+    $middleStr = !empty($payInfo['middle_name']) ? ' ' . $payInfo['middle_name'] : '';
+    $studentName = $payInfo['last_name'] . $suffixStr . ', ' . $payInfo['first_name'] . $middleStr;
+    
+    logAction($admin_id, "Excess Refunded", $enrollment_id, $studentName, "Refunded excess payment of ₱" . number_format($excess, 2));
+
+    sendJSON(['message' => 'Excess payment refunded successfully.']);
+}
+
+
+// =============================================================
+//  ACTION: UNDO EXCESS REFUND (Cashier revert refund)
+//  - Deletes the most recent negative transaction for a payment.
+// =============================================================
+if ($action === 'undo_excess_refund') {
+    $enrollment_id = $data['enrollment_id'] ?? '';
+    $admin_id      = $data['admin_id'] ?? '';
+
+    if (!$enrollment_id || !$admin_id) {
+        sendJSON(['error' => 'Enrollment ID and Admin ID are required.'], 400);
+    }
+
+    // Get payment ID
+    $stmt = $conn->prepare("SELECT id FROM payments WHERE enrollment_id = ?");
+    $stmt->bind_param("i", $enrollment_id);
+    $stmt->execute();
+    $pay = $stmt->get_result()->fetch_assoc();
+
+    if (!$pay) {
+        sendJSON(['error' => 'Payment record not found.'], 404);
+    }
+
+    $payment_id = $pay['id'];
+
+    // Find latest negative transaction
+    $stmt2 = $conn->prepare("SELECT id, amount_paid FROM payment_transactions WHERE payment_id = ? AND amount_paid < 0 ORDER BY created_at DESC LIMIT 1");
+    $stmt2->bind_param("i", $payment_id);
+    $stmt2->execute();
+    $trans = $stmt2->get_result()->fetch_assoc();
+
+    if (!$trans) {
+        sendJSON(['error' => 'No refund transaction found to undo.'], 404);
+    }
+
+    // Delete it
+    $stmt3 = $conn->prepare("DELETE FROM payment_transactions WHERE id = ?");
+    $stmt3->bind_param("i", $trans['id']);
+    $stmt3->execute();
+
+    // Log
+    logAction($admin_id, "Undo Excess Refund", $enrollment_id, null, "Reverted a refund of ₱" . number_format(abs($trans['amount_paid']), 2));
+
+    sendJSON(['message' => 'Refund undone successfully.']);
 }
 
 

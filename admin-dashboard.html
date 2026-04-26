@@ -346,7 +346,6 @@
                             <option value="For Payment Review">For Payment Review</option>
                             <option value="For Application Review">For Application Review</option>
                             <option value="Dropped">Dropped</option>
-                            <option value="Refunded">Refunded</option>
                             <option value="Declined">Declined</option>
                         </select>
                     </div>
@@ -398,7 +397,6 @@
             <div class="dash-stats" id="paymentStats" style="margin-bottom:24px;">
                 <div class="dash-stat-card"><div class="dash-stat-icon-wrap blue">💳</div><div class="dash-stat-body"><span class="dash-stat-label">Total Records</span><span class="dash-stat-value" id="payTotalCount">0</span></div></div>
                 <div class="dash-stat-card"><div class="dash-stat-icon-wrap green">✅</div><div class="dash-stat-body"><span class="dash-stat-label">Enrolled</span><span class="dash-stat-value" id="payEnrolledCount">0</span></div></div>
-                <div class="dash-stat-card"><div class="dash-stat-icon-wrap purple">💸</div><div class="dash-stat-body"><span class="dash-stat-label">Refunded</span><span class="dash-stat-value" id="payRefundedCount">0</span></div></div>
                 <div class="dash-stat-card"><div class="dash-stat-icon-wrap blue">📱</div><div class="dash-stat-body"><span class="dash-stat-label">GCash</span><span class="dash-stat-value" id="payGcashCount">0</span></div></div>
                 <div class="dash-stat-card"><div class="dash-stat-icon-wrap green">💵</div><div class="dash-stat-body"><span class="dash-stat-label">Cash</span><span class="dash-stat-value" id="payCashCount">0</span></div></div>
                 <div class="dash-stat-card"><div class="dash-stat-icon-wrap yellow">🏦</div><div class="dash-stat-body"><span class="dash-stat-label">Bank Transfer</span><span class="dash-stat-value" id="payBankCount">0</span></div></div>
@@ -409,12 +407,12 @@
                     <div class="dash-filter-row">
                         <input type="text" id="paySearchInput" placeholder="🔍 Search ref..." oninput="filterPayments()">
                         <select id="filterPaymentMethod" onchange="filterPayments()"><option value="All">All Methods</option><option value="GCash">GCash</option><option value="Cash">Cash</option><option value="Bank Transfer">Bank Transfer</option><option value="None">None</option></select>
-                        <select id="payFilterStatus" onchange="filterPayments()"><option value="All">All Status</option><option value="Pending">Pending</option><option value="For Payment Review">For Payment Review</option><option value="Enrolled">Enrolled</option><option value="Enrolled (Doc. Pending)">Enrolled (Doc. Pending)</option><option value="Refunded">Refunded</option></select>
+                        <select id="payFilterStatus" onchange="filterPayments()"><option value="All">All Status</option><option value="Pending">Pending</option><option value="For Payment Review">For Payment Review</option><option value="Enrolled">Enrolled</option><option value="Enrolled (Doc. Pending)">Enrolled (Doc. Pending)</option></select>
                     </div>
                 </div>
                 <div class="dash-table-scroll">
                     <table class="dash-table">
-                        <thead><tr><th>Student ID</th><th>Full Name</th><th>Method</th><th>Mode</th><th>Total</th><th>Paid</th><th>Balance</th><th>Status</th><th>Actions</th></tr></thead>
+                        <thead><tr><th>Student ID</th><th>Full Name</th><th>Method</th><th>Mode</th><th>Total</th><th>Paid</th><th>Balance</th><th>Refundable</th><th>Status</th><th>Actions</th></tr></thead>
                         <tbody id="paymentsTableBody"><tr><td colspan="9" style="text-align:center;padding:40px;">Loading...</td></tr></tbody>
                     </table>
                 </div>
@@ -506,18 +504,6 @@
         document.getElementById('adminUserChip').textContent = adminUser;
         document.getElementById('adminAvatarInitial').textContent = adminUser.charAt(0).toUpperCase();
 
-        // Close dot menus when clicking outside
-        document.addEventListener('click', function(e) {
-            if (!e.target.closest('.dot-menu-wrapper')) {
-                document.querySelectorAll('.dot-dropdown.open').forEach(d => d.classList.remove('open'));
-            }
-        });
-        function toggleDotMenu(id) {
-            const menu = document.getElementById(id);
-            document.querySelectorAll('.dot-dropdown.open').forEach(d => { if (d.id !== id) d.classList.remove('open'); });
-            menu.classList.toggle('open');
-        }
-
         // --- Helper: get a colored status badge ---
         function getStatusBadge(status) {
             const map = {
@@ -527,14 +513,12 @@
                 'Enrolled': 'enrolled',
                 'Enrolled (Doc. Pending)': 'doc-pending',
                 'Declined': 'declined',
-                'Dropped': 'dropped',
-                'Refunded': 'refunded'
+                'Dropped': 'dropped'
             };
             const cls = map[status] || 'review';
             return `<span class="status-badge ${cls}">${status}</span>`;
         }
 
-        // --- TAB SWITCHING ---
         function switchTab(tab) {
             document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
             document.querySelectorAll('.dash-nav-item').forEach(b => b.classList.remove('active'));
@@ -604,15 +588,11 @@
                         ${s.documents_pending == 1 ? '<span class="doc-pending-badge">🔴 Doc. Pending</span>' : ''}
                     </td>
                     <td>
-                        <div class="dash-action-group">
+                        <div class="dash-action-group" style="flex-wrap:wrap; gap:8px;">
                             <button class="btn-view" onclick="viewStudent(${s.enrollment_id})">👁 View</button>
                             ${s.status === 'Dropped' ? `
-                            <div class="dot-menu-wrapper">
-                                <button class="btn-dots" onclick="toggleDotMenu('dm-s-${s.enrollment_id}')">⋮</button>
-                                <div class="dot-dropdown" id="dm-s-${s.enrollment_id}">
-                                    <button class="success" onclick="undoDrop(${s.enrollment_id})">↩ Undo Drop</button>
-                                </div>
-                            </div>` : ''}
+                                <button class="btn-view" style="background:#f0fdf4; border-color:#22c55e; color:#166534;" onclick="undoDrop(${s.enrollment_id})">↩ Undo Drop</button>
+                            ` : ''}
                         </div>
                     </td>
                 </tr>
@@ -862,7 +842,6 @@
                 // Update payment summary stats
                 document.getElementById('payTotalCount').textContent = allPayments.length;
                 document.getElementById('payEnrolledCount').textContent = allPayments.filter(r => r.status === 'Enrolled' || r.status === 'Enrolled (Doc. Pending)').length;
-                document.getElementById('payRefundedCount').textContent = allPayments.filter(r => r.status === 'Refunded').length;
                 document.getElementById('payGcashCount').textContent = allPayments.filter(r => r.payment_method === 'GCash').length;
                 document.getElementById('payCashCount').textContent = allPayments.filter(r => r.payment_method === 'Cash').length;
                 document.getElementById('payBankCount').textContent = allPayments.filter(r => r.payment_method === 'Bank Transfer').length;
@@ -874,10 +853,10 @@
         }
 
         async function undoRefund(id) {
-            if (!confirm('Are you sure you want to undo the "Refunded" status for this student?')) return;
+            if (!confirm('Are you sure you want to undo the excess refund for this student?')) return;
 
             try {
-                const res = await apiPost('api/registrar.php?action=undo_refund', {
+                const res = await apiPost('api/registrar.php?action=undo_excess_refund', {
                     enrollment_id: id,
                     admin_id: sessionStorage.getItem('adminId')
                 });
@@ -899,11 +878,16 @@
         function renderPayments(payments) {
             const tbody = document.getElementById('paymentsTableBody');
             if (payments.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="9" style="text-align:center;color:var(--gray-500);padding:40px;">No payment records found.</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="10" style="text-align:center;color:var(--gray-500);padding:40px;">No payment records found.</td></tr>`;
                 return;
             }
             tbody.innerHTML = payments.map(p => {
-                const balance = parseFloat(p.balance || 0);
+                const total = parseFloat(p.total_amount || 0);
+                const paid = parseFloat(p.total_paid || 0);
+                const balanceVal = total - paid;
+                const balance = Math.max(0, balanceVal);
+                const refundable = Math.max(0, -balanceVal);
+
                 const isPaid = balance <= 0;
                 return `
                 <tr>
@@ -911,21 +895,22 @@
                     <td>${formatStudentName(p)}</td>
                     <td>${getPaymentBadge(p.payment_method)}</td>
                     <td>${p.payment_mode}</td>
-                    <td style="font-weight:600;">${formatCurrency(p.total_amount || 0)}</td>
-                    <td style="color:#16a34a; font-weight:600;">${formatCurrency(p.total_paid || 0)}</td>
+                    <td style="font-weight:600;">${formatCurrency(total)}</td>
+                    <td style="color:#16a34a; font-weight:600;">${formatCurrency(paid)}</td>
                     <td style="color:${isPaid ? '#16a34a' : '#dc2626'}; font-weight:700;">
                         ${isPaid ? '✅ Paid' : formatCurrency(balance)}
                     </td>
+                    <td style="color:${refundable > 0 ? '#8b5cf6' : '#64748b'}; font-weight:700;">
+                        ${formatCurrency(refundable)}
+                    </td>
                     <td>${getStatusBadge(p.status)}</td>
                     <td>
-                        <button class="btn" style="padding:4px 10px; border:1px solid var(--maroon-dark); color:var(--maroon-dark); background:transparent; border-radius:6px; font-size:11px;"
-                                onclick="viewPaymentDetail(${p.enrollment_id})">
-                            💳 View Payment
-                        </button>
-                        ${p.status === 'Refunded' ? `
-                        <button class="btn" style="padding:4px 10px; border:1px solid #16a34a; color:#16a34a; background:transparent; border-radius:6px; font-size:11px; margin-top: 4px; width: 100%;"
-                                onclick="undoRefund(${p.enrollment_id})">↩ Undo Refund</button>
-                        ` : ''}
+                        <div class="dash-action-group" style="flex-wrap:wrap; gap:8px;">
+                            <button class="btn-view" onclick="viewPaymentDetail(${p.enrollment_id})">💳 View</button>
+                            ${p.has_refund == 1 ? `
+                                <button class="btn-view" style="background:#f0fdf4; border-color:#22c55e; color:#166534;" onclick="undoRefund(${p.enrollment_id})">↩ Undo Refund</button>
+                            ` : ''}
+                        </div>
                     </td>
                 </tr>
             `;
