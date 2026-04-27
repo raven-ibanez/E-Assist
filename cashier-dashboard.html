@@ -1,0 +1,671 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cashier Dashboard — Enrollment System</title>
+    <link rel="stylesheet" href="style.css?v=1.1">
+    <style>
+        /* Cashier-specific styles */
+        .payment-badge {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .payment-badge-gcash {
+            background: #dbeafe;
+            color: #1e40af;
+        }
+
+        .payment-badge-maya {
+            background: #e0e7ff;
+            color: #3730a3;
+        }
+
+        .payment-badge-bank {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .payment-badge-none {
+            background: var(--gray-100);
+            color: var(--gray-500);
+        }
+
+        .ref-number {
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--gray-700);
+            background: var(--gray-50);
+            padding: 3px 8px;
+            border-radius: 4px;
+        }
+
+        .search-bar {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .search-bar input {
+            flex: 1;
+            min-width: 200px;
+        }
+
+        @media (max-width: 640px) {
+            .search-bar {
+                flex-direction: column;
+            }
+
+            .search-bar input,
+            .search-bar select {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+
+<body style="margin:0;padding:0;background:#f4f6fa;font-family:'Inter',sans-serif;">
+
+    <div class="dash-layout">
+
+        <!-- SIDEBAR -->
+        <aside class="dash-sidebar" id="dashSidebar">
+            <img src="logo.png" alt="Logo" class="dash-sidebar-logo"
+                onerror="this.style.display='none';document.getElementById('sidebarLogoFallback').style.display='block';">
+            <span id="sidebarLogoFallback" style="display:none;font-size:24px;margin-bottom:28px;">💰</span>
+
+            <div class="dash-nav-items">
+                <button class="dash-nav-item active" id="nav-payments" onclick="switchTab('payments')">
+                    <span class="dash-nav-icon">💳</span>
+                    <span class="dash-nav-label">Payments</span>
+                </button>
+            </div>
+
+            <div class="dash-sidebar-bottom">
+                <a href="index.html" class="dash-nav-item">
+                    <span class="dash-nav-icon">🏠</span>
+                    <span class="dash-nav-label">Home</span>
+                </a>
+                <button class="dash-nav-item" onclick="logout()" style="color:#f87171;">
+                    <span class="dash-nav-icon">🚪</span>
+                    <span class="dash-nav-label">Logout</span>
+                </button>
+            </div>
+        </aside>
+
+        <!-- MAIN -->
+        <div class="dash-main">
+            <!-- Top Bar -->
+            <header class="dash-topbar">
+                <div class="dash-topbar-left">
+                    <span class="dash-topbar-title" id="cashierUserLabel">Cashier Dashboard</span>
+                    <span class="dash-topbar-sub">Brother Sun Sister Moon Academy Inc.</span>
+                </div>
+                <div class="dash-topbar-right">
+                    <div class="dash-user-chip">
+                        <div class="dash-user-avatar" id="cashierAvatarInitial">C</div>
+                        <span id="cashierUserChip">Cashier</span>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Content -->
+            <main class="dash-content">
+
+                <!-- Stats Summary -->
+                <div class="dash-stats">
+                    <div class="dash-stat-card">
+                        <div class="dash-stat-icon-wrap blue">💳</div>
+                        <div class="dash-stat-body"><span class="dash-stat-label">Total Records</span><span
+                                class="dash-stat-value" id="totalCount">0</span></div>
+                    </div>
+                    <div class="dash-stat-card">
+                        <div class="dash-stat-icon-wrap green">✅</div>
+                        <div class="dash-stat-body"><span class="dash-stat-label">Enrolled</span><span
+                                class="dash-stat-value" id="enrolledCount">0</span></div>
+                    </div>
+                    <div class="dash-stat-card">
+                        <div class="dash-stat-icon-wrap blue">📱</div>
+                        <div class="dash-stat-body"><span class="dash-stat-label">GCash</span><span
+                                class="dash-stat-value" id="gcashCount">0</span></div>
+                    </div>
+                    <div class="dash-stat-card">
+                        <div class="dash-stat-icon-wrap green">💵</div>
+                        <div class="dash-stat-body"><span class="dash-stat-label">Cash</span><span
+                                class="dash-stat-value" id="cashCount">0</span></div>
+                    </div>
+                    <div class="dash-stat-card">
+                        <div class="dash-stat-icon-wrap yellow">🏦</div>
+                        <div class="dash-stat-body"><span class="dash-stat-label">Bank Transfer</span><span
+                                class="dash-stat-value" id="bankCount">0</span></div>
+                    </div>
+                </div>
+
+                <div id="alert" class="alert"></div>
+
+                <div class="dash-table-card">
+                    <div class="dash-table-header">
+                        <span class="dash-table-title">Enrollee Payment Records</span>
+                        <!-- Search & Filter -->
+                        <div class="dash-filter-row">
+                            <input type="text" id="searchInput" placeholder="Search by name or ID..."
+                                onkeyup="filterPayments()">
+                            <select id="filterPayment" onchange="filterPayments()">
+                                <option value="All">All Payment Methods</option>
+                                <option value="GCash">GCash</option>
+                                <option value="Maya">Maya</option>
+                                <option value="Bank Transfer">Bank Transfer</option>
+                            </select>
+                            <select id="filterStatus" onchange="filterPayments()">
+                                <option value="All">All Status</option>
+                                <option value="Pending">Pending</option>
+                                <option value="For Payment Review">For Payment Review</option>
+                                <option value="For Application Review">For Application Review</option>
+                                <option value="Enrolled">Enrolled</option>
+                                <option value="Enrolled (Doc. Pending)">Enrolled (Doc. Pending)</option>
+                                <option value="Declined">Declined</option>
+                                <option value="Refundable">Refundable</option>
+                                <option value="Dropped">Dropped</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Payments Table -->
+                    <div class="dash-table-scroll">
+                        <table class="dash-table">
+                            <thead>
+                                <tr>
+                                    <th>Student ID</th>
+                                    <th>Full Name</th>
+                                    <th>Grade</th>
+                                    <th>Method</th>
+                                    <th>Mode</th>
+                                    <th>Total</th>
+                                    <th>Paid</th>
+                                    <th>Balance</th>
+                                    <th>Refundable</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="paymentsTableBody">
+                                <tr>
+                                    <td colspan="9" style="text-align:center;padding:40px;">Loading...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </main>
+        </div><!-- /.dash-main -->
+    </div><!-- /.dash-layout -->
+
+    <!-- ===== MODAL: View Payment Details ===== -->
+    <div class="modal-overlay" id="modalOverlay" onclick="closeModal()">
+        <div class="modal" onclick="event.stopPropagation()">
+            <button class="modal-close" onclick="closeModal()">✕</button>
+            <h3 id="modalTitle">💳 Payment Details</h3>
+            <div id="modalContent" class="info-grid"></div>
+            <div style="margin-top:24px; text-align:right;">
+                <button class="btn btn-outline" onclick="closeModal()">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== MODAL: Update Payment (Add Installment) ===== -->
+    <div class="modal-overlay" id="updatePaymentModal" onclick="closeUpdateModal()">
+        <div class="modal" onclick="event.stopPropagation()" style="max-width: 450px;">
+            <button class="modal-close" onclick="closeUpdateModal()">✕</button>
+            <h3>💳 Update Student Payment</h3>
+            <p style="font-size:13px; color:#666; margin-bottom:20px;">Record a new installment or balance payment.</p>
+
+            <form id="addPaymentForm">
+                <input type="hidden" id="up-payment-id" name="payment_id">
+
+                <div style="margin-bottom:15px;">
+                    <label style="display:block; font-size:12px; font-weight:700; margin-bottom:5px;">Amount Paid (₱)
+                        *</label>
+                    <input type="number" step="0.01" name="amount" required
+                        style="width:100%; padding:10px; border:1px solid #ddd; border-radius:6px;">
+                </div>
+
+                <div style="margin-bottom:15px;">
+                    <label style="display:block; font-size:12px; font-weight:700; margin-bottom:5px;">Payment Method
+                        *</label>
+                    <select id="up-method-id" name="method_id" required
+                        style="width:100%; padding:10px; border:1px solid #ddd; border-radius:6px;">
+                        <option value="">Loading...</option>
+                    </select>
+                </div>
+
+                <div style="margin-bottom:15px;">
+                    <label style="display:block; font-size:12px; font-weight:700; margin-bottom:5px;">Reference
+                        Number</label>
+                    <input type="text" name="reference" placeholder="Ref #"
+                        style="width:100%; padding:10px; border:1px solid #ddd; border-radius:6px;">
+                </div>
+
+                <div style="margin-bottom:20px;">
+                    <label style="display:block; font-size:12px; font-weight:700; margin-bottom:5px;">Notes</label>
+                    <input type="text" name="notes" placeholder="e.g. November Installment"
+                        style="width:100%; padding:10px; border:1px solid #ddd; border-radius:6px;">
+                </div>
+
+                <div style="text-align:right; gap:10px; display:flex; justify-content:flex-end;">
+                    <button type="button" class="btn btn-outline" onclick="closeUpdateModal()">Cancel</button>
+                    <button type="submit" class="btn btn-success" id="submitPaymentBtn">Save Payment</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="main.js"></script>
+    <script>
+        /*
+         * ============================================================
+         *  CASHIER DASHBOARD — JAVASCRIPT
+         * ============================================================
+         */
+
+        let allPayments = [];
+
+        if (!sessionStorage.getItem('registrarLoggedIn')) {
+            window.location.href = 'employee-login.html';
+        }
+
+        const cashierUser = sessionStorage.getItem('registrarUser') || 'Cashier';
+        document.getElementById('cashierUserLabel').textContent = `Cashier: ${cashierUser}`;
+
+        // --- Helper: get a colored status badge ---
+        function getStatusBadge(status) {
+            const map = {
+                'Pending': 'pending',
+                'For Payment Review': 'review',
+                'For Application Review': 'review',
+                'Enrolled': 'enrolled',
+                'Enrolled (Doc. Pending)': 'doc-pending',
+                'Declined': 'declined',
+                'Refundable': 'refundable',
+                'Refunded': 'refunded',
+                'Dropped': 'dropped'
+            };
+            const cls = map[status] || 'review';
+            return `<span class="status-badge ${cls}">${status}</span>`;
+        }
+
+        // --- Load all payment records from the database ---
+        async function loadPayments() {
+            try {
+                allPayments = await apiGet('api/registrar.php?action=payments');
+                updateStats(allPayments);
+                renderTable(allPayments);
+            } catch (err) {
+                showAlert('alert', '❌ Failed to load payments: ' + err.message);
+            }
+        }
+
+        // --- Update the stat cards ---
+        function updateStats(records) {
+            document.getElementById('totalCount').textContent = records.length;
+            document.getElementById('enrolledCount').textContent = records.filter(r => r.status === 'Enrolled' || r.status === 'Enrolled (Doc. Pending)').length;
+            document.getElementById('gcashCount').textContent = records.filter(r => r.payment_method === 'GCash').length;
+            document.getElementById('cashCount').textContent = records.filter(r => r.payment_method === 'Cash').length;
+            document.getElementById('bankCount').textContent = records.filter(r => r.payment_method === 'Bank Transfer').length;
+        }
+
+        // --- Helper: creates a colored badge for the payment method ---
+        function getPaymentBadge(method) {
+            if (!method) return '<span class="payment-badge-none">—</span>';
+            const cls = method.toLowerCase() === 'gcash' ? 'payment-badge-gcash' :
+                method.toLowerCase() === 'maya' ? 'payment-badge-maya' :
+                    method.toLowerCase() === 'bank transfer' ? 'payment-badge-bank' : 'payment-badge-none';
+            return `<span class="payment-badge ${cls}">${method}</span>`;
+        }
+
+        // --- Render the payment table ---
+        function renderTable(records) {
+            const tbody = document.getElementById('paymentsTableBody');
+
+            if (records.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="9" style="text-align:center;color:var(--gray-500);padding:40px;">
+                    No records found.</td></tr>`;
+                return;
+            }
+
+            tbody.innerHTML = records.map(r => {
+                const total = parseFloat(r.total_amount || 0);
+                const paid = parseFloat(r.total_paid || 0);
+                const balanceVal = total - paid;
+                const balance = Math.max(0, balanceVal);
+                let refundable = Math.max(0, -balanceVal);
+                
+                // If status is specifically 'Refundable', it means the application was declined
+                // but the payment was approved, so the student gets a FULL refund.
+                if (r.status === 'Refundable') {
+                    refundable = paid;
+                }
+
+                const isPaid = balance <= 0;
+                return `
+                <tr>
+                    <td><strong style="font-family:'Courier New',monospace;">${r.student_no}</strong></td>
+                    <td>${formatStudentName(r)}</td>
+                    <td>${r.grade_level}</td>
+                    <td>${getPaymentBadge(r.payment_method)}</td>
+                    <td>${r.payment_mode || '—'}</td>
+                    <td style="font-weight:600;">${formatCurrency(total)}</td>
+                    <td style="color:#16a34a; font-weight:600;">${formatCurrency(paid)}</td>
+                    <td style="color:${isPaid ? '#16a34a' : '#dc2626'}; font-weight:700;">
+                        ${isPaid ? '✅ Paid' : formatCurrency(balance)}
+                    </td>
+                    <td style="color:${refundable > 0 ? '#8b5cf6' : '#64748b'}; font-weight:700;">
+                        ${formatCurrency(refundable)}
+                    </td>
+                    <td>${getStatusBadge(r.status)}</td>
+                    <td>
+                        <div class="dash-action-group" style="flex-wrap:wrap; gap:8px;">
+                            <button class="btn-view" onclick="viewPayment(${r.enrollment_id})">👁 View</button>
+                            <button class="btn-view" style="border-color:#1e40af; color:#1e40af;" onclick="openUpdatePaymentModal(${r.payment_id})">💳 Update</button>
+                            
+                            ${r.cashier_status === 'pending' ? `
+                                <button class="btn-view" style="background:#dcfce7; border-color:#16a34a; color:#166534;" onclick="reviewPayment(${r.enrollment_id}, 'approved')">✅ Approve</button>
+                                <button class="btn-view" style="background:#fee2e2; border-color:#dc2626; color:#991b1b;" onclick="reviewPayment(${r.enrollment_id}, 'declined')">❌ Decline</button>
+                            ` : (r.cashier_status === 'declined' ? `
+                                <button class="btn-view" style="background:#dcfce7; border-color:#16a34a; color:#166534;" onclick="reviewPayment(${r.enrollment_id}, 'approved')">✅ Approve</button>
+                            ` : '')}
+                            
+                            ${refundable > 0 ? `
+                                <button class="btn-view" style="background:#fef2f2; border-color:#b91c1c; color:#b91c1c;" onclick="refundExcess(${r.enrollment_id})">💸 Refund Excess</button>
+                            ` : ''}
+
+
+                            ${r.has_refund == 1 ? `
+                                <button class="btn-view" style="background:#f0fdf4; border-color:#22c55e; color:#166534;" onclick="undoRefund(${r.enrollment_id})">↩ Undo Refund</button>
+                            ` : ''}
+                        </div>
+                    </td>
+                </tr>
+            `;
+            }).join('');
+        }
+
+        // --- Filter payments by search text, payment method, and status ---
+        function filterPayments() {
+            const search = document.getElementById('searchInput').value.toLowerCase();
+            const payFilter = document.getElementById('filterPayment').value;
+            const statusFilter = document.getElementById('filterStatus').value;
+
+            let filtered = allPayments;
+
+            // Text search
+            if (search) {
+                filtered = filtered.filter(r =>
+                    nameMatches(r, search) ||
+                    r.student_no.toLowerCase().includes(search) ||
+                    (r.reference_number || '').toLowerCase().includes(search) ||
+                    (formatParentName(r.parent_first_name, r.parent_last_name, r.parent_middle_name)).toLowerCase().includes(search)
+                );
+            }
+
+            // Payment method filter
+            if (payFilter !== 'All') {
+                if (payFilter === 'None') {
+                    filtered = filtered.filter(r => !r.payment_method);
+                } else {
+                    filtered = filtered.filter(r => r.payment_method === payFilter);
+                }
+            }
+
+            // Status filter
+            if (statusFilter !== 'All') {
+                filtered = filtered.filter(r => r.status === statusFilter);
+            }
+
+            renderTable(filtered);
+        }
+
+        // --- Approve or Decline a payment ---
+        async function reviewPayment(enrollmentId, decision) {
+            const labels = {
+                'approved': 'approve this payment',
+                'declined': 'decline this payment',
+                'refunded': 'mark this payment as REFUNDED'
+            };
+
+            let reason = '';
+            if (decision === 'declined' || decision === 'refunded') {
+                reason = prompt(`Please provide a reason for ${decision === 'declined' ? 'declining' : 'refunding'} this payment:`);
+                if (reason === null) return; // User cancelled
+                if (!reason.trim()) {
+                    alert('A reason is required when declining or refunding.');
+                    return;
+                }
+            }
+
+            if (!confirm(`Are you sure you want to ${labels[decision]}?`)) return;
+
+            try {
+                const result = await apiPost('api/registrar.php?action=review_payment', {
+                    enrollment_id: enrollmentId,
+                    decision: decision,
+                    admin_id: sessionStorage.getItem('adminId'),
+                    reason: reason
+                });
+                let msg = '✅ ' + result.message + ` New status: ${result.new_status}`;
+                if (result.email_sent) {
+                    msg += ' | 📧 Email notification sent!';
+                } else if (result.email_msg && !result.email_msg.includes('not applicable')) {
+                    msg += ' | ⚠️ Email not sent: ' + result.email_msg;
+                }
+                showAlert('alert', msg, 'success');
+                loadPayments(); // Refresh the table
+            } catch (err) {
+                showAlert('alert', '❌ ' + err.message);
+            }
+        }
+
+        async function refundExcess(id) {
+            const record = allPayments.find(p => p.enrollment_id === id);
+            const msg = (record && record.status === 'Refundable') 
+                ? 'Are you sure you want to refund the FULL payment for this declined student?' 
+                : 'Are you sure you want to refund the excess payment for this student?';
+                
+            if (!confirm(msg)) return;
+
+            try {
+                const res = await apiPost('api/registrar.php?action=refund_excess', {
+                    enrollment_id: id,
+                    admin_id: sessionStorage.getItem('adminId')
+                });
+
+                showAlert('alert', '✅ ' + res.message, 'success');
+                loadPayments();
+            } catch (err) {
+                showAlert('alert', '❌ ' + err.message);
+            }
+        }
+
+
+        async function undoRefund(id) {
+            if (!confirm('Are you sure you want to undo the excess refund for this student?')) return;
+
+            try {
+                const res = await apiPost('api/registrar.php?action=undo_excess_refund', {
+                    enrollment_id: id,
+                    admin_id: sessionStorage.getItem('adminId')
+                });
+
+                showAlert('alert', '✅ ' + res.message, 'success');
+                loadPayments();
+            } catch (err) {
+                showAlert('alert', '❌ ' + err.message);
+            }
+        }
+
+        // --- Show payment details in a popup modal ---
+        function viewPayment(id) {
+            const r = allPayments.find(p => p.enrollment_id == id);
+            if (!r) return;
+
+            document.getElementById('modalContent').innerHTML = `
+                ${r.registrar_notes || r.cashier_notes ? `
+                <div style="grid-column:1/-1; background:#fff7ed; border-left:4px solid #f97316; border-radius:8px; padding:14px 16px; margin-bottom:12px;">
+                    <strong style="color:#c2410c;">📝 Reviewer Notes</strong>
+                    ${r.registrar_notes ? `<p style="margin:6px 0 0; font-size:13px; color:#9a3412;"><strong>Registrar:</strong> ${r.registrar_notes}</p>` : ''}
+                    ${r.cashier_notes ? `<p style="margin:6px 0 0; font-size:13px; color:#9a3412;"><strong>Cashier:</strong> ${r.cashier_notes}</p>` : ''}
+                </div>` : ''}
+
+                <div class="info-item"><label>Student ID</label><span>${r.student_no}</span></div>
+                <div class="info-item"><label>Full Name</label><span>${formatStudentName(r)}</span></div>
+                <div class="info-item"><label>Grade Level</label><span>${r.grade_level}</span></div>
+                <div class="info-item"><label>Parent / Guardian</label><span>${formatParentName(r.parent_first_name, r.parent_last_name, r.parent_middle_name)}</span></div>
+                <div class="info-item"><label>Contact</label><span>${r.parent_contact || '—'}</span></div>
+                <div class="info-item"><label>Payment Method</label><span>${r.payment_method || 'Not provided'}</span></div>
+                <div class="info-item"><label>Payment Mode</label><span>${r.payment_mode || '—'}${r.payment_mode === 'Monthly' ? ' (10 months)' : ''}</span></div>
+                <div class="info-item"><label>Reference Number</label><span class="ref-number">${r.reference_number || '—'}</span></div>
+                <div class="info-item"><label>Total Tuition</label><span style="font-weight:700;color:var(--maroon-dark);">${formatCurrency(r.tuition_fee)}</span></div>
+                <div class="info-item"><label>Total Books</label><span style="font-weight:700;color:var(--maroon-dark);">${formatCurrency(r.books_fee)}</span></div>
+                <div class="info-item"><label>Overall Status</label><span>${getStatusBadge(r.status)}</span></div>
+                <div class="info-item" style="grid-column: span 2; background: #f8fafc; padding: 12px; border-radius: 8px; margin-top: 10px; display: flex; justify-content: space-around; border: 1px solid #e2e8f0;">
+                    <div style="text-align:center;">
+                        <label style="font-size:11px; color:#64748b; display:block; margin-bottom:4px;">TOTAL PAYABLE</label>
+                        <span style="font-size:18px; font-weight:800; color:#1e293b;">${formatCurrency(r.total_amount)}</span>
+                    </div>
+                    <div style="text-align:center;">
+                        <label style="font-size:11px; color:#64748b; display:block; margin-bottom:4px;">TOTAL PAID</label>
+                        <span style="font-size:18px; font-weight:800; color:#16a34a;">${formatCurrency(r.total_paid)}</span>
+                    </div>
+                    <div style="text-align:center;">
+                        <label style="font-size:11px; color:#64748b; display:block; margin-bottom:4px;">REMAINING BALANCE</label>
+                        <span style="font-size:18px; font-weight:800; color:#dc2626;">${formatCurrency(r.balance)}</span>
+                    </div>
+                </div>
+                <div id="paymentHistorySection" style="grid-column: span 2; margin-top: 20px;">
+                    <h4 style="margin-bottom:10px; font-size:14px; border-bottom:1px solid #eee; padding-bottom:5px;">📜 Payment History</h4>
+                    <div id="historyTableContainer" style="max-height: 200px; overflow-y: auto;">
+                        <p style="text-align:center; color:#999; font-size:12px;">Loading history...</p>
+                    </div>
+                </div>
+            `;
+            document.getElementById('modalOverlay').classList.add('active');
+            document.body.classList.add('modal-open');
+            loadPaymentHistory(r.payment_id);
+        }
+
+        async function loadPaymentHistory(paymentId) {
+            try {
+                const history = await apiGet(`api/registrar.php?action=payment_history&payment_id=${paymentId}`);
+                const container = document.getElementById('historyTableContainer');
+                if (history.length === 0) {
+                    container.innerHTML = '<p style="text-align:center; color:#999; font-size:12px;">No payments found.</p>';
+                    return;
+                }
+                container.innerHTML = `
+                    <table style="width:100%; font-size:12px; border-collapse:collapse;">
+                        <thead>
+                            <tr style="text-align:left; border-bottom:1px solid #eee;">
+                                <th style="padding:5px;">Date</th>
+                                <th style="padding:5px;">Amount</th>
+                                <th style="padding:5px;">Method</th>
+                                <th style="padding:5px;">Reference</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${history.map(h => `
+                                <tr style="border-bottom:1px solid #f9f9f9;">
+                                    <td style="padding:5px;">${formatDate(h.created_at)}</td>
+                                    <td style="padding:5px; font-weight:600;">${formatCurrency(h.amount_paid)}</td>
+                                    <td style="padding:5px;">${h.method_name}</td>
+                                    <td style="padding:5px;"><span class="ref-number">${h.reference_number || '—'}</span></td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                `;
+            } catch (err) {
+                document.getElementById('historyTableContainer').innerHTML = '<p style="color:red; font-size:12px;">Failed to load history.</p>';
+            }
+        }
+
+        // --- NEW: MODAL for Updating Payments ---
+
+        function closeModal() {
+            document.getElementById('modalOverlay').classList.remove('active');
+            document.body.classList.remove('modal-open');
+        }
+
+        // --- Logout: clear session and go to login page ---
+        function logout() {
+            sessionStorage.removeItem('registrarLoggedIn');
+            sessionStorage.removeItem('registrarUser');
+            sessionStorage.removeItem('userRole');
+            window.location.href = 'employee-login.html';
+        }
+
+        // --- Helper: format a date string nicely ---
+        function formatDate(dateStr) {
+            if (!dateStr) return '—';
+            const d = new Date(dateStr);
+            return d.toLocaleDateString('en-PH', { year: 'numeric', month: 'short', day: 'numeric' });
+        }
+
+        // --- NEW: Logic for Updating Payments ---
+        async function openUpdatePaymentModal(paymentId) {
+            document.getElementById('up-payment-id').value = paymentId;
+            document.getElementById('updatePaymentModal').classList.add('active');
+            document.body.classList.add('modal-open');
+
+            // Load methods if not already done
+            const methodSelect = document.getElementById('up-method-id');
+            if (methodSelect.options.length <= 1) {
+                try {
+                    const methods = await apiGet('api/lookups.php?action=payment-methods');
+                    methodSelect.innerHTML = '<option value="">Select Method...</option>';
+                    methods.forEach(m => {
+                        methodSelect.innerHTML += `<option value="${m.id}">${m.name}</option>`;
+                    });
+                } catch (e) {
+                    methodSelect.innerHTML = '<option value="">Error loading</option>';
+                }
+            }
+        }
+
+        function closeUpdateModal() {
+            document.getElementById('updatePaymentModal').classList.remove('active');
+            document.body.classList.remove('modal-open');
+            document.getElementById('addPaymentForm').reset();
+        }
+
+        document.getElementById('addPaymentForm').addEventListener('submit', async function (e) {
+            e.preventDefault();
+            const btn = document.getElementById('submitPaymentBtn');
+            const formData = new FormData(this);
+            const payload = Object.fromEntries(formData.entries());
+            payload.admin_id = sessionStorage.getItem('adminId');
+
+            setLoading('submitPaymentBtn', true, 'Saving...');
+            try {
+                const res = await apiPost('api/registrar.php?action=add_payment', payload);
+                showAlert('alert', '✅ ' + res.message, 'success');
+                closeUpdateModal();
+                loadPayments();
+            } catch (err) {
+                alert('Error: ' + err.message);
+            } finally {
+                setLoading('submitPaymentBtn', false, 'Save Payment');
+            }
+        });
+
+        // Load payment data when the page opens
+        loadPayments();
+    </script>
+</body>
+
+</html>

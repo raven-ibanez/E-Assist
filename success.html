@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registration Successful — Enrollment System</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .success-page-wrapper {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 32px 16px 60px;
+            background: #f5f0f0;
+        }
+        .success-banner {
+            display: flex;
+            align-items: center;
+            gap: 18px;
+            background: #fff;
+            border-left: 6px solid #22c55e;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+            padding: 22px 28px;
+            max-width: 720px;
+            width: 100%;
+            margin-bottom: 24px;
+        }
+        .success-check {
+            width: 52px; height: 52px;
+            border-radius: 50%;
+            background: #22c55e;
+            color: #fff;
+            font-size: 26px;
+            display: flex; align-items: center; justify-content: center;
+            flex-shrink: 0;
+        }
+        .success-banner h2 { margin: 0 0 4px; font-size: 18px; color: #1a1a2e; }
+        .success-banner p  { margin: 0; font-size: 13px; color: #6b7280; }
+        .download-btn {
+            display: inline-flex; align-items: center; gap: 10px;
+            background: #7a1e1e;
+            color: #fff; border: none; border-radius: 10px;
+            padding: 13px 30px; font-size: 15px; font-weight: 700;
+            cursor: pointer; margin-bottom: 24px;
+            transition: background 0.2s;
+        }
+        .download-btn:hover { background: #8b2222; }
+        /* Preview card — purely for visual display on-screen */
+        #receiptPreview {
+            width: 680px;
+            max-width: 100%;
+            background: #fff;
+            border-radius: 16px;
+            box-shadow: 0 6px 40px rgba(0,0,0,0.13);
+            overflow: hidden;
+        }
+        .rp-header {
+            background: #7a1e1e;
+            padding: 28px 40px 22px;
+            text-align: center;
+        }
+        .rp-logo { font-size: 40px; }
+        .rp-school-name { color:#fff; font-size:16px; font-weight:800; margin:10px 0 4px; }
+        .rp-sub { color:#e8b4b4; font-size:10px; letter-spacing:1.5px; text-transform:uppercase; }
+        .rp-divider { height:6px; background:#b05050; }
+        .rp-body { padding:24px 40px 32px; background:#fff; }
+        .rp-title-row { display:flex; justify-content:space-between; align-items:center; padding-bottom:16px; border-bottom:2px dashed #d1d5db; margin-bottom:20px; }
+        .rp-title { font-size:19px; font-weight:800; color:#1a1a2e; }
+        .rp-badge { background:#16a34a; color:#fff; font-size:11px; font-weight:700; padding:5px 14px; border-radius:20px; }
+        .rp-sec { font-size:10px; font-weight:700; color:#9ca3af; text-transform:uppercase; letter-spacing:1.8px; margin:18px 0 10px; }
+        .rp-student-band { background:#fdf2f2; border:1.5px solid #f9a8a8; border-radius:10px; padding:16px 20px; display:flex; align-items:center; gap:16px; }
+        .rp-avatar { width:50px; height:50px; border-radius:50%; background:#7a1e1e; display:flex; align-items:center; justify-content:center; font-size:22px; flex-shrink:0; }
+        .rp-sname { font-size:19px; font-weight:800; color:#1a1a2e; }
+        .rp-sno { font-size:12px; color:#6b7280; font-weight:600; }
+        .rp-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+        .rp-cell { background:#f3f4f6; border-radius:8px; padding:12px 14px; }
+        .rp-cell .cl { display:block; font-size:10px; font-weight:700; color:#9ca3af; text-transform:uppercase; letter-spacing:1.2px; margin-bottom:5px; }
+        .rp-cell .cv { font-size:14px; font-weight:700; color:#1a1a2e; }
+        .rp-billing { border-radius:10px; overflow:hidden; border:1px solid #e5e7eb; }
+        .bill-row { display:flex; justify-content:space-between; align-items:center; padding:12px 16px; font-size:14px; background:#f9fafb; border-bottom:1px solid #e5e7eb; }
+        .bill-row span:last-child { font-weight:700; color:#1a1a2e; }
+        .bill-total { display:flex; justify-content:space-between; align-items:center; padding:15px 16px; font-size:16px; font-weight:800; background:#7a1e1e; color:#fff; }
+        .rp-ref { background:#eff6ff; border:1.5px solid #93c5fd; border-radius:10px; padding:16px 18px; display:flex; justify-content:space-between; align-items:center; }
+        .ref-lbl { font-size:11px; font-weight:700; color:#3b82f6; text-transform:uppercase; letter-spacing:1.2px; margin-bottom:5px; }
+        .ref-val { font-size:17px; font-weight:800; color:#1d4ed8; letter-spacing:1px; }
+        .rp-footer { background:#f3f4f6; border-top:1.5px dashed #e5e7eb; padding:16px 40px; display:flex; justify-content:space-between; font-size:11px; color:#9ca3af; }
+        .rp-footer strong { color:#7a1e1e; }
+        .back-link { margin-top:24px; font-size:13px; color:#6b7280; text-decoration:none; }
+        .back-link:hover { color:#7a1e1e; text-decoration:underline; }
+    </style>
+</head>
+<body class="biodata-page">
+<div class="success-page-wrapper">
+
+    <div class="success-banner">
+        <div class="success-check">✓</div>
+        <div>
+            <h2>Enrollment Application Submitted!</h2>
+            <p>Please keep a copy of this receipt. Check your email and the school's Facebook page for updates.</p>
+        </div>
+    </div>
+
+    <button class="download-btn" onclick="downloadReceipt()" id="downloadBtn">
+        ⬇ Download Receipt Image
+    </button>
+
+    <!-- On-screen preview only -->
+    <div id="receiptPreview">
+        <div class="rp-header">
+            <div class="rp-logo">🏫</div>
+            <div class="rp-school-name">Brother Sun Sister Moon Academy Inc.</div>
+            <div class="rp-sub">Enrollment Application Receipt</div>
+        </div>
+        <div class="rp-divider"></div>
+        <div class="rp-body">
+            <div class="rp-title-row">
+                <div class="rp-title">📋 Application Receipt</div>
+                <div class="rp-badge">✓ SUBMITTED</div>
+            </div>
+            <div class="rp-sec">Student Information</div>
+            <div class="rp-student-band">
+                <div class="rp-avatar">🎒</div>
+                <div>
+                    <div class="rp-sname" id="r-name">—</div>
+                    <div class="rp-sno"   id="r-id">Student No: —</div>
+                </div>
+            </div>
+            <div class="rp-sec">Payment Details</div>
+            <div class="rp-grid">
+                <div class="rp-cell"><span class="cl">Grade Level</span><span class="cv" id="r-grade">—</span></div>
+                <div class="rp-cell"><span class="cl">Payment Method</span><span class="cv" id="r-method">—</span></div>
+                <div class="rp-cell"><span class="cl">Billing Mode</span><span class="cv" id="r-mode">—</span></div>
+                <div class="rp-cell"><span class="cl">Date Submitted</span><span class="cv" id="r-date">—</span></div>
+            </div>
+            <div class="rp-sec">Billing Breakdown</div>
+            <div class="rp-billing">
+                <div class="bill-row"><span>Tuition Fee</span><span id="r-tuition">—</span></div>
+                <div class="bill-row"><span>Book Fee</span><span id="r-books">—</span></div>
+                <div class="bill-row" style="background:#f0f9ff; border-top:2px solid #e5e7eb;"><span>Amount Paid Now</span><span id="r-paid" style="color:#1d4ed8;">—</span></div>
+                <div class="bill-total"><span>Full Total Amount</span><span id="r-total">—</span></div>
+            </div>
+            <div class="rp-sec" id="ref-sec-title">Reference / Transaction</div>
+            <div class="rp-ref" id="ref-sec-box">
+                <div>
+                    <div class="ref-lbl">Reference Number</div>
+                    <div class="ref-val" id="r-ref">—</div>
+                </div>
+                <div style="font-size:26px">🔖</div>
+            </div>
+            <div id="cash-instruction" style="display:none; text-align:center; padding: 10px 40px 20px; font-weight: bold; color: #7a1e1e; font-size: 14px;">
+                Head to the cashier to complete your payment process, and present this form
+            </div>
+        </div>
+        <div class="rp-footer">
+            <div>Powered by <strong>E-Assist Enrollment System</strong></div>
+            <div id="r-footer-date"></div>
+        </div>
+    </div>
+
+    <a href="index.html" class="back-link">← Back to Home</a>
+</div>
+
+<script>
+// ── Read URL params ──────────────────────────────────────────────────────
+const p           = new URLSearchParams(window.location.search);
+const studentName = p.get('name')    || 'Student';
+const studentNo   = p.get('id')      || '—';
+const payMethod   = p.get('method')  || '—';
+const payMode     = p.get('mode')    || '—';
+const refNumber   = p.get('ref')     || 'N/A (Cash)';
+const totalAmt    = p.get('total')   || '—';
+const paidAmt     = p.get('paid')    || '—';
+const tuitionAmt  = p.get('tuition') || '—';
+const booksAmt    = p.get('books')   || '—';
+const gradeLevel  = p.get('grade')   || '—';
+
+const now     = new Date();
+const dateStr = now.toLocaleDateString('en-PH', { year:'numeric', month:'long', day:'numeric', hour:'2-digit', minute:'2-digit' });
+const modeLabel = payMode === 'Full' ? 'Full Payment' : 'Monthly Installment';
+
+// ── Populate preview ─────────────────────────────────────────────────────
+document.getElementById('r-name').textContent    = studentName;
+document.getElementById('r-id').textContent      = 'Student No: ' + studentNo;
+document.getElementById('r-grade').textContent   = gradeLevel;
+document.getElementById('r-method').textContent  = payMethod;
+document.getElementById('r-mode').textContent    = modeLabel;
+document.getElementById('r-date').textContent    = dateStr;
+document.getElementById('r-tuition').textContent = tuitionAmt;
+document.getElementById('r-books').textContent   = booksAmt;
+document.getElementById('r-paid').textContent    = paidAmt;
+document.getElementById('r-total').textContent   = totalAmt;
+
+if (payMethod === 'Cash') {
+    document.getElementById('ref-sec-title').style.display = 'none';
+    document.getElementById('ref-sec-box').style.display = 'none';
+    document.getElementById('cash-instruction').style.display = 'block';
+} else {
+    document.getElementById('r-ref').textContent     = refNumber;
+}
+
+document.getElementById('r-footer-date').textContent = now.toLocaleDateString('en-PH', { year:'numeric', month:'short', day:'numeric' });
+
+// ── Canvas drawing helpers ────────────────────────────────────────────────
+function roundRect(ctx, x, y, w, h, r) {
+    if (typeof r === 'number') r = [r, r, r, r];
+    const [tl, tr, br, bl] = r;
+    ctx.beginPath();
+    ctx.moveTo(x + tl, y);
+    ctx.lineTo(x + w - tr, y);      ctx.arcTo(x+w, y,     x+w,   y+tr,  tr);
+    ctx.lineTo(x + w, y + h - br);  ctx.arcTo(x+w, y+h,   x+w-br,y+h,   br);
+    ctx.lineTo(x + bl, y + h);      ctx.arcTo(x,   y+h,   x,     y+h-bl,bl);
+    ctx.lineTo(x, y + tl);          ctx.arcTo(x,   y,     x+tl,  y,     tl);
+    ctx.closePath();
+}
+function fillRR(ctx, x, y, w, h, r, color) {
+    roundRect(ctx, x, y, w, h, r);
+    ctx.fillStyle = color;
+    ctx.fill();
+}
+function strokeRR(ctx, x, y, w, h, r, color, lw=1.5) {
+    roundRect(ctx, x, y, w, h, r);
+    ctx.strokeStyle = color; ctx.lineWidth = lw;
+    ctx.stroke();
+}
+function txt(ctx, str, x, y, size, color, align='left', bold=false) {
+    ctx.font = `${bold ? '700 ' : '400 '}${size}px Arial, sans-serif`;
+    ctx.fillStyle = color; ctx.textAlign = align;
+    ctx.fillText(String(str || '—'), x, y);
+    ctx.textAlign = 'left';
+}
+function dashes(ctx, x1, y1, x2, y2, color='#d1d5db') {
+    ctx.save(); ctx.setLineDash([6,4]);
+    ctx.strokeStyle = color; ctx.lineWidth = 1.5;
+    ctx.beginPath(); ctx.moveTo(x1,y1); ctx.lineTo(x2,y2); ctx.stroke();
+    ctx.restore();
+}
+
+// ── Download: draw everything on canvas ─────────────────────────────────
+function downloadReceipt() {
+    const btn = document.getElementById('downloadBtn');
+    btn.disabled = true; btn.textContent = '⏳ Generating…';
+
+    const W   = 680;
+    const PAD = 40;
+    const S   = 2;          // scale (retina)
+
+    /* ---- layout constants ---- */
+    const HDR_H  = 130;
+    const DIV_H  = 6;
+    const BODY_T = 24;
+    const TITLE_H = 56;     // title row + dashed line
+    const SEC_H   = 28;     // section label
+    const BAND_H  = 80;
+    const GRID_ROWS = 2, CELL_H = 62, GRID_GAP = 10;
+    const GRID_H  = GRID_ROWS * CELL_H + (GRID_ROWS - 1) * GRID_GAP;
+    const BILL_ROW = 42, BILL_TOT = 52;
+    const BILL_H  = BILL_ROW * 3 + BILL_TOT;
+    const REF_H   = 72;
+    const BODY_B  = 32;
+    const FTR_H   = 52;
+
+    const REF_TOTAL_H = (payMethod === 'Cash') ? 50 : (SEC_H + REF_H);
+
+    const TOTAL_H = HDR_H + DIV_H + BODY_T
+                  + TITLE_H
+                  + SEC_H + BAND_H + 16
+                  + SEC_H + GRID_H + 16
+                  + SEC_H + BILL_H + 16
+                  + REF_TOTAL_H
+                  + BODY_B + FTR_H;
+
+    const canvas = document.createElement('canvas');
+    canvas.width  = W * S;
+    canvas.height = TOTAL_H * S;
+    const ctx = canvas.getContext('2d');
+    ctx.scale(S, S);
+
+    /* ---------- draw ---------- */
+    let y = 0;
+
+    // White BG
+    ctx.fillStyle = '#ffffff'; ctx.fillRect(0, 0, W, TOTAL_H);
+
+    // ── Header ──
+    ctx.fillStyle = '#7a1e1e'; ctx.fillRect(0, 0, W, HDR_H);
+    ctx.font = '36px Arial'; ctx.textAlign = 'center';
+    ctx.fillText('🏫', W/2, 50);
+    txt(ctx, 'Brother Sun Sister Moon Academy Inc.', W/2, 80, 15, '#ffffff', 'center', true);
+    txt(ctx, 'ENROLLMENT APPLICATION RECEIPT',        W/2, 98, 10, '#e8b4b4', 'center');
+    y = HDR_H;
+
+    // ── Divider ──
+    ctx.fillStyle = '#b05050'; ctx.fillRect(0, y, W, DIV_H);
+    y += DIV_H + BODY_T;
+
+    // ── Title row ──
+    txt(ctx, 'Application Receipt', PAD, y + 18, 18, '#1a1a2e', 'left', true);
+    fillRR(ctx, W - PAD - 118, y, 118, 28, 14, '#16a34a');
+    txt(ctx, '✓ SUBMITTED', W - PAD - 59, y + 19, 11, '#ffffff', 'center', true);
+    y += 32;
+    dashes(ctx, PAD, y, W - PAD, y);
+    y += 24;
+
+    // ── Student band ──
+    txt(ctx, 'STUDENT INFORMATION', PAD, y, 9, '#9ca3af', 'left', true);
+    y += 12;
+    fillRR(ctx,    PAD, y, W - PAD*2, BAND_H, 10, '#fdf2f2');
+    strokeRR(ctx,  PAD, y, W - PAD*2, BAND_H, 10, '#f9a8a8');
+    ctx.beginPath(); ctx.arc(PAD + 46, y + BAND_H/2, 26, 0, Math.PI*2);
+    ctx.fillStyle = '#7a1e1e'; ctx.fill();
+    ctx.font = '20px Arial'; ctx.textAlign = 'center';
+    ctx.fillText('🎒', PAD + 46, y + BAND_H/2 + 8);
+    txt(ctx, studentName, PAD + 86, y + BAND_H/2 - 4,  16, '#1a1a2e', 'left', true);
+    txt(ctx, 'Student No: ' + studentNo, PAD + 86, y + BAND_H/2 + 16, 12, '#6b7280');
+    y += BAND_H + 16;
+
+    // ── Payment grid ──
+    txt(ctx, 'PAYMENT DETAILS', PAD, y, 9, '#9ca3af', 'left', true);
+    y += 12;
+    const CW = (W - PAD*2 - GRID_GAP) / 2;
+    const gridData = [
+        ['GRADE LEVEL',    gradeLevel],
+        ['PAYMENT METHOD', payMethod],
+        ['BILLING MODE',   modeLabel],
+        ['DATE SUBMITTED', dateStr],
+    ];
+    for (let i = 0; i < 4; i++) {
+        const col = i % 2, row = Math.floor(i / 2);
+        const cx = PAD + col * (CW + GRID_GAP);
+        const cy = y + row * (CELL_H + GRID_GAP);
+        fillRR(ctx, cx, cy, CW, CELL_H, 8, '#f3f4f6');
+        txt(ctx, gridData[i][0], cx + 14, cy + 18, 9,  '#9ca3af', 'left', true);
+        txt(ctx, gridData[i][1], cx + 14, cy + 42, 13, '#1a1a2e', 'left', true);
+    }
+    y += GRID_H + 16;
+
+    // ── Billing ──
+    txt(ctx, 'BILLING BREAKDOWN', PAD, y, 9, '#9ca3af', 'left', true);
+    y += 12;
+    strokeRR(ctx, PAD, y, W - PAD*2, BILL_H, 10, '#e5e7eb');
+    // row 1
+    fillRR(ctx, PAD, y, W - PAD*2, BILL_ROW, [10,10,0,0], '#f9fafb');
+    txt(ctx, 'Tuition Fee', PAD+16, y + BILL_ROW/2 + 5, 13, '#374151');
+    txt(ctx, tuitionAmt, W-PAD-16, y + BILL_ROW/2 + 5, 13, '#1a1a2e', 'right', true);
+    ctx.fillStyle = '#e5e7eb'; ctx.fillRect(PAD, y + BILL_ROW, W - PAD*2, 1);
+    // row 2
+    fillRR(ctx, PAD, y + BILL_ROW + 1, W - PAD*2, BILL_ROW - 1, 0, '#f9fafb');
+    txt(ctx, 'Book Fee', PAD+16, y + BILL_ROW + BILL_ROW/2 + 5, 13, '#374151');
+    txt(ctx, booksAmt, W-PAD-16, y + BILL_ROW + BILL_ROW/2 + 5, 13, '#1a1a2e', 'right', true);
+    ctx.fillStyle = '#e5e7eb'; ctx.fillRect(PAD, y + BILL_ROW*2, W - PAD*2, 1);
+    // row 3 (Paid Now)
+    fillRR(ctx, PAD, y + BILL_ROW*2 + 1, W - PAD*2, BILL_ROW - 1, 0, '#eff6ff');
+    txt(ctx, 'Amount Paid Now', PAD+16, y + BILL_ROW*2 + BILL_ROW/2 + 5, 13, '#1d4ed8', 'left', true);
+    txt(ctx, paidAmt, W-PAD-16, y + BILL_ROW*2 + BILL_ROW/2 + 5, 13, '#1d4ed8', 'right', true);
+    ctx.fillStyle = '#e5e7eb'; ctx.fillRect(PAD, y + BILL_ROW*3, W - PAD*2, 1);
+    // total
+    fillRR(ctx, PAD, y + BILL_ROW*3 + 1, W - PAD*2, BILL_TOT - 1, [0,0,10,10], '#7a1e1e');
+    txt(ctx, 'Full Total Amount', PAD+16, y + BILL_ROW*3 + BILL_TOT/2 + 6, 15, '#ffffff', 'left', true);
+    txt(ctx, totalAmt, W-PAD-16, y + BILL_ROW*3 + BILL_TOT/2 + 6, 15, '#ffffff', 'right', true);
+    y += BILL_H + 16;
+
+    // ── Reference / Cash Instruction ──
+    if (payMethod === 'Cash') {
+        y += 20;
+        txt(ctx, 'Head to the cashier to complete your payment process, and present this form', W/2, y, 14, '#7a1e1e', 'center', true);
+        y += 30 + BODY_B;
+    } else {
+        txt(ctx, 'REFERENCE / TRANSACTION', PAD, y, 9, '#9ca3af', 'left', true);
+        y += 12;
+        fillRR(ctx,   PAD, y, W - PAD*2, REF_H, 10, '#eff6ff');
+        strokeRR(ctx, PAD, y, W - PAD*2, REF_H, 10, '#93c5fd');
+        txt(ctx, 'REFERENCE NUMBER', PAD+18, y + 22, 10, '#3b82f6', 'left', true);
+        txt(ctx, refNumber,           PAD+18, y + 48, 16, '#1d4ed8', 'left', true);
+        ctx.font = '22px Arial'; ctx.textAlign = 'right';
+        ctx.fillText('🔖', W - PAD - 14, y + REF_H/2 + 10);
+        y += REF_H + BODY_B;
+    }
+
+    // ── Footer ──
+    ctx.fillStyle = '#f3f4f6'; ctx.fillRect(0, y, W, FTR_H);
+    dashes(ctx, 0, y, W, y, '#e5e7eb');
+    txt(ctx, 'Powered by  E-Assist Enrollment System', PAD, y + FTR_H/2 + 5, 11, '#9ca3af');
+    txt(ctx, now.toLocaleDateString('en-PH', {year:'numeric',month:'short',day:'numeric'}),
+        W - PAD, y + FTR_H/2 + 5, 11, '#9ca3af', 'right');
+
+    // ── Save ──
+    const link = document.createElement('a');
+    link.download = `E-Assist_Receipt_${studentNo}.png`;
+    link.href = canvas.toDataURL('image/png');
+    link.click();
+
+    btn.disabled = false;
+    btn.textContent = '⬇ Download Receipt Image';
+}
+</script>
+</body>
+</html>

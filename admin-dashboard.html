@@ -1,0 +1,1183 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard — Enrollment System</title>
+    <link rel="stylesheet" href="style.css?v=1.1">
+    <style>
+        /* Legacy tab compat kept for JS */
+        .tab-nav { display:none; }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; animation: fadeInTab 0.25s ease; }
+
+        .tab-btn {
+            flex: 1;
+            padding: 16px 20px;
+            border: none;
+            background: var(--white);
+            color: var(--gray-500);
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            border-bottom: 3px solid transparent;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .tab-btn:hover {
+            background: var(--gray-50);
+            color: var(--gray-700);
+        }
+
+        .tab-btn.active {
+            color: var(--maroon-dark);
+            border-bottom-color: var(--maroon-dark);
+            background: #fff5f6;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(5px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Employee cards */
+        .employee-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 16px;
+            margin-top: 20px;
+        }
+
+        .employee-card {
+            background: var(--white);
+            border: 1.5px solid var(--gray-100);
+            border-radius: var(--radius);
+            padding: 20px;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            transition: all 0.2s;
+        }
+
+        .employee-card:hover {
+            border-color: var(--gray-300);
+            box-shadow: var(--shadow);
+        }
+
+        .employee-avatar {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            flex-shrink: 0;
+        }
+
+        .avatar-admin {
+            background: #fef3c7;
+        }
+
+        .avatar-registrar {
+            background: #dbeafe;
+        }
+
+        .avatar-cashier {
+            background: #d1fae5;
+        }
+
+        .employee-info {
+            flex: 1;
+        }
+
+        .employee-info h4 {
+            font-size: 15px;
+            font-weight: 700;
+            color: var(--gray-900);
+            margin-bottom: 2px;
+        }
+
+        .role-tag {
+            display: inline-block;
+            padding: 2px 10px;
+            border-radius: 999px;
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .role-admin {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .role-registrar {
+            background: #dbeafe;
+            color: #1e40af;
+        }
+
+        .role-cashier {
+            background: #d1fae5;
+            color: #065f46;
+        }
+
+        /* Add Employee Form */
+        .add-form {
+            background: var(--gray-50);
+            border: 1.5px dashed var(--gray-300);
+            border-radius: var(--radius);
+            padding: 24px;
+            margin-top: 20px;
+            display: none;
+        }
+
+        .add-form.visible {
+            display: block;
+        }
+
+        .add-form .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr auto;
+            gap: 12px;
+            align-items: end;
+        }
+
+        /* Payment badges */
+        .payment-badge {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .payment-badge-gcash {
+            background: #dbeafe;
+            color: #1e40af;
+        }
+
+        .payment-badge-maya {
+            background: #e0e7ff;
+            color: #3730a3;
+        }
+
+        .payment-badge-bank {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .payment-badge-none {
+            background: var(--gray-100);
+            color: var(--gray-500);
+        }
+
+        .ref-number {
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--gray-700);
+            background: var(--gray-50);
+            padding: 3px 8px;
+            border-radius: 4px;
+        }
+
+        .search-bar {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .search-bar input {
+            flex: 1;
+            min-width: 200px;
+        }
+
+        @media (max-width: 640px) {
+            .tab-btn {
+                font-size: 12px;
+                padding: 12px 8px;
+            }
+
+            .tab-btn span.tab-label {
+                display: none;
+            }
+
+            .add-form .form-row {
+                grid-template-columns: 1fr;
+            }
+            
+            .employee-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .employee-card {
+                flex-wrap: wrap;
+            }
+        }
+    </style>
+</head>
+
+<body style="margin:0;padding:0;background:#f4f6fa;font-family:'Inter',sans-serif;">
+
+<div class="dash-layout">
+
+    <!-- SIDEBAR -->
+    <aside class="dash-sidebar" id="dashSidebar">
+        <img src="logo.png" alt="Logo" class="dash-sidebar-logo" onerror="this.style.display='none';document.getElementById('sidebarLogoFallback').style.display='block';">
+        <span id="sidebarLogoFallback" style="display:none;font-size:24px;margin-bottom:28px;">🎓</span>
+
+        <div class="dash-nav-items">
+            <button class="dash-nav-item active" id="nav-enrollments" onclick="switchTab('enrollments')">
+                <span class="dash-nav-icon">📋</span>
+                <span class="dash-nav-label">Applications</span>
+            </button>
+            <button class="dash-nav-item" id="nav-payments" onclick="switchTab('payments')">
+                <span class="dash-nav-icon">💳</span>
+                <span class="dash-nav-label">Payments</span>
+            </button>
+            <button class="dash-nav-item" id="nav-enrolled" onclick="switchTab('enrolled')">
+                <span class="dash-nav-icon">✅</span>
+                <span class="dash-nav-label">Enrolled</span>
+            </button>
+            <button class="dash-nav-item" id="nav-employees" onclick="switchTab('employees')">
+                <span class="dash-nav-icon">👥</span>
+                <span class="dash-nav-label">Employees</span>
+            </button>
+            <button class="dash-nav-item" id="nav-logs" onclick="switchTab('logs')">
+                <span class="dash-nav-icon">📜</span>
+                <span class="dash-nav-label">Logs</span>
+            </button>
+        </div>
+
+        <div class="dash-sidebar-bottom">
+            <a href="index.html" class="dash-nav-item">
+                <span class="dash-nav-icon">🏠</span>
+                <span class="dash-nav-label">Home</span>
+            </a>
+            <button class="dash-nav-item" onclick="logout()" style="color:#f87171;">
+                <span class="dash-nav-icon">🚪</span>
+                <span class="dash-nav-label">Logout</span>
+            </button>
+        </div>
+    </aside>
+
+    <!-- MAIN -->
+    <div class="dash-main">
+        <!-- Top Bar -->
+        <header class="dash-topbar">
+            <div class="dash-topbar-left">
+                <span class="dash-topbar-title" id="adminUserLabel">Admin Dashboard</span>
+                <span class="dash-topbar-sub">Brother Sun Sister Moon Academy Inc.</span>
+            </div>
+            <div class="dash-topbar-right">
+                <div class="dash-user-chip">
+                    <div class="dash-user-avatar" id="adminAvatarInitial">A</div>
+                    <span id="adminUserChip">Admin</span>
+                </div>
+            </div>
+        </header>
+
+        <!-- Content -->
+        <main class="dash-content">
+
+        <!-- ==================== TAB 1: APPLICATIONS ==================== -->
+        <div class="tab-content active" id="tab-enrollments">
+            <div class="dash-stats">
+                <div class="dash-stat-card">
+                    <div class="dash-stat-icon-wrap blue">📋</div>
+                    <div class="dash-stat-body"><span class="dash-stat-label">Total Applications</span><span class="dash-stat-value" id="enrollTotalCount">0</span></div>
+                </div>
+                <div class="dash-stat-card">
+                    <div class="dash-stat-icon-wrap yellow">📝</div>
+                    <div class="dash-stat-body"><span class="dash-stat-label">Pending</span><span class="dash-stat-value" id="enrollPendingCount">0</span></div>
+                </div>
+                <div class="dash-stat-card">
+                    <div class="dash-stat-icon-wrap purple">👀</div>
+                    <div class="dash-stat-body"><span class="dash-stat-label">For Payment Review</span><span class="dash-stat-value" id="enrollPaymentCount">0</span></div>
+                </div>
+                <div class="dash-stat-card">
+                    <div class="dash-stat-icon-wrap purple">🔍</div>
+                    <div class="dash-stat-body"><span class="dash-stat-label">For App Review</span><span class="dash-stat-value" id="enrollAppCount">0</span></div>
+                </div>
+                <div class="dash-stat-card">
+                    <div class="dash-stat-icon-wrap orange">🚫</div>
+                    <div class="dash-stat-body"><span class="dash-stat-label">Dropped</span><span class="dash-stat-value" id="enrollDroppedCount">0</span></div>
+                </div>
+                <div class="dash-stat-card">
+                    <div class="dash-stat-icon-wrap red">❌</div>
+                    <div class="dash-stat-body"><span class="dash-stat-label">Declined</span><span class="dash-stat-value" id="enrollDeclinedCount">0</span></div>
+                </div>
+            </div>
+
+            <div id="enrollAlert" class="alert"></div>
+
+            <div class="dash-table-card">
+                <div class="dash-table-header">
+                    <span class="dash-table-title">Active Applications &amp; Dropped Records</span>
+                    <div class="dash-filter-row">
+                        <input type="text" id="enrollSearchInput" placeholder="🔍 Search name..." oninput="filterStudents()">
+                        <select id="enrollFilterStatus" onchange="filterStudents()">
+                            <option value="All">All Status</option>
+                            <option value="Pending">Pending</option>
+                            <option value="For Payment Review">For Payment Review</option>
+                            <option value="For Application Review">For Application Review</option>
+                            <option value="Declined">Declined</option>
+                            <option value="Refundable">Refundable</option>
+                            <option value="Dropped">Dropped</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="dash-table-scroll">
+                    <table class="dash-table">
+                        <thead><tr>
+                            <th>Student ID</th><th>Full Name</th><th>Grade</th>
+                            <th>Parent</th><th>Contact</th><th>Date Applied</th>
+                            <th>Status</th><th>Actions</th>
+                        </tr></thead>
+                        <tbody id="studentsTableBody"><tr><td colspan="8" style="text-align:center;padding:40px;">Loading...</td></tr></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- ==================== TAB 1.5: ENROLLED STUDENTS ==================== -->
+        <div class="tab-content" id="tab-enrolled">
+            <div class="dash-stats" style="margin-bottom:24px;">
+                <div class="dash-stat-card">
+                    <div class="dash-stat-icon-wrap green">✅</div>
+                    <div class="dash-stat-body"><span class="dash-stat-label">Currently Enrolled</span><span class="dash-stat-value" id="enrolledMasterCount">0</span></div>
+                </div>
+                <div class="dash-stat-card">
+                    <div class="dash-stat-icon-wrap red">🔴</div>
+                    <div class="dash-stat-body"><span class="dash-stat-label">Documents Pending</span><span class="dash-stat-value" id="enrolledPendingDocsCount">0</span></div>
+                </div>
+            </div>
+            <div class="dash-table-card">
+                <div class="dash-table-header">
+                    <span class="dash-table-title">Enrolled Masterlist</span>
+                    <div class="dash-filter-row">
+                        <input type="text" id="enrolledSearchInput" placeholder="🔍 Search name..." oninput="filterEnrolledStudents()">
+                    </div>
+                </div>
+                <div class="dash-table-scroll">
+                    <table class="dash-table">
+                        <thead><tr><th>Student ID</th><th>Full Name</th><th>Grade</th><th>Parent</th><th>Contact</th><th>Date Applied</th><th>Status</th><th>Actions</th></tr></thead>
+                        <tbody id="enrolledTableBody"><tr><td colspan="8" style="text-align:center;padding:40px;">Loading...</td></tr></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- ==================== TAB 2: PAYMENTS ==================== -->
+        <div class="tab-content" id="tab-payments">
+            <div id="payAlert" class="alert"></div>
+            <div class="dash-stats" id="paymentStats" style="margin-bottom:24px;">
+                <div class="dash-stat-card"><div class="dash-stat-icon-wrap blue">💳</div><div class="dash-stat-body"><span class="dash-stat-label">Total Records</span><span class="dash-stat-value" id="payTotalCount">0</span></div></div>
+                <div class="dash-stat-card"><div class="dash-stat-icon-wrap green">✅</div><div class="dash-stat-body"><span class="dash-stat-label">Enrolled</span><span class="dash-stat-value" id="payEnrolledCount">0</span></div></div>
+                <div class="dash-stat-card"><div class="dash-stat-icon-wrap blue">📱</div><div class="dash-stat-body"><span class="dash-stat-label">GCash</span><span class="dash-stat-value" id="payGcashCount">0</span></div></div>
+                <div class="dash-stat-card"><div class="dash-stat-icon-wrap green">💵</div><div class="dash-stat-body"><span class="dash-stat-label">Cash</span><span class="dash-stat-value" id="payCashCount">0</span></div></div>
+                <div class="dash-stat-card"><div class="dash-stat-icon-wrap yellow">🏦</div><div class="dash-stat-body"><span class="dash-stat-label">Bank Transfer</span><span class="dash-stat-value" id="payBankCount">0</span></div></div>
+            </div>
+            <div class="dash-table-card">
+                <div class="dash-table-header">
+                    <span class="dash-table-title">Payment Records</span>
+                    <div class="dash-filter-row">
+                        <input type="text" id="paySearchInput" placeholder="🔍 Search ref..." oninput="filterPayments()">
+                        <select id="filterPaymentMethod" onchange="filterPayments()"><option value="All">All Methods</option><option value="GCash">GCash</option><option value="Cash">Cash</option><option value="Bank Transfer">Bank Transfer</option><option value="None">None</option></select>
+                        <select id="payFilterStatus" onchange="filterPayments()"><option value="All">All Status</option><option value="Pending">Pending</option><option value="For Payment Review">For Payment Review</option><option value="Enrolled">Enrolled</option><option value="Enrolled (Doc. Pending)">Enrolled (Doc. Pending)</option></select>
+                    </div>
+                </div>
+                <div class="dash-table-scroll">
+                    <table class="dash-table">
+                        <thead><tr><th>Student ID</th><th>Full Name</th><th>Method</th><th>Mode</th><th>Total</th><th>Paid</th><th>Balance</th><th>Refundable</th><th>Status</th><th>Actions</th></tr></thead>
+                        <tbody id="paymentsTableBody"><tr><td colspan="9" style="text-align:center;padding:40px;">Loading...</td></tr></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- ==================== TAB 3: EMPLOYEE ACCOUNTS ==================== -->
+        <div class="tab-content" id="tab-employees">
+            <div id="empAlert" class="alert"></div>
+            <div class="dash-table-card">
+                <div class="dash-table-header">
+                    <span class="dash-table-title">Employee Accounts</span>
+                    <div class="dash-filter-row">
+                        <input type="text" id="empSearchInput" placeholder="🔍 Search user..." oninput="filterEmployees()">
+                        <select id="empFilterRole" onchange="filterEmployees()"><option value="All">All Roles</option><option value="admin">Admin</option><option value="registrar">Registrar</option><option value="cashier">Cashier</option></select>
+                        <select id="empFilterStatus" onchange="filterEmployees()"><option value="All">All Status</option><option value="1">Active</option><option value="0">Inactive</option></select>
+                        <button class="btn-dash-primary" onclick="toggleAddForm()">+ Add Employee</button>
+                    </div>
+                </div>
+                <div class="dash-add-form" id="addEmployeeForm">
+                    <h4 style="margin-bottom:12px;font-size:14px;font-weight:700;">Create New Account</h4>
+                    <div class="dash-add-form-row">
+                        <div><label style="font-size:12px;font-weight:600;display:block;margin-bottom:4px;">Username</label><input type="text" id="newUsername" placeholder="e.g. registrar_jane"></div>
+                        <div><label style="font-size:12px;font-weight:600;display:block;margin-bottom:4px;">Password</label><input type="password" id="newPassword" placeholder="Strong password"></div>
+                        <div><label style="font-size:12px;font-weight:600;display:block;margin-bottom:4px;">Role</label><select id="newRole" style="width:100%;"></select></div>
+                        <div><button class="btn-dash-primary" onclick="addEmployee()" style="width:100%;">Create</button></div>
+                    </div>
+                </div>
+                <div class="dash-employee-grid" id="employeeGrid"><p style="text-align:center;padding:20px;">Loading...</p></div>
+            </div>
+        </div>
+
+        <!-- ==================== TAB 4: TRANSACTION LOGS ==================== -->
+        <div class="tab-content" id="tab-logs">
+            <div id="logsAlert" class="alert"></div>
+            <div class="dash-table-card">
+                <div class="dash-table-header">
+                    <span class="dash-table-title">System Transaction &amp; Change Logs</span>
+                    <div class="dash-filter-row">
+                        <input type="text" id="logsSearchInput" placeholder="🔍 Search logs..." oninput="filterLogs()">
+                        <select id="logsFilterAction" onchange="filterLogs()"><option value="All">All Actions</option><option value="Application Review">Application Review</option><option value="Payment Review">Payment Review</option><option value="Email Sent">Email Sent</option><option value="Update Student">Update Student</option><option value="Upload Document">Upload Document</option></select>
+                    </div>
+                </div>
+                <div class="dash-table-scroll">
+                    <table class="dash-table">
+                        <thead><tr><th>Date &amp; Time</th><th>Employee</th><th>Role</th><th>Action Type</th><th>Target Student</th><th>Details</th></tr></thead>
+                        <tbody id="logsTableBody"><tr><td colspan="6" style="text-align:center;padding:40px;">Loading...</td></tr></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        </main>
+    </div><!-- /.dash-main -->
+</div><!-- /.dash-layout -->
+
+
+    <!-- ===== MODAL: View Full Student Details ===== -->
+    <div class="modal-overlay" id="modalOverlay" onclick="closeModal()">
+        <div class="modal" onclick="event.stopPropagation()">
+            <button class="modal-close" onclick="closeModal()">✕</button>
+            <h3 id="modalTitle">🧒 Student Full Details</h3>
+            <div id="modalContent" class="info-grid"></div>
+            <div style="margin-top:24px; text-align:right;">
+                <button class="btn btn-outline" onclick="closeModal()">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="main.js"></script>
+    <script>
+        /*
+         * ============================================================
+         *  ADMIN DASHBOARD — JAVASCRIPT
+         * ============================================================
+         */
+
+        let allStudents = [];
+        let allPayments = [];
+        let allEmployees = [];
+        let allLogs = [];
+
+        if (!sessionStorage.getItem('registrarLoggedIn')) {
+            window.location.href = 'employee-login.html';
+        }
+
+        const adminUser = sessionStorage.getItem('registrarUser') || 'Admin';
+        document.getElementById('adminUserLabel').textContent = `Admin: ${adminUser}`;
+        document.getElementById('adminUserChip').textContent = adminUser;
+        document.getElementById('adminAvatarInitial').textContent = adminUser.charAt(0).toUpperCase();
+
+        // --- Helper: get a colored status badge ---
+        function getStatusBadge(status) {
+            const map = {
+                'Pending': 'pending',
+                'For Payment Review': 'review',
+                'For Application Review': 'review',
+                'Enrolled': 'enrolled',
+                'Enrolled (Doc. Pending)': 'doc-pending',
+                'Declined': 'declined',
+                'Refundable': 'refundable',
+                'Refunded': 'refunded',
+                'Dropped': 'dropped'
+            };
+            const cls = map[status] || 'review';
+            return `<span class="status-badge ${cls}">${status}</span>`;
+        }
+
+        function switchTab(tab) {
+            document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.dash-nav-item').forEach(b => b.classList.remove('active'));
+            document.getElementById('tab-' + tab).classList.add('active');
+            const navEl = document.getElementById('nav-' + tab);
+            if (navEl) navEl.classList.add('active');
+
+            // Load data on first switch
+            if ((tab === 'enrollments' || tab === 'enrolled') && allStudents.length === 0) loadStudents();
+            if (tab === 'payments' && allPayments.length === 0) loadPayments();
+            if (tab === 'employees') {
+                if (allEmployees.length === 0) loadEmployees();
+                loadRoles();
+            }
+            if (tab === 'logs') loadLogs();
+        }
+
+        // ===============================================
+        // TAB 1: ENROLLMENTS (view-only for admin)
+        // ===============================================
+        async function loadStudents() {
+            try {
+                allStudents = await apiGet('api/registrar.php?action=students');
+                updateEnrollStats(allStudents);
+
+                // Student Applications (Exclude Enrolled)
+                const applications = allStudents.filter(s => s.status !== 'Enrolled' && s.status !== 'Enrolled (Doc. Pending)');
+                renderStudents(applications);
+
+                // Enrolled Masterlist
+                const enrolled = allStudents.filter(s => s.status === 'Enrolled' || s.status === 'Enrolled (Doc. Pending)');
+                renderEnrolledStudents(enrolled);
+            } catch (err) {
+                showAlert('enrollAlert', '❌ Failed to load students: ' + err.message);
+            }
+        }
+
+        function updateEnrollStats(students) {
+            document.getElementById('enrollTotalCount').textContent = students.filter(s => s.status !== 'Enrolled' && s.status !== 'Enrolled (Doc. Pending)').length;
+            document.getElementById('enrollPendingCount').textContent = students.filter(s => s.status === 'Pending').length;
+            document.getElementById('enrollPaymentCount').textContent = students.filter(s => s.status === 'For Payment Review').length;
+            document.getElementById('enrollAppCount').textContent = students.filter(s => s.status === 'For Application Review').length;
+            document.getElementById('enrollDroppedCount').textContent = students.filter(s => s.status === 'Dropped').length;
+            document.getElementById('enrollDeclinedCount').textContent = students.filter(s => s.status === 'Declined').length;
+
+            // Master Enrolled Stats
+            document.getElementById('enrolledMasterCount').textContent = students.filter(s => s.status === 'Enrolled' || s.status === 'Enrolled (Doc. Pending)').length;
+            document.getElementById('enrolledPendingDocsCount').textContent = students.filter(s => s.status === 'Enrolled (Doc. Pending)').length;
+        }
+
+        function renderStudents(students) {
+            const tbody = document.getElementById('studentsTableBody');
+            if (students.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="8" style="text-align:center;color:var(--gray-500);padding:40px;">No students found.</td></tr>`;
+                return;
+            }
+            tbody.innerHTML = students.map(s => `
+                <tr>
+                    <td><strong style="font-family:'Courier New',monospace;">${s.student_no}</strong></td>
+                    <td>${formatStudentName(s)}</td>
+                    <td>${s.grade_level}</td>
+                    <td>${formatParentName(s.parent_first_name, s.parent_last_name, s.parent_middle_name)}</td>
+                    <td>${s.parent_contact || '—'}</td>
+                    <td style="white-space:nowrap;">${formatDate(s.applied_at)}</td>
+                    <td>
+                        ${getStatusBadge(s.status)}
+                        ${s.documents_pending == 1 ? '<span class="doc-pending-badge">🔴 Doc. Pending</span>' : ''}
+                    </td>
+                    <td>
+                        <div class="dash-action-group" style="flex-wrap:wrap; gap:8px;">
+                            <button class="btn-view" onclick="viewStudent(${s.enrollment_id})">👁 View</button>
+                            ${s.status === 'Dropped' ? `
+                                <button class="btn-view" style="background:#f0fdf4; border-color:#22c55e; color:#166534;" onclick="undoDrop(${s.enrollment_id})">↩ Undo Drop</button>
+                            ` : ''}
+                        </div>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        function filterStudents() {
+            const search = document.getElementById('enrollSearchInput').value.toLowerCase();
+            const statusFilter = document.getElementById('enrollFilterStatus').value;
+
+            // Base list excludes enrolled
+            let baseList = allStudents.filter(s => s.status !== 'Enrolled' && s.status !== 'Enrolled (Doc. Pending)');
+            let filtered = baseList;
+
+            if (search) {
+                filtered = filtered.filter(s =>
+                    nameMatches(s, search) ||
+                    s.student_no.toLowerCase().includes(search) ||
+                    (formatParentName(s.parent_first_name, s.parent_last_name, s.parent_middle_name)).toLowerCase().includes(search)
+                );
+            }
+            if (statusFilter !== 'All') {
+                filtered = filtered.filter(s => s.status === statusFilter);
+            }
+            renderStudents(filtered);
+        }
+
+        function filterEnrolledStudents() {
+            const search = document.getElementById('enrolledSearchInput').value.toLowerCase();
+
+            // Base list only enrolled
+            let baseList = allStudents.filter(s => s.status === 'Enrolled' || s.status === 'Enrolled (Doc. Pending)');
+            let filtered = baseList;
+
+            if (search) {
+                filtered = filtered.filter(s =>
+                    nameMatches(s, search) ||
+                    s.student_no.toLowerCase().includes(search) ||
+                    (formatParentName(s.parent_first_name, s.parent_last_name, s.parent_middle_name)).toLowerCase().includes(search)
+                );
+            }
+            renderEnrolledStudents(filtered);
+        }
+
+        function renderEnrolledStudents(students) {
+            const tbody = document.getElementById('enrolledTableBody');
+            if (students.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="8" style="text-align:center;color:var(--gray-500);padding:40px;">No enrolled students found.</td></tr>`;
+                return;
+            }
+            tbody.innerHTML = students.map(s => `
+                <tr>
+                    <td><strong style="font-family:'Courier New',monospace;">${s.student_no}</strong></td>
+                    <td>${formatStudentName(s)}</td>
+                    <td>${s.grade_level}</td>
+                    <td>${formatParentName(s.parent_first_name, s.parent_last_name, s.parent_middle_name)}</td>
+                    <td>${s.parent_contact || '—'}</td>
+                    <td style="white-space:nowrap;">${formatDate(s.applied_at)}</td>
+                    <td>
+                        ${getStatusBadge(s.status)}
+                    </td>
+                    <td><button class="btn-view" onclick="viewStudent(${s.enrollment_id})">👁 View</button></td>
+                </tr>
+            `).join('');
+        }
+
+        async function viewStudent(id) {
+            try {
+                const s = await apiGet(`api/registrar.php?action=detail&id=${id}`);
+                document.getElementById('modalTitle').textContent = '🧒 Student Full Details';
+                document.getElementById('modalContent').innerHTML = `
+                    ${s.documents_pending == 1 ? `
+                    <div style="grid-column:1/-1; background:#fef2f2; border-left:4px solid #dc2626; border-radius:8px; padding:14px 16px; margin-bottom:8px;">
+                        <strong style="color:#dc2626;">🔴 Documents Pending</strong>
+                        <p style="margin:6px 0 0; font-size:13px; color:#7f1d1d;">This student has missing documents. The Registrar is responsible for uploading missing files to clear this flag.</p>
+                    </div>` : ''}
+
+                    ${s.registrar_notes || s.cashier_notes ? `
+                    <div style="grid-column:1/-1; background:#fff7ed; border-left:4px solid #f97316; border-radius:8px; padding:14px 16px; margin-bottom:12px;">
+                        <strong style="color:#c2410c;">📝 Reviewer Notes</strong>
+                        ${s.registrar_notes ? `<p style="margin:6px 0 0; font-size:13px; color:#9a3412;"><strong>Registrar:</strong> ${s.registrar_notes}</p>` : ''}
+                        ${s.cashier_notes ? `<p style="margin:6px 0 0; font-size:13px; color:#9a3412;"><strong>Cashier:</strong> ${s.cashier_notes}</p>` : ''}
+                    </div>` : ''}
+
+                    <div style="grid-column:1/-1;font-size:13px;font-weight:700;color:var(--blue-dark);text-transform:uppercase;letter-spacing:0.5px;border-bottom:2px solid var(--blue-light);padding-bottom:6px;margin-bottom:4px;">Student Information</div>
+                    <div class="info-item"><label>Student ID</label><span>${s.student_no}</span></div>
+                    <div class="info-item"><label>Full Name</label><span>${formatStudentName(s)}</span></div>
+                    <div class="info-item"><label>Date of Birth</label><span>${s.birth_date}</span></div>
+                    <div class="info-item"><label>Gender</label><span>${s.gender}</span></div>
+                    <div class="info-item"><label>Religion</label><span>${s.religion || '—'}</span></div>
+                    <div class="info-item"><label>Grade Level</label><span>${s.grade_level}</span></div>
+                    <div class="info-item"><label>School Year</label><span>${s.school_year || '—'}</span></div>
+                    <div class="info-item"><label>Address</label><span>${s.house_no_street}, ${s.barangay}, ${s.city_municipality}, ${s.province}</span></div>
+                    <div class="info-item"><label>Previous School</label><span>${s.previous_school || '—'}</span></div>
+                    <div class="info-item"><label>Session Preference</label><span>${s.session_preference || '—'}</span></div>
+
+                    <div style="grid-column:1/-1;font-size:13px;font-weight:700;color:var(--blue-dark);text-transform:uppercase;letter-spacing:0.5px;border-bottom:2px solid var(--blue-light);padding-bottom:6px;margin-top:12px;margin-bottom:4px;">Parent / Guardian</div>
+                    <div class="info-item"><label>Full Name</label><span>${formatParentName(s.parent_first_name, s.parent_last_name, s.parent_middle_name)}</span></div>
+                    <div class="info-item"><label>Relationship</label><span>${s.parent_relation}</span></div>
+                    <div class="info-item"><label>Contact Number</label><span>${s.parent_contact}</span></div>
+                    <div class="info-item"><label>Email</label><span>${s.email}</span></div>
+                    <div class="info-item"><label>Occupation</label><span>${s.occupation || '—'}</span></div>
+                    <div class="info-item"><label>Monthly Income</label><span>${s.monthly_income || '—'}</span></div>
+
+                    <div style="grid-column:1/-1;font-size:13px;font-weight:700;color:var(--blue-dark);text-transform:uppercase;letter-spacing:0.5px;border-bottom:2px solid var(--blue-light);padding-bottom:6px;margin-top:12px;margin-bottom:4px;">Payment Info</div>
+                    <div class="info-item"><label>Method</label><span>${s.payment_method || '—'}</span></div>
+                    <div class="info-item"><label>Mode</label><span>${s.payment_mode || '—'}${s.payment_mode === 'Monthly' ? ' (10 months)' : ''}</span></div>
+                    <div class="info-item"><label>Reference #</label><span>${s.reference_number || '—'}</span></div>
+                    <div class="info-item"><label>Tuition Fee</label><span>${formatCurrency(s.tuition_fee)}</span></div>
+                    <div class="info-item"><label>Books Fee</label><span>${formatCurrency(s.books_fee)}</span></div>
+
+                    <div style="grid-column:1/-1;font-size:13px;font-weight:700;color:var(--blue-dark);text-transform:uppercase;letter-spacing:0.5px;border-bottom:2px solid var(--blue-light);padding-bottom:6px;margin-top:12px;margin-bottom:4px;">Documents</div>
+                    <div class="info-item" style="grid-column:1/-1;">
+                        <label>PSA Birth Certificate</label>
+                        <span>${s.psa_birth_cert
+                        ? `<a href="${s.psa_birth_cert}" target="_blank" style="color:var(--blue-dark);font-weight:600;text-decoration:underline;">📄 View Document</a>
+                               <div style="margin-top:8px;"><img src="${s.psa_birth_cert}" style="max-width:100%;max-height:200px;border-radius:8px;border:1px solid var(--gray-300);cursor:pointer;" onclick="window.open('${s.psa_birth_cert}','_blank')" onerror="this.style.display='none'"></div>`
+                        : '<span style="color:#dc2626">❌ Not uploaded</span>'}</span>
+                    </div>
+                    <div class="info-item" style="grid-column:1/-1;">
+                        <label>SF10 (New Students) or Previous Report Card</label>
+                        <span>${s.sf10_document
+                        ? `<a href="${s.sf10_document}" target="_blank" style="color:var(--blue-dark);font-weight:600;text-decoration:underline;">📄 View Document</a>
+                               <div style="margin-top:8px;"><img src="${s.sf10_document}" style="max-width:100%;max-height:200px;border-radius:8px;border:1px solid var(--gray-300);cursor:pointer;" onclick="window.open('${s.sf10_document}','_blank')" onerror="this.style.display='none'"></div>`
+                        : '<span style="color:#dc2626">❌ Not uploaded</span>'}</span>
+                    </div>
+                    <div class="info-item" style="grid-column:1/-1;">
+                        <label>2×2 Picture</label>
+                        <span>${s.picture_2x2
+                        ? `<div style="margin-top:8px;"><img src="${s.picture_2x2}" style="width:100px;height:100px;object-fit:cover;border-radius:8px;border:1px solid var(--gray-300);cursor:pointer;" onclick="window.open('${s.picture_2x2}','_blank')" onerror="this.style.display='none'"></div>
+                               <a href="${s.picture_2x2}" target="_blank" style="color:var(--blue-dark);font-weight:600;text-decoration:underline;font-size:12px;">🖼 View Full Image</a>`
+                        : '<span style="color:#dc2626">❌ Not uploaded</span>'}</span>
+                    </div>
+
+                    <div style="grid-column:1/-1;font-size:13px;font-weight:700;color:var(--blue-dark);text-transform:uppercase;letter-spacing:0.5px;border-bottom:2px solid var(--blue-light);padding-bottom:6px;margin-top:12px;margin-bottom:4px;">Review Status</div>
+                    <div class="info-item"><label>Overall Status</label><span>${getStatusBadge(s.status)}</span></div>
+                    <div class="info-item"><label>Registrar Review</label><span>${s.registrar_status}</span></div>
+                    <div class="info-item"><label>Cashier Review</label><span>${s.cashier_status}</span></div>
+                    <div class="info-item"><label>Date Applied</label><span>${formatDate(s.applied_at)}</span></div>
+                `;
+                document.getElementById('modalOverlay').classList.add('active');
+                document.body.classList.add('modal-open');
+            } catch (err) {
+                showAlert('enrollAlert', '❌ Could not load student details.');
+            }
+        }
+
+        // ===============================================
+        // TAB 2: PAYMENTS (view-only for admin)
+        // ===============================================
+        async function viewPaymentDetail(id) {
+            try {
+                const s = await apiGet(`api/registrar.php?action=detail&id=${id}`);
+                document.getElementById('modalTitle').textContent = '💳 Payment Details';
+                document.getElementById('modalContent').innerHTML = `
+                    ${s.registrar_notes || s.cashier_notes ? `
+                    <div style="grid-column:1/-1; background:#fff7ed; border-left:4px solid #f97316; border-radius:8px; padding:14px 16px; margin-bottom:12px;">
+                        <strong style="color:#c2410c;">📝 Reviewer Notes</strong>
+                        ${s.registrar_notes ? `<p style="margin:6px 0 0; font-size:13px; color:#9a3412;"><strong>Registrar:</strong> ${s.registrar_notes}</p>` : ''}
+                        ${s.cashier_notes ? `<p style="margin:6px 0 0; font-size:13px; color:#9a3412;"><strong>Cashier:</strong> ${s.cashier_notes}</p>` : ''}
+                    </div>` : ''}
+
+                    <div class="info-item"><label>Student ID</label><span>${s.student_no}</span></div>
+                    <div class="info-item"><label>Full Name</label><span>${formatStudentName(s)}</span></div>
+                    <div class="info-item"><label>Grade Level</label><span>${s.grade_level}</span></div>
+                    <div class="info-item"><label>Parent / Guardian</label><span>${formatParentName(s.parent_first_name, s.parent_last_name, s.parent_middle_name)}</span></div>
+                    <div class="info-item"><label>Contact</label><span>${s.parent_contact || '—'}</span></div>
+                    <div class="info-item"><label>Payment Method</label><span>${s.payment_method || 'Not provided'}</span></div>
+                    <div class="info-item"><label>Payment Mode</label><span>${s.payment_mode || '—'}${s.payment_mode === 'Monthly' ? ' (10 months)' : ''}</span></div>
+                    <div class="info-item"><label>Reference Number</label><span class="ref-number">${s.reference_number || '—'}</span></div>
+                    <div class="info-item"><label>Total Tuition</label><span style="font-weight:700;color:var(--maroon-dark);">${formatCurrency(s.tuition_fee)}</span></div>
+                    <div class="info-item"><label>Total Books</label><span style="font-weight:700;color:var(--maroon-dark);">${formatCurrency(s.books_fee)}</span></div>
+                    
+                    <div class="info-item" style="grid-column: span 2; background: #f8fafc; padding: 12px; border-radius: 8px; margin-top: 10px; display: flex; justify-content: space-around; border: 1px solid #e2e8f0;">
+                        <div style="text-align:center;">
+                            <label style="font-size:11px; color:#64748b; display:block; margin-bottom:4px;">TOTAL PAYABLE</label>
+                            <span style="font-size:18px; font-weight:800; color:#1e293b;">${formatCurrency(s.total_amount)}</span>
+                        </div>
+                        <div style="text-align:center;">
+                            <label style="font-size:11px; color:#64748b; display:block; margin-bottom:4px;">TOTAL PAID</label>
+                            <span style="font-size:18px; font-weight:800; color:#16a34a;">${formatCurrency(s.total_paid)}</span>
+                        </div>
+                        <div style="text-align:center;">
+                            <label style="font-size:11px; color:#64748b; display:block; margin-bottom:4px;">REMAINING BALANCE</label>
+                            <span style="font-size:18px; font-weight:800; color:#dc2626;">${formatCurrency(s.balance)}</span>
+                        </div>
+                    </div>
+
+                    <div id="adminPaymentHistory" style="grid-column: span 2; margin-top: 20px;">
+                        <h4 style="margin-bottom:10px; font-size:14px; border-bottom:1px solid #eee; padding-bottom:5px;">📜 Payment History</h4>
+                        <div id="adminHistoryContainer" style="max-height: 200px; overflow-y: auto;">
+                            <p style="text-align:center; color:#999; font-size:12px;">Loading history...</p>
+                        </div>
+                    </div>
+
+                    <div style="grid-column:1/-1;font-size:13px;font-weight:700;color:var(--blue-dark);text-transform:uppercase;letter-spacing:0.5px;border-bottom:2px solid var(--blue-light);padding-bottom:6px;margin-top:12px;margin-bottom:4px;">Review Status</div>
+                    <div class="info-item"><label>Overall Status</label><span>${getStatusBadge(s.status)}</span></div>
+                    <div class="info-item"><label>Registrar Review</label><span>${s.registrar_status}</span></div>
+                    <div class="info-item"><label>Cashier Review</label><span>${s.cashier_status}</span></div>
+                    <div class="info-item"><label>Date Applied</label><span>${formatDate(s.applied_at)}</span></div>
+                `;
+                document.getElementById('modalOverlay').classList.add('active');
+                document.body.classList.add('modal-open');
+                loadAdminPaymentHistory(s.payment_id);
+            } catch (err) {
+                showAlert('payAlert', '❌ Could not load payment details.');
+            }
+        }
+
+        async function loadAdminPaymentHistory(paymentId) {
+            try {
+                const history = await apiGet(`api/registrar.php?action=payment_history&payment_id=${paymentId}`);
+                const container = document.getElementById('adminHistoryContainer');
+                if (history.length === 0) {
+                    container.innerHTML = '<p style="text-align:center; color:#999; font-size:12px;">No payments found.</p>';
+                    return;
+                }
+                container.innerHTML = `
+                    <table style="width:100%; font-size:12px; border-collapse:collapse;">
+                        <thead>
+                            <tr style="text-align:left; border-bottom:1px solid #eee;">
+                                <th style="padding:5px;">Date</th>
+                                <th style="padding:5px;">Amount</th>
+                                <th style="padding:5px;">Method</th>
+                                <th style="padding:5px;">Reference</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${history.map(h => `
+                                <tr style="border-bottom:1px solid #f9f9f9;">
+                                    <td style="padding:5px;">${formatDate(h.created_at)}</td>
+                                    <td style="padding:5px; font-weight:600;">${formatCurrency(h.amount_paid)}</td>
+                                    <td style="padding:5px;">${h.method_name}</td>
+                                    <td style="padding:5px;"><span class="ref-number">${h.reference_number || '—'}</span></td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                `;
+            } catch (err) {
+                document.getElementById('adminHistoryContainer').innerHTML = '<p style="color:red; font-size:12px;">Failed to load history.</p>';
+            }
+        }
+
+        async function loadPayments() {
+            try {
+                allPayments = await apiGet('api/registrar.php?action=payments');
+
+                // Update payment summary stats
+                document.getElementById('payTotalCount').textContent = allPayments.length;
+                document.getElementById('payEnrolledCount').textContent = allPayments.filter(r => r.status === 'Enrolled' || r.status === 'Enrolled (Doc. Pending)').length;
+                document.getElementById('payGcashCount').textContent = allPayments.filter(r => r.payment_method === 'GCash').length;
+                document.getElementById('payCashCount').textContent = allPayments.filter(r => r.payment_method === 'Cash').length;
+                document.getElementById('payBankCount').textContent = allPayments.filter(r => r.payment_method === 'Bank Transfer').length;
+
+                renderPayments(allPayments);
+            } catch (err) {
+                showAlert('payAlert', '❌ Failed to load payments: ' + err.message);
+            }
+        }
+
+        async function undoRefund(id) {
+            if (!confirm('Are you sure you want to undo the excess refund for this student?')) return;
+
+            try {
+                const res = await apiPost('api/registrar.php?action=undo_excess_refund', {
+                    enrollment_id: id,
+                    admin_id: sessionStorage.getItem('adminId')
+                });
+
+                showAlert('payAlert', '✅ ' + res.message, 'success');
+                loadPayments();
+            } catch (err) {
+                showAlert('payAlert', '❌ ' + err.message);
+            }
+        }
+
+        function getPaymentBadge(method) {
+            if (!method) return '<span class="v2-badge-gray">—</span>';
+            const key = method.toLowerCase().replace(' ', '');
+            const classMap = { 'gcash': 'v2-badge-blue', 'maya': 'v2-badge-green', 'banktransfer': 'v2-badge-salmon' };
+            return `<span class="${classMap[key] || 'v2-badge-gray'}">${method}</span>`;
+        }
+
+        function renderPayments(payments) {
+            const tbody = document.getElementById('paymentsTableBody');
+            if (payments.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="10" style="text-align:center;color:var(--gray-500);padding:40px;">No payment records found.</td></tr>`;
+                return;
+            }
+            tbody.innerHTML = payments.map(p => {
+                const total = parseFloat(p.total_amount || 0);
+                const paid = parseFloat(p.total_paid || 0);
+                const balanceVal = total - paid;
+                const balance = Math.max(0, balanceVal);
+                let refundable = Math.max(0, -balanceVal);
+
+                if (p.status === 'Refundable') {
+                    refundable = paid;
+                }
+
+                const isPaid = balance <= 0;
+                return `
+                <tr>
+                    <td><strong>${p.student_no}</strong></td>
+                    <td>${formatStudentName(p)}</td>
+                    <td>${getPaymentBadge(p.payment_method)}</td>
+                    <td>${p.payment_mode}</td>
+                    <td style="font-weight:600;">${formatCurrency(total)}</td>
+                    <td style="color:#16a34a; font-weight:600;">${formatCurrency(paid)}</td>
+                    <td style="color:${isPaid ? '#16a34a' : '#dc2626'}; font-weight:700;">
+                        ${isPaid ? '✅ Paid' : formatCurrency(balance)}
+                    </td>
+                    <td style="color:${refundable > 0 ? '#8b5cf6' : '#64748b'}; font-weight:700;">
+                        ${formatCurrency(refundable)}
+                    </td>
+                    <td>${getStatusBadge(p.status)}</td>
+                    <td>
+                        <div class="dash-action-group" style="flex-wrap:wrap; gap:8px;">
+                            <button class="btn-view" onclick="viewPaymentDetail(${p.enrollment_id})">💳 View</button>
+                            ${p.has_refund == 1 ? `
+                                <button class="btn-view" style="background:#f0fdf4; border-color:#22c55e; color:#166534;" onclick="undoRefund(${p.enrollment_id})">↩ Undo Refund</button>
+                            ` : ''}
+                        </div>
+                    </td>
+                </tr>
+            `;
+            }).join('');
+        }
+
+        function filterPayments() {
+            const search = document.getElementById('paySearchInput').value.toLowerCase();
+            const payFilter = document.getElementById('filterPaymentMethod').value;
+            const statusFilter = document.getElementById('payFilterStatus').value;
+
+            let filtered = allPayments;
+            if (search) {
+                filtered = filtered.filter(r =>
+                    nameMatches(r, search) ||
+                    r.student_no.toLowerCase().includes(search) ||
+                    (r.reference_number || '').toLowerCase().includes(search)
+                );
+            }
+            if (payFilter !== 'All') {
+                if (payFilter === 'None') { filtered = filtered.filter(r => !r.payment_method); }
+                else { filtered = filtered.filter(r => r.payment_method === payFilter); }
+            }
+            if (statusFilter !== 'All') {
+                filtered = filtered.filter(r => r.status === statusFilter);
+            }
+            renderPayments(filtered);
+        }
+
+        // ===============================================
+        // TAB 3: EMPLOYEE ACCOUNTS
+        // Admin-only feature: create and delete accounts
+        // ===============================================
+        async function loadEmployees() {
+            try {
+                allEmployees = await apiGet('api/registrar.php?action=employees');
+                renderEmployees(allEmployees);
+            } catch (err) {
+                showAlert('empAlert', '❌ Failed to load employees: ' + err.message);
+            }
+        }
+
+        function getRoleIcon(role) {
+            const icons = { admin: '⚙️', registrar: '📋', cashier: '💰' };
+            return icons[role] || '👤';
+        }
+
+        function renderEmployees(employees) {
+            const grid = document.getElementById('employeeGrid');
+            if (employees.length === 0) {
+                grid.innerHTML = '<p style="color:var(--gray-500);padding:20px;">No employee accounts found.</p>';
+                return;
+            }
+            grid.innerHTML = employees.map(e => `
+                <div class="employee-card" style="opacity: ${e.is_active == 1 ? 1 : 0.6}; transition: all 0.3s ease;">
+                    <div class="employee-avatar avatar-${e.role}">${getRoleIcon(e.role)}</div>
+                    <div class="employee-info">
+                        <h4>${e.username}</h4>
+                        <span class="role-tag role-${e.role}">${e.role}</span>
+                        <div style="font-size: 10px; color: ${e.is_active == 1 ? '#16a34a' : '#dc2626'}; font-weight: 700; margin-top: 4px;">
+                            ${e.is_active == 1 ? '● ACTIVE' : '○ INACTIVE'}
+                        </div>
+                    </div>
+                    <button class="btn" style="padding:6px 10px; font-size:10px; border:1px solid ${e.is_active == 1 ? '#dc2626' : '#16a34a'}; color: ${e.is_active == 1 ? '#dc2626' : '#16a34a'}; background:transparent; border-radius:6px; cursor:pointer;"
+                            onclick="toggleEmployeeStatus(${e.id}, '${e.username}', ${e.is_active})">
+                        ${e.is_active == 1 ? 'Deactivate' : 'Activate'}
+                    </button>
+                </div>
+            `).join('');
+        }
+
+        function filterEmployees() {
+            const search = document.getElementById('empSearchInput').value.toLowerCase();
+            const roleFilter = document.getElementById('empFilterRole').value;
+            const statusFilter = document.getElementById('empFilterStatus').value;
+
+            let filtered = allEmployees;
+            if (search) {
+                filtered = filtered.filter(e => e.username.toLowerCase().includes(search));
+            }
+            if (roleFilter !== 'All') {
+                filtered = filtered.filter(e => e.role === roleFilter);
+            }
+            if (statusFilter !== 'All') {
+                filtered = filtered.filter(e => e.is_active == statusFilter);
+            }
+            renderEmployees(filtered);
+        }
+
+        async function loadRoles() {
+            try {
+                const roles = await apiGet('api/lookups.php?action=roles');
+                const roleSelect = document.getElementById('newRole');
+                roleSelect.innerHTML = '<option value="">Select role...</option>';
+                roles.forEach(r => {
+                    roleSelect.innerHTML += `<option value="${r.id}">${r.name.charAt(0).toUpperCase() + r.name.slice(1)}</option>`;
+                });
+            } catch (err) {
+                console.warn('Failed to load roles');
+            }
+        }
+
+        function toggleAddForm() {
+            const form = document.getElementById('addEmployeeForm');
+            form.classList.toggle('visible');
+        }
+
+        async function addEmployee() {
+            const username = document.getElementById('newUsername').value.trim();
+            const password = document.getElementById('newPassword').value.trim();
+            const role_id = document.getElementById('newRole').value;
+
+            if (!username || !password || !role_id) {
+                showAlert('empAlert', '❌ Please fill in all fields.');
+                return;
+            }
+
+            try {
+                const result = await apiPost('api/registrar.php?action=add_employee', {
+                    username, password, role_id,
+                    admin_id: sessionStorage.getItem('adminId')
+                });
+                showAlert('empAlert', '✅ ' + result.message, 'success');
+                document.getElementById('newUsername').value = '';
+                document.getElementById('newPassword').value = '';
+                document.getElementById('newRole').value = '';
+                document.getElementById('addEmployeeForm').classList.remove('visible');
+                allEmployees = [];
+                loadEmployees();
+            } catch (err) {
+                showAlert('empAlert', '❌ ' + err.message);
+            }
+        }
+
+        async function toggleEmployeeStatus(id, username, currentStatus) {
+            const action = currentStatus == 1 ? 'deactivate' : 'activate';
+            
+            // Prevent self-deactivation
+            const loggedInUser = sessionStorage.getItem('registrarUser');
+            if (action === 'deactivate' && username === loggedInUser) {
+                showAlert('empAlert', '❌ You cannot deactivate your own account.');
+                return;
+            }
+
+            if (!confirm(`Are you sure you want to ${action} the account for '${username}'?`)) return;
+
+            try {
+                const adminId = sessionStorage.getItem('adminId');
+                const result = await apiGet(`api/registrar.php?action=toggle_employee_status&id=${id}&admin_id=${adminId}`);
+                showAlert('empAlert', '✅ ' + result.message, 'success');
+                loadEmployees();
+            } catch (err) {
+                showAlert('empAlert', '❌ ' + err.message);
+            }
+        }
+
+        // ===============================================
+        // SHARED UTILITIES (used by all tabs)
+        // ===============================================
+        function closeModal() {
+            document.getElementById('modalOverlay').classList.remove('active');
+            document.body.classList.remove('modal-open');
+        }
+
+        function logout() {
+            sessionStorage.removeItem('registrarLoggedIn');
+            sessionStorage.removeItem('registrarUser');
+            sessionStorage.removeItem('userRole');
+            window.location.href = 'employee-login.html';
+        }
+
+        function formatDate(dateStr) {
+            if (!dateStr) return '—';
+            const d = new Date(dateStr);
+            return d.toLocaleDateString('en-PH', { year: 'numeric', month: 'short', day: 'numeric' });
+        }
+
+        function formatDateTime(dateStr) {
+            if (!dateStr) return '—';
+            const d = new Date(dateStr);
+            return d.toLocaleDateString('en-PH', {
+                year: 'numeric', month: 'short', day: 'numeric',
+                hour: '2-digit', minute: '2-digit'
+            });
+        }
+
+        // ===============================================
+        // TAB 4: SYSTEM LOGS
+        // ===============================================
+        async function loadLogs() {
+            try {
+                const tbody = document.getElementById('logsTableBody');
+                tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;">⏳ Fetching logs...</td></tr>`;
+
+                allLogs = await apiGet('api/registrar.php?action=get_logs');
+                renderLogs(allLogs);
+            } catch (err) {
+                showAlert('logsAlert', '❌ Failed to load logs: ' + err.message);
+            }
+        }
+
+        function renderLogs(logs) {
+            const tbody = document.getElementById('logsTableBody');
+            if (logs.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;color:var(--gray-500);padding:40px;">No logs found.</td></tr>`;
+                return;
+            }
+            tbody.innerHTML = logs.map(l => `
+                <tr>
+                    <td style="font-size:12px; white-space:nowrap;">${formatDateTime(l.created_at)}</td>
+                    <td><strong>${l.employee_name}</strong></td>
+                    <td><span class="role-tag role-${l.employee_role}">${l.employee_role}</span></td>
+                    <td><span style="font-weight:600;">${l.action_type}</span></td>
+                    <td>${l.target_name || '—'}</td>
+                    <td style="font-size:13px; color:var(--gray-600);">${l.details || '—'}</td>
+                </tr>
+            `).join('');
+        }
+
+        function filterLogs() {
+            const search = document.getElementById('logsSearchInput').value.toLowerCase();
+            const actionFilter = document.getElementById('logsFilterAction').value;
+
+            let filtered = allLogs;
+            if (search) {
+                filtered = filtered.filter(l =>
+                    (l.employee_name || '').toLowerCase().includes(search) ||
+                    (l.target_name || '').toLowerCase().includes(search) ||
+                    (l.details || '').toLowerCase().includes(search) ||
+                    (l.action_type || '').toLowerCase().includes(search)
+                );
+            }
+            if (actionFilter !== 'All') {
+                filtered = filtered.filter(l => l.action_type === actionFilter);
+            }
+            renderLogs(filtered);
+        }
+
+        async function undoDrop(id) {
+            if (!confirm('Are you sure you want to undo the "Dropped" status for this student?')) return;
+
+            try {
+                const adminId = sessionStorage.getItem('adminId');
+                const res = await apiPost('api/registrar.php?action=undo_drop', {
+                    enrollment_id: id,
+                    admin_id: adminId
+                });
+
+                showAlert('enrollAlert', '✅ ' + res.message, 'success');
+                loadStudents(); // Refresh the list
+            } catch (err) {
+                showAlert('enrollAlert', '❌ ' + err.message);
+            }
+        }
+
+        // Load enrollments on page load (default tab)
+        loadStudents();
+    </script>
+</body>
+
+</html>
