@@ -209,14 +209,22 @@ HTML;
     return wrapEmailTemplate('Payment Declined', '#dc2626', '❌', 'Payment Declined', $body);
 }
 
-function buildPaymentUpdatedEmail($studentName, $gradeLevel, $totalPaid, $totalAmount)
+function buildPaymentUpdatedEmail($studentName, $gradeLevel, $totalPaid, $totalAmount, $currentAmount = null)
 {
     $balance = max(0, $totalAmount - $totalPaid);
     $totalPaidFmt = '₱' . number_format($totalPaid, 2);
     $balanceFmt = '₱' . number_format($balance, 2);
+
+    $currentAmountHtml = '';
+    if ($currentAmount !== null && $currentAmount > 0) {
+        $currentAmountFmt = '₱' . number_format($currentAmount, 2);
+        $currentAmountHtml = "<p style='font-size:15px; color:#333; margin-bottom:12px;'>We have received your payment of <strong>{$currentAmountFmt}</strong> for this installment.</p>";
+    }
+
     $body = <<<HTML
         <p>Dear Parent/Guardian,</p>
         <p>There has been an update to the payment records for <strong>{$studentName}</strong>.</p>
+        {$currentAmountHtml}
         <table width="100%" style="background:#f0fdf4; border-radius:12px; padding:20px; margin:20px 0;">
             <tr><td><strong>Total Paid:</strong> {$totalPaidFmt}<br><strong>Remaining Balance:</strong> {$balanceFmt}</td></tr>
         </table>
@@ -284,17 +292,47 @@ function sendStatusEmail($conn, $enrollment_id, $decision, $reason = '', $trigge
         case 'approved':
         case 'approved_dtf':
             $isDTF = ($decision === 'approved_dtf' || $docs_pending);
-            if ($reg === 'approved' && $cash === 'approved') {
-                $subject = "Officially Enrolled — " . $data['student_full_name'];
-                $htmlBody = buildOfficiallyEnrolledEmail($data['student_full_name'], $data['grade_level'], $data['school_year'], $data['student_no'], $isDTF, $data['missing_docs']);
-            } elseif ($triggeredBy === 'Registrar') {
+
+            $sentCount = 0;
+            $errors = [];
+
+            // 1. Send specific review email
+            if ($triggeredBy === 'Registrar') {
                 $subject = ($isDTF ? "Application Approved (Missing Documents)" : "Application Approved") . " — " . $data['student_full_name'];
                 $htmlBody = buildApplicationApprovedEmail($data['student_full_name'], $data['grade_level'], $data['school_year'], $data['student_no'], $isDTF, $data['missing_docs']);
+                $res = sendEnrollmentEmail($data['parent_email'], $data['parent_full_name'], $subject, $htmlBody);
+                if ($res['success'])
+                    $sentCount++;
+                else
+                    $errors[] = $res['message'];
             } elseif ($triggeredBy === 'Cashier') {
                 $subject = "Payment Received — " . $data['student_full_name'];
                 $htmlBody = buildPaymentReceivedEmail($data['student_full_name'], $data['grade_level'], $data['school_year']);
+                $res = sendEnrollmentEmail($data['parent_email'], $data['parent_full_name'], $subject, $htmlBody);
+                if ($res['success'])
+                    $sentCount++;
+                else
+                    $errors[] = $res['message'];
             }
-            break;
+
+            // 2. If BOTH are approved, send the Officially Enrolled email
+            if ($reg === 'approved' && $cash === 'approved') {
+                $subjectFinal = "Officially Enrolled — " . $data['student_full_name'];
+                $htmlBodyFinal = buildOfficiallyEnrolledEmail($data['student_full_name'], $data['grade_level'], $data['school_year'], $data['student_no'], $isDTF, $data['missing_docs']);
+                $resFinal = sendEnrollmentEmail($data['parent_email'], $data['parent_full_name'], $subjectFinal, $htmlBodyFinal);
+                if ($resFinal['success'])
+                    $sentCount++;
+                else
+                    $errors[] = $resFinal['message'];
+            }
+
+            if ($sentCount > 0) {
+                return ['success' => true, 'message' => $sentCount . ' email(s) sent successfully.' . (count($errors) > 0 ? ' Errors: ' . implode(', ', $errors) : '')];
+            } else {
+                return ['success' => false, 'message' => 'No emails sent.' . (count($errors) > 0 ? ' Errors: ' . implode(', ', $errors) : '')];
+            }
+        // break; // Logic returns directly
+
         case 'declined':
             if ($triggeredBy === 'Cashier') {
                 $subject = "Payment Declined";
@@ -305,8 +343,9 @@ function sendStatusEmail($conn, $enrollment_id, $decision, $reason = '', $trigge
             }
             break;
         case 'payment_updated':
+            $currentAmount = (is_numeric($reason) && $reason > 0) ? $reason : null;
             $subject = '💳 Payment Record Updated — ' . $data['student_full_name'];
-            $htmlBody = buildPaymentUpdatedEmail($data['student_full_name'], $data['grade_level'], $data['total_paid'], $data['total_amount']);
+            $htmlBody = buildPaymentUpdatedEmail($data['student_full_name'], $data['grade_level'], $data['total_paid'], $data['total_amount'], $currentAmount);
             break;
         case 'dropped':
             $subject = '🚫 Enrollment Status: Dropped — ' . $data['student_full_name'];

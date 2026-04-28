@@ -1036,7 +1036,7 @@ if ($action === 'add_payment') {
     logAction($admin_id, "Update Payment", $enrollment_id, $studentName, "Added payment of ₱" . number_format($amount, 2) . ". Ref: $ref");
 
     // --- AUTO-SEND EMAIL NOTIFICATION ---
-    sendStatusEmail($conn, $enrollment_id, 'payment_updated', '', 'Cashier');
+    sendStatusEmail($conn, $enrollment_id, 'payment_updated', $amount, 'Cashier');
 
     sendJSON(['message' => 'Payment updated successfully.']);
 }
