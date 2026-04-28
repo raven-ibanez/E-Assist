@@ -893,7 +893,7 @@
                 const balance = Math.max(0, balanceVal);
                 let refundable = Math.max(0, -balanceVal);
 
-                if (p.status === 'Refundable') {
+                if (p.status === 'Declined' && p.cashier_status === 'approved' && p.registrar_status === 'declined') {
                     refundable = paid;
                 }
 

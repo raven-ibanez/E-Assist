@@ -346,9 +346,8 @@
                 const balance = Math.max(0, balanceVal);
                 let refundable = Math.max(0, -balanceVal);
                 
-                // If status is specifically 'Refundable', it means the application was declined
-                // but the payment was approved, so the student gets a FULL refund.
-                if (r.status === 'Refundable') {
+                // If declined but already paid (Registrar denied after Cashier approved)
+                if (r.status === 'Declined' && r.cashier_status === 'approved' && r.registrar_status === 'declined') {
                     refundable = paid;
                 }
 
@@ -473,7 +472,8 @@
 
         async function refundExcess(id) {
             const record = allPayments.find(p => p.enrollment_id === id);
-            const msg = (record && record.status === 'Refundable') 
+            const isFullRefund = record && record.cashier_status === 'approved' && record.registrar_status === 'declined';
+            const msg = isFullRefund
                 ? 'Are you sure you want to refund the FULL payment for this declined student?' 
                 : 'Are you sure you want to refund the excess payment for this student?';
                 

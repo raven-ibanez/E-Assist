@@ -33,8 +33,8 @@ require_once __DIR__ . '/email_config.php';
 function calculateStatus($reg, $cash, $docs_pending = 0) {
     if ($reg === 'dropped') return 'Dropped';
     
-    // IF Cashier approved BUT Registrar declined -> Refundable
-    if ($cash === 'approved' && $reg === 'declined') return 'Refundable';
+    // IF Cashier approved BUT Registrar declined -> Still Declined but with refund option
+    if ($cash === 'approved' && $reg === 'declined') return 'Declined';
     
     if ($reg === 'declined' || $cash === 'declined') return 'Declined';
     if ($cash === 'refunded') return 'Refunded';
