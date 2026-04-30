@@ -54,7 +54,11 @@ E-Assist/
 │   ├── register.php        ← Handles enrollment form submission
 │   ├── registrar.php       ← Handles login + all dashboard data
 │   ├── lookups.php         ← Provides dropdown data
+│   ├── email_config.php    ← PHPMailer setup & templates
+│   ├── send_email.php      ← Standalone script for sending emails
 │   └── uploads/            ← Uploaded student files (PSA, SF10, 2x2)
+│
+├── phpmailer/              ← Third-party email library
 │
 └── Images:
     ├── logo.png
@@ -81,236 +85,106 @@ Study the files in this exact order:
 | 10 | `api/lookups.php` | Simple PHP API |
 | 11 | `api/register.php` | How enrollment data is saved |
 | 12 | `success.html` | Confirmation page |
-| 13 | `employee-login.html` | Staff login page |
-| 14 | `api/registrar.php` | All dashboard backend logic |
-| 15 | `registrar-dashboard.html` | Registrar's view |
-| 16 | `cashier-dashboard.html` | Cashier's view |
-| 17 | `admin-dashboard.html` | Admin super-dashboard |
+| 13 | `api/email_config.php` | How automated emails are sent |
+| 14 | `employee-login.html` | Staff login page |
+| 15 | `api/registrar.php` | All dashboard backend logic |
+| 16 | `registrar-dashboard.html` | Registrar's view |
+| 17 | `cashier-dashboard.html` | Cashier's view |
+| 18 | `admin-dashboard.html` | Admin super-dashboard |
 
 ---
 
 # CHAPTER 1: schema_mysql.sql
-**What is this?** The blueprint for the database. It defines what tables exist and what data they store.
+**What is this?** The blueprint for the database. It defines what tables exist, what data they store, and how they relate to each other.
 
-```sql
--- Create the database (if it doesn't exist yet)
-CREATE DATABASE IF NOT EXISTS enrollment_db;
-USE enrollment_db;
-```
-- `CREATE DATABASE` — makes a new database called `enrollment_db`
-- `IF NOT EXISTS` — only create it if it's not already there (prevents errors)
-- `USE` — tells MySQL "I want to work with this database now"
+### 🔗 Understanding Database Relationships
+In this system, we use **Relational Database Design (3rd Normal Form)**. This means we separate data into logical tables and link them together using **Foreign Keys** instead of duplicating data.
 
-### Table: grade_levels
-```sql
-CREATE TABLE IF NOT EXISTS grade_levels (
-    id         INT AUTO_INCREMENT PRIMARY KEY,
-    name       VARCHAR(50) NOT NULL UNIQUE,
-    sort_order INT NOT NULL
-);
-```
-- `CREATE TABLE` — makes a new table
-- `id INT AUTO_INCREMENT PRIMARY KEY` — a unique number that increases automatically (1, 2, 3...)
-- `name VARCHAR(50)` — text up to 50 characters (like "Kinder", "Grade 1")
-- `NOT NULL` — this field cannot be empty
-- `UNIQUE` — no two rows can have the same name
-- `sort_order` — determines the display order in dropdowns
+Here are the key relationship types you need to master:
+1. **One-to-Many (1:N):** One row in Table A can link to multiple rows in Table B. 
+   *(Example: `parents` to `students` — One parent can have multiple enrolled students, but each student only has one parent record).*
+2. **Lookup Tables:** Small tables used to store standard options instead of hardcoding them. 
+   *(Example: `grade_levels`, `relations`, `payment_methods`).*
+3. **Link/Junction Tables:** Tables that connect other tables to represent an event.
+   *(Example: `enrollments` links a `student`, a `school_year`, and a `grade_level` together).*
 
-### Table: relations
-```sql
-CREATE TABLE IF NOT EXISTS relations (
-    id   INT AUTO_INCREMENT PRIMARY KEY,
-    name VARCHAR(50) NOT NULL UNIQUE
-);
--- Sample data: 'Mother', 'Father', 'Guardian', 'Grandparent', 'Other'
-```
-- Stores the relationship types a parent can select on Step 2 of the enrollment form
-- This is a **lookup table** — it just holds static reference values
+---
 
-### Table: income_ranges
-```sql
-CREATE TABLE IF NOT EXISTS income_ranges (
-    id          INT AUTO_INCREMENT PRIMARY KEY,
-    range_label VARCHAR(100) NOT NULL UNIQUE
-);
--- Sample data: 'Below ₱10,000', '₱10,000 - ₱30,000', etc.
-```
-- Used for the Parent's estimated monthly income dropdown in Step 2
+### Core Entity Tables
+These tables hold the primary data about the people in the system.
 
-### Table: sessions
-```sql
-CREATE TABLE IF NOT EXISTS sessions (
-    id   INT AUTO_INCREMENT PRIMARY KEY,
-    name VARCHAR(100) NOT NULL UNIQUE
-);
--- Sample data: 'AM Session', 'PM Session', 'Morning Session', 'Afternoon Session', etc.
-```
-- Stores the available class schedule/session options
-- The enrollment form (Step 1) uses this to let parents pick a schedule based on grade level
+#### Table: parents
+- **Purpose:** Stores parent/guardian information.
+- **Relationships:**
+  - **One-to-Many with students:** A parent (`id`) can appear multiple times in the `students` table (`parent_id`).
+  - **Foreign Keys:** Links to `relations` (`relation_id`) and `income_ranges` (`income_range_id`).
+- **Note:** `email` is NOT unique because a single parent account can enroll multiple children.
 
-### Table: parents
-```sql
-CREATE TABLE IF NOT EXISTS parents (
-    id              INT AUTO_INCREMENT PRIMARY KEY,
-    first_name      VARCHAR(100) NOT NULL,
-    last_name       VARCHAR(100) NOT NULL,
-    middle_name     VARCHAR(100) DEFAULT NULL,
-    relation_id     INT NOT NULL,               -- Links to "relations" table
-    contact_no      VARCHAR(20) NOT NULL,
-    occupation      VARCHAR(100) DEFAULT NULL,
-    income_range_id INT DEFAULT NULL,           -- Links to "income_ranges" table
-    email           VARCHAR(100) NOT NULL UNIQUE,
-    FOREIGN KEY (relation_id)     REFERENCES relations(id),
-    FOREIGN KEY (income_range_id) REFERENCES income_ranges(id)
-);
-```
-- `relation_id INT` — stores a number that links to the `relations` table
-- `FOREIGN KEY` — enforces the link; a parent's `relation_id` **must** exist in `relations`
-- `email UNIQUE` — no two parents can use the same email address
+#### Table: students
+- **Purpose:** Stores the student's personal information and uploaded files.
+- **Relationships:** 
+  - **Belongs to one parent:** `parent_id` links directly to `parents.id`. `ON DELETE CASCADE` means if a parent record is deleted, all their student records are deleted too.
+  - **One-to-Many with enrollments:** A student can enroll multiple times across different school years.
 
-### Table: students
-```sql
-CREATE TABLE IF NOT EXISTS students (
-    id              INT AUTO_INCREMENT PRIMARY KEY,
-    parent_id       INT NOT NULL,              -- Links to "parents" table
-    student_no      VARCHAR(20) NOT NULL UNIQUE, -- e.g., "2026-00001"
-    first_name      VARCHAR(100) NOT NULL,
-    last_name       VARCHAR(100) NOT NULL,
-    middle_name     VARCHAR(100) DEFAULT NULL,
-    suffix          VARCHAR(10) DEFAULT NULL,  -- e.g., "Jr.", "Sr.", "III"
-    birth_date      DATE NOT NULL,
-    gender          ENUM('Male', 'Female') NOT NULL,
-    religion        VARCHAR(100) DEFAULT NULL,
-    address         TEXT NOT NULL,
-    previous_school VARCHAR(255) DEFAULT NULL, -- Only for transferees
-    psa_birth_cert  VARCHAR(255) DEFAULT NULL, -- File path to uploaded PSA
-    sf10_document   VARCHAR(255) DEFAULT NULL, -- File path to uploaded SF10
-    picture_2x2     VARCHAR(255) DEFAULT NULL, -- File path to 2x2 photo
-    FOREIGN KEY (parent_id) REFERENCES parents(id) ON DELETE CASCADE
-);
-```
-- `student_no` — auto-generated ID like "2026-00001" (built in register.php)
-- `ENUM('Male', 'Female')` — can only be one of these two values
-- `TEXT` — for longer text (no character limit)
-- `DEFAULT NULL` — if not provided, it will be stored as null (empty)
-- `ON DELETE CASCADE` — if a parent is deleted, their student records are also deleted
+---
 
-### Table: payment_methods
-```sql
-CREATE TABLE IF NOT EXISTS payment_methods (
-    id   INT AUTO_INCREMENT PRIMARY KEY,
-    name VARCHAR(50) NOT NULL UNIQUE
-);
--- Sample data: 'GCash', 'Cash', 'Bank Transfer'
-```
-- Stores the payment options shown in Step 4. By keeping these in a table instead of hardcoding them, an admin can add new payment methods without changing the code.
+### Lookup Tables (The Options)
+Instead of storing text like "Mother" or "Kinder" repeatedly, we store them once here and reference their `id`. This makes renaming an option easy.
+- **`school_years`**: Available school years (e.g., 2025-2026). Has an `is_current` flag.
+- **`grade_levels`**: Kinder, Grade 1, etc.
+- **`relations`**: Mother, Father, Guardian, etc.
+- **`sessions`**: AM/PM session options.
+- **`income_ranges`**: Estimated monthly income choices.
+- **`payment_methods`**: GCash, Cash, Bank Transfer.
+- **`roles`**: Admin, Registrar, Cashier.
 
-### Table: enrollments
-```sql
-CREATE TABLE IF NOT EXISTS enrollments (
-    id             INT AUTO_INCREMENT PRIMARY KEY,
-    student_id     INT NOT NULL,
-    grade_level_id INT NOT NULL,
-    session_id     INT NOT NULL,
-    applied_at     TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (student_id)     REFERENCES students(id) ON DELETE CASCADE,
-    FOREIGN KEY (grade_level_id) REFERENCES grade_levels(id),
-    FOREIGN KEY (session_id)     REFERENCES sessions(id)
-);
-```
-- This is the **main linking table** — it connects a student to their grade level and session
-- `TIMESTAMP DEFAULT CURRENT_TIMESTAMP` — automatically records when the application was made
+---
 
-### Table: payments
-```sql
-CREATE TABLE IF NOT EXISTS payments (
-    id                INT AUTO_INCREMENT PRIMARY KEY,
-    enrollment_id     INT NOT NULL,
-    payment_method_id INT NOT NULL,
-    payment_mode      ENUM('Full', 'Monthly') NOT NULL DEFAULT 'Monthly',
-    reference_number  VARCHAR(100) DEFAULT NULL,
-    applied_at        TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (enrollment_id)     REFERENCES enrollments(id) ON DELETE CASCADE,
-    FOREIGN KEY (payment_method_id) REFERENCES payment_methods(id)
-);
-```
-- Separated from `enrollments` to keep payment data isolated (3rd Normal Form / 3NF)
-- `payment_mode ENUM('Full', 'Monthly')` — whether the parent pays everything upfront or in installments
-- `reference_number` — the GCash/bank transaction ID (null for Cash payments)
+### The Enrollment Engine (Link Tables)
+This is where the magic happens. These tables tie the people to the school data.
 
-### Table: roles
-```sql
-CREATE TABLE IF NOT EXISTS roles (
-    id   INT AUTO_INCREMENT PRIMARY KEY,
-    name VARCHAR(20) NOT NULL UNIQUE
-);
--- Sample data: 'admin', 'registrar', 'cashier'
-```
-- Stores the employee role types. Using a table instead of hardcoding the role string makes it easier to add new roles in the future.
+#### Table: enrollments
+- **Purpose:** The core operational table. It answers: *"Who is enrolled, in what grade, for what year, and at what time?"*
+- **Relationships:** This table acts as a **hub**.
+  - `student_id` links to `students`
+  - `school_year_id` links to `school_years`
+  - `grade_level_id` links to `grade_levels`
+  - `session_id` links to `sessions`
 
-### Table: admin (employee accounts)
-```sql
-CREATE TABLE IF NOT EXISTS admin (
-    id       INT AUTO_INCREMENT PRIMARY KEY,
-    username VARCHAR(50) NOT NULL UNIQUE,
-    password VARCHAR(255) NOT NULL,
-    role_id  INT NOT NULL DEFAULT 2,  -- Links to "roles" table (default: registrar)
-    FOREIGN KEY (role_id) REFERENCES roles(id)
-);
-```
-- `role_id` links to the `roles` table instead of storing the role name directly
-- This is the normalized (3NF) version — the role name is stored once in `roles`, not repeated in every admin row
+#### Table: enrollment_reviews (The "Middle Man")
+- **Purpose:** Records administrative decisions to keep student data separate from staff actions.
+- **Relationships:** 
+  - **Many-to-One with enrollments:** An enrollment can have multiple reviews over time (e.g., approved, then dropped, then undo drop).
+  - **Many-to-One with admin:** Tracks *which* employee made the decision.
+- **Why?** This provides a clean **audit trail** and calculates the real-time status dynamically.
 
-### Table: enrollment_reviews (the "middle man")
-```sql
-CREATE TABLE IF NOT EXISTS enrollment_reviews (
-    id            INT AUTO_INCREMENT PRIMARY KEY,
-    enrollment_id INT NOT NULL,
-    admin_id      INT NOT NULL,
-    review_type   ENUM('Registrar', 'Cashier') NOT NULL,
-    decision      ENUM('approved', 'declined') NOT NULL,
-    notes         TEXT DEFAULT NULL,
-    created_at    TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (enrollment_id) REFERENCES enrollments(id) ON DELETE CASCADE,
-    FOREIGN KEY (admin_id)      REFERENCES admin(id) ON DELETE CASCADE
-);
-```
-- This table records every approval/rejection decision made by staff
-- `review_type` — was this reviewed by the Registrar or the Cashier?
-- `decision` — what was their verdict?
-- **Why a separate table?** This keeps administrative decisions separate from student data (3NF). It also creates an audit trail — you can see the full history of decisions.
-- The **overall status** of an enrollment is calculated dynamically from the latest `Registrar` and `Cashier` rows in this table (see `calculateStatus()` in `registrar.php`)
+---
 
-### Table: payment_transactions
-```sql
-CREATE TABLE IF NOT EXISTS payment_transactions (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    payment_id INT NOT NULL,
-    amount_paid DECIMAL(10,2) NOT NULL,
-    method_id INT DEFAULT NULL,
-    reference_number VARCHAR(100) DEFAULT NULL,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (payment_id) REFERENCES payments(id) ON DELETE CASCADE
-);
-```
-- Tracks all individual payments and refunds for a student's enrollment.
-- Instead of a single "amount_paid" column, we sum these transactions. Positive values are payments, negative values are refunds (e.g., "Refund Excess").
+### Financial Tracking Tables
+We separate the payment plans from the actual cash transactions.
 
-### Table: system_logs
-```sql
-CREATE TABLE IF NOT EXISTS system_logs (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    admin_id INT NOT NULL,
-    action_type VARCHAR(100) NOT NULL,
-    target_enrollment_id INT DEFAULT NULL,
-    target_student_id INT DEFAULT NULL,
-    details TEXT DEFAULT NULL,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (admin_id) REFERENCES admin(id) ON DELETE CASCADE
-);
-```
-- Provides an **Audit Trail** for everything employees do (e.g., "Registrar approved application", "Admin deactivated cashier").
-- It is visible in the Admin Dashboard under the "Logs" tab.
+#### Table: payments
+- **Purpose:** Defines the *expected* payment plan (Full vs Monthly) and total calculated fees.
+- **Relationships:** 
+  - **One-to-One with enrollments:** Every enrollment gets exactly one `payments` record.
+  - **One-to-Many with payment_transactions:** One payment plan will have many actual cash payments over time.
+
+#### Table: payment_transactions
+- **Purpose:** Records every actual payment or refund made.
+- **Relationships:** 
+  - Links to `payments` (`payment_id`).
+- **How it works:** We sum the `amount_paid` column to calculate the Total Paid. **Positive** values are payments. **Negative** values are refunds (e.g., "Refund Excess").
+
+---
+
+### System Management
+#### Table: admin
+- **Purpose:** Employee login accounts.
+- **Relationships:** Links to `roles` (`role_id`) to determine dashboard access.
+
+#### Table: system_logs
+- **Purpose:** The master audit trail tracking everything employees do.
+- **Relationships:** Links to `admin` (`admin_id`) to know who did what.
 
 # CHAPTER 2: db.php
 **What is this?** Connects PHP to your MySQL database. Every PHP file includes this.
@@ -870,7 +744,31 @@ COALESCE(
 
 ---
 
-# CHAPTER 8: Employee Login Flow
+# CHAPTER 8: Automated Email System (api/email_config.php)
+**What is this?** This file handles sending automated email updates to parents whenever their child's enrollment status changes.
+
+### How it works:
+We use a library called **PHPMailer** because PHP's built-in `mail()` function is often blocked by spam filters. 
+1. The system connects to a real Gmail account using SMTP.
+2. When a staff member clicks "Approve" or "Decline", `registrar.php` calls the `sendStatusEmail()` function.
+3. The function checks the database to get the parent's email address and the student's name.
+4. It wraps the message in a beautiful, branded HTML template (with the school logo and maroon colors).
+
+### The Trigger Points:
+Emails are automatically sent during these events:
+- **Received:** When the parent finishes Step 4 (sent by `register.php`).
+- **Approved / Approved (DTF):** When the Registrar approves the application.
+- **Declined:** If either the Registrar or Cashier rejects the application.
+- **Payment Updated:** When the Cashier logs a new payment transaction.
+
+```php
+// Example of how it's called in registrar.php:
+$emailResult = sendStatusEmail($conn, $enrollment_id, 'approved', $reason, 'Registrar');
+```
+
+---
+
+# CHAPTER 9: Employee Login Flow
 **File: employee-login.html**
 
 ### The Interface Design:
@@ -906,7 +804,7 @@ if (!sessionStorage.getItem('registrarLoggedIn')) {
 
 ---
 
-# CHAPTER 9: Dashboard Pages
+# CHAPTER 10: Dashboard Pages
 ### The Premium Design System (`.style.css`)
 The system follows a high-end educational aesthetic:
 - **Primary Color**: `var(--maroon-dark)` (#7a1230) — Used for headers, primary buttons, and critical UI elements.
@@ -939,7 +837,7 @@ The system follows a high-end educational aesthetic:
 
 ---
 
-# CHAPTER 10: Login Credentials
+# CHAPTER 11: Login Credentials
 
 | Role | Username | Password | Dashboard |
 |---|---|---|---|
