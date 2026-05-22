@@ -546,16 +546,24 @@
                         </div>
                         <div class="dash-add-form" id="addEmployeeForm">
                             <h4 style="margin-bottom:12px;font-size:14px;font-weight:700;">Create New Account</h4>
-                            <div class="dash-add-form-row">
+                            <div class="dash-add-form-row" style="grid-template-columns: 1fr 1fr 1fr; margin-bottom: 12px;">
+                                <div><label
+                                        style="font-size:12px;font-weight:600;display:block;margin-bottom:4px;">Employee Name</label><input
+                                        type="text" id="newEmployeeName" placeholder="Full name"></div>
                                 <div><label
                                         style="font-size:12px;font-weight:600;display:block;margin-bottom:4px;">Username</label><input
                                         type="text" id="newUsername" placeholder="e.g. registrar_jane"></div>
                                 <div><label
+                                        style="font-size:12px;font-weight:600;display:block;margin-bottom:4px;">Role</label><select
+                                        id="newRole" style="width:100%;"></select></div>
+                            </div>
+                            <div class="dash-add-form-row" style="grid-template-columns: 1fr 1fr 1fr;">
+                                <div><label
                                         style="font-size:12px;font-weight:600;display:block;margin-bottom:4px;">Password</label><input
                                         type="password" id="newPassword" placeholder="Strong password"></div>
                                 <div><label
-                                        style="font-size:12px;font-weight:600;display:block;margin-bottom:4px;">Role</label><select
-                                        id="newRole" style="width:100%;"></select></div>
+                                        style="font-size:12px;font-weight:600;display:block;margin-bottom:4px;">Confirm Password</label><input
+                                        type="password" id="newConfirmPassword" placeholder="Confirm password"></div>
                                 <div><button class="btn-dash-primary" onclick="addEmployee()"
                                         style="width:100%;">Create</button></div>
                             </div>
@@ -1122,7 +1130,8 @@
                 <div class="employee-card" style="opacity: ${e.is_active == 1 ? 1 : 0.6}; transition: all 0.3s ease;">
                     <div class="employee-avatar avatar-${e.role}">${getRoleIcon(e.role)}</div>
                     <div class="employee-info">
-                        <h4>${e.username}</h4>
+                        <h4 style="margin:0; font-size:14px; font-weight:700;">${e.employee_name || 'No Name'}</h4>
+                        <div style="font-size:12px; color:var(--gray-500); margin-bottom:4px;">@${e.username}</div>
                         <span class="role-tag role-${e.role}">${e.role}</span>
                         <div style="font-size: 10px; color: ${e.is_active == 1 ? '#16a34a' : '#dc2626'}; font-weight: 700; margin-top: 4px;">
                             ${e.is_active == 1 ? '● ACTIVE' : '○ INACTIVE'}
@@ -1143,7 +1152,10 @@
 
             let filtered = allEmployees;
             if (search) {
-                filtered = filtered.filter(e => e.username.toLowerCase().includes(search));
+                filtered = filtered.filter(e => 
+                    e.username.toLowerCase().includes(search) || 
+                    (e.employee_name && e.employee_name.toLowerCase().includes(search))
+                );
             }
             if (roleFilter !== 'All') {
                 filtered = filtered.filter(e => e.role === roleFilter);
@@ -1173,24 +1185,37 @@
         }
 
         async function addEmployee() {
+            const employee_name = document.getElementById('newEmployeeName').value.trim();
             const username = document.getElementById('newUsername').value.trim();
-            const password = document.getElementById('newPassword').value.trim();
             const role_id = document.getElementById('newRole').value;
+            const password = document.getElementById('newPassword').value;
+            const confirm_password = document.getElementById('newConfirmPassword').value;
 
-            if (!username || !password || !role_id) {
+            if (!employee_name || !username || !role_id || !password || !confirm_password) {
                 showAlert('empAlert', '❌ Please fill in all fields.');
+                return;
+            }
+
+            if (password !== confirm_password) {
+                showAlert('empAlert', '❌ Password and Confirm Password do not match.');
                 return;
             }
 
             try {
                 const result = await apiPost('api/registrar.php?action=add_employee', {
-                    username, password, role_id,
+                    employee_name,
+                    username,
+                    role_id,
+                    password,
+                    confirm_password,
                     admin_id: sessionStorage.getItem('adminId')
                 });
                 showAlert('empAlert', '✅ ' + result.message, 'success');
+                document.getElementById('newEmployeeName').value = '';
                 document.getElementById('newUsername').value = '';
-                document.getElementById('newPassword').value = '';
                 document.getElementById('newRole').value = '';
+                document.getElementById('newPassword').value = '';
+                document.getElementById('newConfirmPassword').value = '';
                 document.getElementById('addEmployeeForm').classList.remove('visible');
                 allEmployees = [];
                 loadEmployees();
