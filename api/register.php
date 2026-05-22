@@ -44,6 +44,7 @@ $parent_first_name  = $_POST['parent_first_name'] ?? '';
 $parent_last_name   = $_POST['parent_last_name'] ?? '';
 $parent_middle_name = $_POST['parent_middle_name'] ?? '';
 $parent_contact     = $_POST['parent_contact'] ?? '';
+$parent_telephone   = $_POST['parent_telephone'] ?? '';
 $occupation         = $_POST['occupation'] ?? '';
 $income_range_id    = $_POST['income_range_id'] ?? '';
 $previous_school    = $_POST['previous_school'] ?? '';
@@ -102,8 +103,8 @@ try {
     $conn->begin_transaction();
 
     // A. Insert the Parent record (no email uniqueness check — same parent can enroll multiple children)
-    $stmt = $conn->prepare("INSERT INTO parents (first_name, last_name, middle_name, relation_id, contact_no, occupation, income_range_id, email) VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
-    $stmt->bind_param("sssissss", $parent_first_name, $parent_last_name, $parent_middle_name, $relation_id, $parent_contact, $occupation, $income_range_id, $email);
+    $stmt = $conn->prepare("INSERT INTO parents (first_name, last_name, middle_name, relation_id, mobile, telephone, occupation, income_range_id, email) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)");
+    $stmt->bind_param("sssississs", $parent_first_name, $parent_last_name, $parent_middle_name, $relation_id, $parent_contact, $parent_telephone, $occupation, $income_range_id, $email);
     $stmt->execute();
     $parentId = $conn->insert_id;  // Get the new parent's ID
 

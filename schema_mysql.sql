@@ -140,7 +140,8 @@ CREATE TABLE IF NOT EXISTS parents (
     last_name      VARCHAR(100) NOT NULL,
     middle_name    VARCHAR(100) DEFAULT NULL,
     relation_id    INT NOT NULL,                    -- Links to "relations" table
-    contact_no     VARCHAR(20) NOT NULL,
+    mobile         VARCHAR(20) NOT NULL,            -- Mobile number (required)
+    telephone      VARCHAR(20) DEFAULT NULL,        -- Landline number (optional)
     occupation     VARCHAR(100) DEFAULT NULL,
     income_range_id INT DEFAULT NULL,               -- Links to "income_ranges" table
     email          VARCHAR(100) NOT NULL,           -- NOT unique: same parent can enroll multiple children
@@ -260,21 +261,22 @@ INSERT IGNORE INTO roles (name) VALUES
 --  The "role_id" column determines what dashboard they can access.
 -- ============================================================
 CREATE TABLE IF NOT EXISTS admin (
-    id       INT AUTO_INCREMENT PRIMARY KEY,
-    username VARCHAR(50) NOT NULL UNIQUE,
-    password VARCHAR(255) NOT NULL,               -- bcrypt hash
-    role_id  INT NOT NULL DEFAULT 2,              -- Links to "roles" table (default: registrar)
-    is_active TINYINT(1) NOT NULL DEFAULT 1,      -- 1 = active, 0 = deactivated
+    id            INT AUTO_INCREMENT PRIMARY KEY,
+    username      VARCHAR(50) NOT NULL UNIQUE,
+    password      VARCHAR(255) NOT NULL,               -- bcrypt hash
+    employee_name VARCHAR(100) NOT NULL DEFAULT '',     -- Full name of the employee
+    role_id       INT NOT NULL DEFAULT 2,              -- Links to "roles" table (default: registrar)
+    is_active     TINYINT(1) NOT NULL DEFAULT 1,       -- 1 = active, 0 = deactivated
     FOREIGN KEY (role_id) REFERENCES roles(id)
 );
 
 -- Default employee accounts (passwords are bcrypt hashes, case-sensitive)
 -- Generated with: password_hash('plaintext', PASSWORD_DEFAULT)
 -- Plaintext => admin=admin123, registrar=registrar123, cashier=cashier123
-INSERT IGNORE INTO admin (username, password, role_id, is_active) VALUES
-    ('admin',     '$2y$10$t.PZskHjxJEAPVlNFmgS8uFz3ywhVIyKILEgyOLNShY1QyeRpwoNC', 1, 1),
-    ('registrar', '$2y$10$d.UDomEf9f2yxWlEmEiZGefPkqIGypqTsXx./ev89vwpgZsLWB2RC', 2, 1),
-    ('cashier',   '$2y$10$Wmk0h.er4bfoI7jd.3ipzenn42.2CTXFnoowtTahhJfFwtY8GPZlW', 3, 1);
+INSERT IGNORE INTO admin (username, password, employee_name, role_id, is_active) VALUES
+    ('admin',     '$2y$10$t.PZskHjxJEAPVlNFmgS8uFz3ywhVIyKILEgyOLNShY1QyeRpwoNC', 'System Administrator', 1, 1),
+    ('registrar', '$2y$10$d.UDomEf9f2yxWlEmEiZGefPkqIGypqTsXx./ev89vwpgZsLWB2RC', 'Default Registrar', 2, 1),
+    ('cashier',   '$2y$10$Wmk0h.er4bfoI7jd.3ipzenn42.2CTXFnoowtTahhJfFwtY8GPZlW', 'Default Cashier', 3, 1);
 -- IMPORTANT: Passwords are bcrypt hashed and case-sensitive.
 -- To reset a password, delete the row and re-insert, or run:
 --   UPDATE admin SET password = '$new_hash' WHERE username = 'xxx';

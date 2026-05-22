@@ -127,7 +127,8 @@ if ($action === 'students') {
             p.first_name AS parent_first_name,
             p.last_name AS parent_last_name,
             p.middle_name AS parent_middle_name,
-            p.contact_no AS parent_contact,
+            p.mobile AS parent_mobile,
+            p.telephone AS parent_telephone,
             COALESCE((SELECT SUM(amount_paid) FROM payment_transactions pt JOIN payments pay ON pt.payment_id = pay.id WHERE pay.enrollment_id = e.id), 0) AS total_paid,
             COALESCE((SELECT decision FROM enrollment_reviews WHERE enrollment_id = e.id AND review_type = 'Registrar' ORDER BY created_at DESC LIMIT 1), 'pending') AS registrar_status,
             COALESCE((SELECT decision FROM enrollment_reviews WHERE enrollment_id = e.id AND review_type = 'Cashier' ORDER BY created_at DESC LIMIT 1), 'pending') AS cashier_status
@@ -197,7 +198,8 @@ if ($action === 'detail') {
             p.first_name AS parent_first_name,
             p.last_name AS parent_last_name,
             p.middle_name AS parent_middle_name,
-            p.contact_no AS parent_contact,
+            p.mobile AS parent_mobile,
+            p.telephone AS parent_telephone,
             p.email, 
             p.occupation, 
             ir.range_label AS monthly_income,
@@ -267,7 +269,8 @@ if ($action === 'payments') {
             p.first_name AS parent_first_name,
             p.last_name AS parent_last_name,
             p.middle_name AS parent_middle_name,
-            p.contact_no AS parent_contact,
+            p.mobile AS parent_mobile,
+            p.telephone AS parent_telephone,
             COALESCE((SELECT 1 FROM payment_transactions WHERE payment_id = pay.id AND amount_paid < 0 LIMIT 1), 0) AS has_refund,
             COALESCE((SELECT decision FROM enrollment_reviews WHERE enrollment_id = e.id AND review_type = 'Registrar' ORDER BY created_at DESC LIMIT 1), 'pending') AS registrar_status,
             COALESCE((SELECT decision FROM enrollment_reviews WHERE enrollment_id = e.id AND review_type = 'Cashier' ORDER BY created_at DESC LIMIT 1), 'pending') AS cashier_status
@@ -490,6 +493,7 @@ if ($action === 'update_student') {
     $parent_last_name  = $_POST['parent_last_name'] ?? '';
     $parent_middle_name = $_POST['parent_middle_name'] ?? '';
     $parent_contact    = $_POST['parent_contact'] ?? '';
+    $parent_telephone  = $_POST['parent_telephone'] ?? '';
     $parent_email      = $_POST['parent_email'] ?? '';
     $parent_occupation = $_POST['parent_occupation'] ?? '';
 
@@ -503,8 +507,8 @@ if ($action === 'update_student') {
     $stmt->execute();
 
     // Update parent record
-    $stmt2 = $conn->prepare("UPDATE parents SET first_name=?, last_name=?, middle_name=?, contact_no=?, email=?, occupation=? WHERE id=?");
-    $stmt2->bind_param("ssssssi", $parent_first_name, $parent_last_name, $parent_middle_name, $parent_contact, $parent_email, $parent_occupation, $parent_id);
+    $stmt2 = $conn->prepare("UPDATE parents SET first_name=?, last_name=?, middle_name=?, mobile=?, telephone=?, email=?, occupation=? WHERE id=?");
+    $stmt2->bind_param("sssssssi", $parent_first_name, $parent_last_name, $parent_middle_name, $parent_contact, $parent_telephone, $parent_email, $parent_occupation, $parent_id);
     $stmt2->execute();
 
     // Log the action (if admin_id is provided)
@@ -607,7 +611,7 @@ if ($action === 'upload_document') {
 // =============================================================
 if ($action === 'employees') {
     $result = $conn->query("
-        SELECT a.id, a.username, a.is_active, r.name AS role 
+        SELECT a.id, a.username, a.employee_name, a.is_active, r.name AS role 
         FROM admin a
         JOIN roles r ON a.role_id = r.id
         ORDER BY a.is_active DESC, r.name, a.username
@@ -626,13 +630,25 @@ if ($action === 'employees') {
 //  - Used by: Admin Dashboard "Add Employee" form.
 // =============================================================
 if ($action === 'add_employee') {
-    $username = $data['username'] ?? '';
-    $password = $data['password'] ?? '';
-    $role_id  = $data['role_id'] ?? '';
+    $username      = $data['username'] ?? '';
+    $password      = $data['password'] ?? '';
+    $confirm_pass  = $data['confirm_password'] ?? '';
+    $employee_name = $data['employee_name'] ?? '';
+    $role_id       = $data['role_id'] ?? '';
 
     // Validate input
     if (!$username || !$password || !$role_id) {
         sendJSON(['error' => 'Username, password, and role are required.'], 400);
+    }
+
+    // Validate employee name (required)
+    if (!$employee_name || trim($employee_name) === '') {
+        sendJSON(['error' => 'Employee name is required.'], 400);
+    }
+
+    // Validate confirm password matches
+    if ($password !== $confirm_pass) {
+        sendJSON(['error' => 'Password and Confirm Password do not match.'], 400);
     }
 
     // Check if username already exists
@@ -646,22 +662,15 @@ if ($action === 'add_employee') {
     // Hash the password before storing (bcrypt, case-sensitive)
     $hashedPassword = password_hash($password, PASSWORD_DEFAULT);
 
-    // 5-Active-Employee Limit Check
-    $resCount = $conn->query("SELECT COUNT(*) as active_count FROM admin WHERE is_active = 1");
-    $countRow = $resCount->fetch_assoc();
-    if ($countRow['active_count'] >= 5) {
-        sendJSON(['error' => 'Employee limit reached. You can only have 5 active accounts. Please deactivate an existing account first.'], 403);
-    }
-
-    // Insert the new employee
-    $stmt = $conn->prepare("INSERT INTO admin (username, password, role_id, is_active) VALUES (?, ?, ?, 1)");
-    $stmt->bind_param("ssi", $username, $hashedPassword, $role_id);
+    // Insert the new employee (no employee limit)
+    $stmt = $conn->prepare("INSERT INTO admin (username, password, employee_name, role_id, is_active) VALUES (?, ?, ?, ?, 1)");
+    $stmt->bind_param("sssi", $username, $hashedPassword, $employee_name, $role_id);
     $stmt->execute();
 
     // Log the action (if admin_id is provided)
     $admin_id = $data['admin_id'] ?? null;
     if ($admin_id) {
-        logAction($admin_id, "Account Created", $conn->insert_id, $username, "Created new employee account: $username");
+        logAction($admin_id, "Account Created", $conn->insert_id, $username, "Created new employee account: $username ($employee_name)");
     }
 
     sendJSON(['message' => "Employee account created successfully."]);
@@ -687,14 +696,7 @@ if ($action === 'toggle_employee_status') {
 
     $new_status = ($target['is_active'] == 1) ? 0 : 1;
 
-    // If activating, check the limit again
-    if ($new_status == 1) {
-        $resCount = $conn->query("SELECT COUNT(*) as active_count FROM admin WHERE is_active = 1");
-        $countRow = $resCount->fetch_assoc();
-        if ($countRow['active_count'] >= 5) {
-            sendJSON(['error' => 'Cannot activate. You already have 5 active accounts.'], 403);
-        }
-    }
+    // No employee limit — activate freely
 
     // Update the employee status
     $stmt = $conn->prepare("UPDATE admin SET is_active = ? WHERE id = ?");

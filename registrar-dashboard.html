@@ -276,15 +276,24 @@
                 </div>
                 <div class="form-row"
                     style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:20px;">
-                    <div><label style="font-size:12px;font-weight:600;display:block;margin-bottom:4px;">Contact
-                            No.</label><input id="edit_parent_contact" name="parent_contact" class="form-input"
-                            style="width:100%;padding:8px;border:1px solid var(--gray-300);border-radius:6px;font-size:13px;">
+                    <div><label style="font-size:12px;font-weight:600;display:block;margin-bottom:4px;">Mobile
+                            No. *</label><input id="edit_parent_contact" name="parent_contact" class="form-input"
+                            style="width:100%;padding:8px;border:1px solid var(--gray-300);border-radius:6px;font-size:13px;"
+                            placeholder="09123456789">
+                    </div>
+                    <div><label style="font-size:12px;font-weight:600;display:block;margin-bottom:4px;">Telephone /
+                            Landline</label><input id="edit_parent_telephone" name="parent_telephone" class="form-input"
+                            style="width:100%;padding:8px;border:1px solid var(--gray-300);border-radius:6px;font-size:13px;"
+                            placeholder="(02) 1234-5678">
                     </div>
                     <div><label
                             style="font-size:12px;font-weight:600;display:block;margin-bottom:4px;">Email</label><input
                             id="edit_parent_email" name="parent_email" type="email" class="form-input"
                             style="width:100%;padding:8px;border:1px solid var(--gray-300);border-radius:6px;font-size:13px;">
                     </div>
+                </div>
+                <div class="form-row"
+                    style="display:grid;grid-template-columns:1fr;gap:12px;margin-bottom:20px;">
                     <div><label
                             style="font-size:12px;font-weight:600;display:block;margin-bottom:4px;">Occupation</label><input
                             id="edit_parent_occupation" name="parent_occupation" class="form-input"
@@ -401,7 +410,7 @@
                     <td>${formatStudentName(s)}</td>
                     <td>${s.grade_level}</td>
                     <td>${formatParentName(s.parent_first_name, s.parent_last_name, s.parent_middle_name)}</td>
-                    <td>${s.parent_contact || '—'}</td>
+                    <td>${s.parent_mobile || '—'}${s.parent_telephone ? '<br><small style="color:var(--gray-500)">☎ ' + s.parent_telephone + '</small>' : ''}</td>
                     <td style="white-space:nowrap;">${formatDate(s.applied_at)}</td>
                     <td>
                         ${getStatusBadge(s.status)}
@@ -535,7 +544,8 @@
                     <div style="grid-column:1/-1;font-size:13px;font-weight:700;color:var(--blue-dark);text-transform:uppercase;letter-spacing:0.5px;border-bottom:2px solid var(--blue-light);padding-bottom:6px;margin-top:12px;margin-bottom:4px;">Parent / Guardian</div>
                     <div class="info-item"><label>Full Name</label><span>${formatParentName(s.parent_first_name, s.parent_last_name, s.parent_middle_name)}</span></div>
                     <div class="info-item"><label>Relationship</label><span>${s.parent_relation}</span></div>
-                    <div class="info-item"><label>Contact Number</label><span>${s.parent_contact}</span></div>
+                    <div class="info-item"><label>Contact (Mobile)</label><span>${s.parent_mobile}</span></div>
+                    <div class="info-item"><label>Telephone / Landline</label><span>${s.parent_telephone || '—'}</span></div>
                     <div class="info-item"><label>Email</label><span>${s.email}</span></div>
                     <div class="info-item"><label>Occupation</label><span>${s.occupation || '—'}</span></div>
                     <div class="info-item"><label>Monthly Income</label><span>${s.monthly_income || '—'}</span></div>
@@ -648,7 +658,8 @@
                 document.getElementById('edit_parent_first_name').value = s.parent_first_name || '';
                 document.getElementById('edit_parent_last_name').value = s.parent_last_name || '';
                 document.getElementById('edit_parent_middle_name').value = s.parent_middle_name || '';
-                document.getElementById('edit_parent_contact').value = s.parent_contact || '';
+                document.getElementById('edit_parent_contact').value = s.parent_mobile || '';
+                document.getElementById('edit_parent_telephone').value = s.parent_telephone || '';
                 document.getElementById('edit_parent_email').value = s.email || '';
                 document.getElementById('edit_parent_occupation').value = s.occupation || '';
 
