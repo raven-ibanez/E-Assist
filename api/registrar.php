@@ -108,7 +108,7 @@ if ($action === 'login') {
 // =============================================================
 //  ACTION: GET ALL STUDENTS
 //  - Used by: Registrar Dashboard & Admin Dashboard (Enrollments tab)
-//  - Returns a list of all enrollment applications.
+//  - Returns a list of all enrollment applications (active records only).
 // =============================================================
 if ($action === 'students') {
     $result = $conn->query("
@@ -136,6 +136,7 @@ if ($action === 'students') {
         JOIN students s            ON e.student_id    = s.id
         JOIN parents p             ON s.parent_id     = p.id
         JOIN grade_levels gl       ON e.grade_level_id = gl.id
+        WHERE s.status = 'active'
         ORDER BY e.applied_at DESC
     ");
 
@@ -254,7 +255,7 @@ if ($action === 'detail') {
 // =============================================================
 //  ACTION: GET PAYMENT INFO
 //  - Used by: Cashier Dashboard & Admin Dashboard (Payments tab)
-//  - Returns all enrollments with payment method and reference.
+//  - Returns all enrollments with payment method and reference (active records only).
 // =============================================================
 if ($action === 'payments') {
     $result = $conn->query("
@@ -295,6 +296,7 @@ if ($action === 'payments') {
         JOIN school_years sy       ON e.school_year_id = sy.id
         LEFT JOIN payments pay     ON e.id             = pay.enrollment_id
         LEFT JOIN payment_methods pm ON pay.payment_method_id = pm.id
+        WHERE s.status = 'active'
         ORDER BY e.applied_at DESC
     ");
 
@@ -617,13 +619,14 @@ if ($action === 'upload_document') {
 // =============================================================
 //  ACTION: GET ALL EMPLOYEE ACCOUNTS
 //  - Used by: Admin Dashboard (Employees tab)
-//  - Returns a list of all employee usernames and roles.
+//  - Returns a list of all employee usernames and roles (active employees only).
 // =============================================================
 if ($action === 'employees') {
     $result = $conn->query("
-        SELECT a.id, a.username, a.employee_name, a.is_active, r.name AS role 
+        SELECT a.id, a.username, a.employee_name, a.is_active, a.status, r.name AS role 
         FROM admin a
         JOIN roles r ON a.role_id = r.id
+        WHERE a.status = 'active'
         ORDER BY a.is_active DESC, r.name, a.username
     ");
 
@@ -1077,6 +1080,210 @@ if ($action === 'payment_history') {
     $result = $stmt->get_result();
 
     sendJSON($result->fetch_all(MYSQLI_ASSOC));
+}
+
+
+// =============================================================
+//  ACTION: ARCHIVE STUDENT
+//  - Used by: Admin Archive Module (Phase 2)
+//  - Marks a student record as archived (soft delete).
+// =============================================================
+if ($action === 'archive_student') {
+    $student_id = $data['student_id'] ?? '';
+    $admin_id   = $data['admin_id'] ?? '';
+
+    if (!$student_id || !$admin_id) {
+        sendJSON(['error' => 'Student ID and Admin ID are required.'], 400);
+    }
+
+    $stmt = $conn->prepare("UPDATE students SET status = 'archived' WHERE id = ?");
+    $stmt->bind_param("i", $student_id);
+    $stmt->execute();
+
+    if ($stmt->affected_rows > 0) {
+        $stmtName = $conn->prepare("SELECT first_name, last_name, middle_name, suffix FROM students WHERE id = ?");
+        $stmtName->bind_param("i", $student_id);
+        $stmtName->execute();
+        $nameRes = $stmtName->get_result()->fetch_assoc();
+        $studentName = 'Unknown';
+        if ($nameRes) {
+            $suffixStr = !empty($nameRes['suffix']) ? ' ' . $nameRes['suffix'] : '';
+            $middleStr = !empty($nameRes['middle_name']) ? ' ' . $nameRes['middle_name'] : '';
+            $studentName = $nameRes['last_name'] . $suffixStr . ', ' . $nameRes['first_name'] . $middleStr;
+        }
+        logAction($admin_id, "Archive Student", $student_id, $studentName, "Student record archived.");
+        sendJSON(['message' => 'Student record archived successfully.']);
+    } else {
+        sendJSON(['error' => 'Student not found or already archived.'], 404);
+    }
+}
+
+
+// =============================================================
+//  ACTION: DELETE STUDENT
+//  - Used by: Admin Delete Module (Phase 2)
+//  - Marks a student record as deleted (soft delete).
+// =============================================================
+if ($action === 'delete_student') {
+    $student_id = $data['student_id'] ?? '';
+    $admin_id   = $data['admin_id'] ?? '';
+
+    if (!$student_id || !$admin_id) {
+        sendJSON(['error' => 'Student ID and Admin ID are required.'], 400);
+    }
+
+    $stmt = $conn->prepare("UPDATE students SET status = 'deleted' WHERE id = ?");
+    $stmt->bind_param("i", $student_id);
+    $stmt->execute();
+
+    if ($stmt->affected_rows > 0) {
+        $stmtName = $conn->prepare("SELECT first_name, last_name, middle_name, suffix FROM students WHERE id = ?");
+        $stmtName->bind_param("i", $student_id);
+        $stmtName->execute();
+        $nameRes = $stmtName->get_result()->fetch_assoc();
+        $studentName = 'Unknown';
+        if ($nameRes) {
+            $suffixStr = !empty($nameRes['suffix']) ? ' ' . $nameRes['suffix'] : '';
+            $middleStr = !empty($nameRes['middle_name']) ? ' ' . $nameRes['middle_name'] : '';
+            $studentName = $nameRes['last_name'] . $suffixStr . ', ' . $nameRes['first_name'] . $middleStr;
+        }
+        logAction($admin_id, "Delete Student", $student_id, $studentName, "Student record marked as deleted.");
+        sendJSON(['message' => 'Student record deleted successfully.']);
+    } else {
+        sendJSON(['error' => 'Student not found.'], 404);
+    }
+}
+
+
+// =============================================================
+//  ACTION: RESTORE STUDENT
+//  - Used by: Admin Delete/Archive Module (Phase 2)
+//  - Restores a student record from archived or deleted status back to active.
+// =============================================================
+if ($action === 'restore_student') {
+    $student_id = $data['student_id'] ?? '';
+    $admin_id   = $data['admin_id'] ?? '';
+
+    if (!$student_id || !$admin_id) {
+        sendJSON(['error' => 'Student ID and Admin ID are required.'], 400);
+    }
+
+    $stmt = $conn->prepare("UPDATE students SET status = 'active' WHERE id = ?");
+    $stmt->bind_param("i", $student_id);
+    $stmt->execute();
+
+    if ($stmt->affected_rows > 0) {
+        $stmtName = $conn->prepare("SELECT first_name, last_name, middle_name, suffix FROM students WHERE id = ?");
+        $stmtName->bind_param("i", $student_id);
+        $stmtName->execute();
+        $nameRes = $stmtName->get_result()->fetch_assoc();
+        $studentName = 'Unknown';
+        if ($nameRes) {
+            $suffixStr = !empty($nameRes['suffix']) ? ' ' . $nameRes['suffix'] : '';
+            $middleStr = !empty($nameRes['middle_name']) ? ' ' . $nameRes['middle_name'] : '';
+            $studentName = $nameRes['last_name'] . $suffixStr . ', ' . $nameRes['first_name'] . $middleStr;
+        }
+        logAction($admin_id, "Restore Student", $student_id, $studentName, "Student record restored to active status.");
+        sendJSON(['message' => 'Student record restored successfully.']);
+    } else {
+        sendJSON(['error' => 'Student not found.'], 404);
+    }
+}
+
+
+// =============================================================
+//  ACTION: ARCHIVE EMPLOYEE
+//  - Used by: Admin Delete/Archive Module (Phase 2)
+//  - Marks an employee record as archived.
+// =============================================================
+if ($action === 'archive_employee') {
+    $id       = $data['id'] ?? '';
+    $admin_id = $data['admin_id'] ?? '';
+
+    if (!$id || !$admin_id) {
+        sendJSON(['error' => 'Employee ID and Admin ID are required.'], 400);
+    }
+
+    $stmt = $conn->prepare("UPDATE admin SET status = 'archived' WHERE id = ?");
+    $stmt->bind_param("i", $id);
+    $stmt->execute();
+
+    if ($stmt->affected_rows > 0) {
+        $stmtName = $conn->prepare("SELECT username FROM admin WHERE id = ?");
+        $stmtName->bind_param("i", $id);
+        $stmtName->execute();
+        $nameRes = $stmtName->get_result()->fetch_assoc();
+        $employeeName = $nameRes['username'] ?? 'Unknown';
+        
+        logAction($admin_id, "Archive Employee", $id, $employeeName, "Employee record archived.");
+        sendJSON(['message' => 'Employee record archived successfully.']);
+    } else {
+        sendJSON(['error' => 'Employee not found or already archived.'], 404);
+    }
+}
+
+
+// =============================================================
+//  ACTION: DELETE EMPLOYEE
+//  - Used by: Admin Delete Module (Phase 2)
+//  - Marks an employee record as deleted (soft delete).
+// =============================================================
+if ($action === 'delete_employee') {
+    $id       = $data['id'] ?? '';
+    $admin_id = $data['admin_id'] ?? '';
+
+    if (!$id || !$admin_id) {
+        sendJSON(['error' => 'Employee ID and Admin ID are required.'], 400);
+    }
+
+    $stmt = $conn->prepare("UPDATE admin SET status = 'deleted' WHERE id = ?");
+    $stmt->bind_param("i", $id);
+    $stmt->execute();
+
+    if ($stmt->affected_rows > 0) {
+        $stmtName = $conn->prepare("SELECT username FROM admin WHERE id = ?");
+        $stmtName->bind_param("i", $id);
+        $stmtName->execute();
+        $nameRes = $stmtName->get_result()->fetch_assoc();
+        $employeeName = $nameRes['username'] ?? 'Unknown';
+        
+        logAction($admin_id, "Delete Employee", $id, $employeeName, "Employee record marked as deleted.");
+        sendJSON(['message' => 'Employee record deleted successfully.']);
+    } else {
+        sendJSON(['error' => 'Employee not found.'], 404);
+    }
+}
+
+
+// =============================================================
+//  ACTION: RESTORE EMPLOYEE
+//  - Used by: Admin Delete/Archive Module (Phase 2)
+//  - Restores an employee record from archived or deleted status back to active.
+// =============================================================
+if ($action === 'restore_employee') {
+    $id       = $data['id'] ?? '';
+    $admin_id = $data['admin_id'] ?? '';
+
+    if (!$id || !$admin_id) {
+        sendJSON(['error' => 'Employee ID and Admin ID are required.'], 400);
+    }
+
+    $stmt = $conn->prepare("UPDATE admin SET status = 'active' WHERE id = ?");
+    $stmt->bind_param("i", $id);
+    $stmt->execute();
+
+    if ($stmt->affected_rows > 0) {
+        $stmtName = $conn->prepare("SELECT username FROM admin WHERE id = ?");
+        $stmtName->bind_param("i", $id);
+        $stmtName->execute();
+        $nameRes = $stmtName->get_result()->fetch_assoc();
+        $employeeName = $nameRes['username'] ?? 'Unknown';
+        
+        logAction($admin_id, "Restore Employee", $id, $employeeName, "Employee record restored to active status.");
+        sendJSON(['message' => 'Employee record restored successfully.']);
+    } else {
+        sendJSON(['error' => 'Employee not found.'], 404);
+    }
 }
 
 

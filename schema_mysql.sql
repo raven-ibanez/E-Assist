@@ -181,6 +181,7 @@ CREATE TABLE IF NOT EXISTS students (
     psa_birth_cert  VARCHAR(255) DEFAULT NULL,      -- File path to uploaded PSA
     sf10_document   VARCHAR(255) DEFAULT NULL,      -- File path to uploaded SF10
     picture_2x2     VARCHAR(255) NOT NULL,      -- File path to uploaded 2x2 Picture (Required)
+    status          ENUM('active', 'archived', 'deleted') NOT NULL DEFAULT 'active', -- Record status
     FOREIGN KEY (parent_id) REFERENCES parents(id) ON DELETE CASCADE
 );
 
@@ -277,6 +278,7 @@ CREATE TABLE IF NOT EXISTS admin (
     employee_name VARCHAR(100) NOT NULL DEFAULT '',     -- Full name of the employee
     role_id       INT NOT NULL DEFAULT 2,              -- Links to "roles" table (default: registrar)
     is_active     TINYINT(1) NOT NULL DEFAULT 1,       -- 1 = active, 0 = deactivated
+    status        ENUM('active', 'archived', 'deleted') NOT NULL DEFAULT 'active', -- Record status
     FOREIGN KEY (role_id) REFERENCES roles(id)
 );
 

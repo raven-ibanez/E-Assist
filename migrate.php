@@ -97,5 +97,23 @@ if ($check->num_rows === 0) {
     $steps[] = 'payment_mode_id column in payments: already exists';
 }
 
+// 6. Add status column to students table if it doesn't exist
+$checkStudentStatus = $conn->query("SHOW COLUMNS FROM students LIKE 'status'");
+if ($checkStudentStatus->num_rows === 0) {
+    $conn->query("ALTER TABLE students ADD COLUMN status ENUM('active', 'archived', 'deleted') NOT NULL DEFAULT 'active' AFTER picture_2x2");
+    $steps[] = 'Added status column to students table: ' . ($conn->error ?: 'OK');
+} else {
+    $steps[] = 'status column in students: already exists';
+}
+
+// 7. Add status column to admin table if it doesn't exist
+$checkAdminStatus = $conn->query("SHOW COLUMNS FROM admin LIKE 'status'");
+if ($checkAdminStatus->num_rows === 0) {
+    $conn->query("ALTER TABLE admin ADD COLUMN status ENUM('active', 'archived', 'deleted') NOT NULL DEFAULT 'active' AFTER is_active");
+    $steps[] = 'Added status column to admin table: ' . ($conn->error ?: 'OK');
+} else {
+    $steps[] = 'status column in admin: already exists';
+}
+
 echo implode("\n", $steps) . "\nMigration complete!\n";
 ?>
