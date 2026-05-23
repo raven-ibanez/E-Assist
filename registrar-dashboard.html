@@ -29,6 +29,17 @@
                 width: 100%;
             }
         }
+        .tab-content {
+            display: none;
+        }
+        .tab-content.active {
+            display: block;
+            animation: fadeInTab 0.25s ease;
+        }
+        @keyframes fadeInTab {
+            from { opacity: 0; transform: translateY(5px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
     </style>
 </head>
 
@@ -45,6 +56,14 @@
             <button class="dash-nav-item active" id="nav-students" onclick="switchTab('students')">
                 <span class="dash-nav-icon">📋</span>
                 <span class="dash-nav-label">Applications</span>
+            </button>
+            <button class="dash-nav-item" id="nav-enrolled" onclick="switchTab('enrolled')">
+                <span class="dash-nav-icon">✅</span>
+                <span class="dash-nav-label">Enrolled</span>
+            </button>
+            <button class="dash-nav-item" id="nav-reports" onclick="switchTab('reports')">
+                <span class="dash-nav-icon">📊</span>
+                <span class="dash-nav-label">Reports</span>
             </button>
         </div>
 
@@ -79,81 +98,190 @@
         <!-- Content -->
         <main class="dash-content">
 
-            <!-- Stats -->
-            <div class="dash-stats">
-                <div class="dash-stat-card">
-                    <div class="dash-stat-icon-wrap blue">📋</div>
-                    <div class="dash-stat-body"><span class="dash-stat-label">Total Applications</span><span class="dash-stat-value" id="totalCount">0</span></div>
-                </div>
-                <div class="dash-stat-card">
-                    <div class="dash-stat-icon-wrap yellow">📝</div>
-                    <div class="dash-stat-body"><span class="dash-stat-label">Pending</span><span class="dash-stat-value" id="pendingCount">0</span></div>
-                </div>
-                <div class="dash-stat-card">
-                    <div class="dash-stat-icon-wrap purple">👀</div>
-                    <div class="dash-stat-body"><span class="dash-stat-label">For Payment Review</span><span class="dash-stat-value" id="paymentReviewCount">0</span></div>
-                </div>
-                <div class="dash-stat-card">
-                    <div class="dash-stat-icon-wrap purple">🔍</div>
-                    <div class="dash-stat-body"><span class="dash-stat-label">For App Review</span><span class="dash-stat-value" id="appReviewCount">0</span></div>
-                </div>
-                <div class="dash-stat-card">
-                    <div class="dash-stat-icon-wrap green">✅</div>
-                    <div class="dash-stat-body"><span class="dash-stat-label">Enrolled</span><span class="dash-stat-value" id="enrolledCount">0</span></div>
-                </div>
-                <div class="dash-stat-card">
-                    <div class="dash-stat-icon-wrap orange">🚫</div>
-                    <div class="dash-stat-body"><span class="dash-stat-label">Dropped</span><span class="dash-stat-value" id="droppedCount">0</span></div>
-                </div>
-                <div class="dash-stat-card">
-                    <div class="dash-stat-icon-wrap red">❌</div>
-                    <div class="dash-stat-body"><span class="dash-stat-label">Declined</span><span class="dash-stat-value" id="declinedCount">0</span></div>
-                </div>
-            </div>
-
             <div id="alert" class="alert"></div>
 
-            <!-- Table Container -->
-            <div class="dash-table-card">
-                <div class="dash-table-header">
-                    <span class="dash-table-title">Student Enrollment Applications</span>
-
-                    <!-- Search & Filter -->
-                    <div class="dash-filter-row">
-                        <input type="text" id="searchInput" placeholder="Search by name or ID..." onkeyup="filterStudents()">
-                        <select id="filterStatus" onchange="filterStudents()">
-                            <option value="All">All Status</option>
-                            <option value="Pending">Pending</option>
-                            <option value="For Payment Review">For Payment Review</option>
-                            <option value="For Application Review">For Application Review</option>
-                            <option value="Enrolled">Enrolled</option>
-                            <option value="Enrolled (Doc. Pending)">Enrolled (Doc. Pending)</option>
-                            <option value="Declined">Declined</option>
-                            <option value="Refundable">Refundable</option>
-                            <option value="Dropped">Dropped</option>
-                        </select>
+            <!-- ===== TAB 1: APPLICATIONS ===== -->
+            <div class="tab-content active" id="tab-students">
+                <!-- Stats -->
+                <div class="dash-stats">
+                    <div class="dash-stat-card">
+                        <div class="dash-stat-icon-wrap blue">📋</div>
+                        <div class="dash-stat-body"><span class="dash-stat-label">Total Applications</span><span class="dash-stat-value" id="totalCount">0</span></div>
+                    </div>
+                    <div class="dash-stat-card">
+                        <div class="dash-stat-icon-wrap yellow">📝</div>
+                        <div class="dash-stat-body"><span class="dash-stat-label">Pending</span><span class="dash-stat-value" id="pendingCount">0</span></div>
+                    </div>
+                    <div class="dash-stat-card">
+                        <div class="dash-stat-icon-wrap purple">👀</div>
+                        <div class="dash-stat-body"><span class="dash-stat-label">For Payment Review</span><span class="dash-stat-value" id="paymentReviewCount">0</span></div>
+                    </div>
+                    <div class="dash-stat-card">
+                        <div class="dash-stat-icon-wrap purple">🔍</div>
+                        <div class="dash-stat-body"><span class="dash-stat-label">For App Review</span><span class="dash-stat-value" id="appReviewCount">0</span></div>
+                    </div>
+                    <div class="dash-stat-card">
+                        <div class="dash-stat-icon-wrap orange">🚫</div>
+                        <div class="dash-stat-body"><span class="dash-stat-label">Dropped</span><span class="dash-stat-value" id="droppedCount">0</span></div>
+                    </div>
+                    <div class="dash-stat-card">
+                        <div class="dash-stat-icon-wrap red">❌</div>
+                        <div class="dash-stat-body"><span class="dash-stat-label">Declined</span><span class="dash-stat-value" id="declinedCount">0</span></div>
                     </div>
                 </div>
 
-                <!-- Students Table -->
-                <div class="dash-table-scroll">
-                    <table class="dash-table">
-                        <thead>
-                            <tr>
-                                <th>Student ID</th>
-                                <th>Full Name</th>
-                                <th>Grade</th>
-                                <th>Parent</th>
-                                <th>Contact</th>
-                                <th>Date Applied</th>
-                                <th>Status</th>
-                                <th>Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody id="studentsTableBody">
-                            <tr><td colspan="8" style="text-align:center;padding:40px;">Loading...</td></tr>
-                        </tbody>
-                    </table>
+                <!-- Table Container -->
+                <div class="dash-table-card">
+                    <div class="dash-table-header">
+                        <span class="dash-table-title">Student Enrollment Applications</span>
+
+                        <!-- Search & Filter -->
+                        <div class="dash-filter-row">
+                            <input type="text" id="searchInput" placeholder="Search by name or ID..." onkeyup="filterStudents()">
+                            <select id="filterStatus" onchange="filterStudents()">
+                                <option value="All">All Status</option>
+                                <option value="Pending">Pending</option>
+                                <option value="For Payment Review">For Payment Review</option>
+                                <option value="For Application Review">For Application Review</option>
+                                <option value="Enrolled">Enrolled</option>
+                                <option value="Enrolled (Doc. Pending)">Enrolled (Doc. Pending)</option>
+                                <option value="Declined">Declined</option>
+                                <option value="Refundable">Refundable</option>
+                                <option value="Dropped">Dropped</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Students Table -->
+                    <div class="dash-table-scroll">
+                        <table class="dash-table">
+                            <thead>
+                                <tr>
+                                    <th>Student ID</th>
+                                    <th>Full Name</th>
+                                    <th>Grade</th>
+                                    <th>Parent</th>
+                                    <th>Contact</th>
+                                    <th>Date Applied</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="studentsTableBody">
+                                <tr><td colspan="8" style="text-align:center;padding:40px;">Loading...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ===== TAB 1.5: ENROLLED STUDENTS ===== -->
+            <div class="tab-content" id="tab-enrolled">
+                <div class="dash-stats" style="margin-bottom:24px;">
+                    <div class="dash-stat-card">
+                        <div class="dash-stat-icon-wrap green">✅</div>
+                        <div class="dash-stat-body"><span class="dash-stat-label">Currently Enrolled</span><span class="dash-stat-value" id="enrolledMasterCount">0</span></div>
+                    </div>
+                    <div class="dash-stat-card">
+                        <div class="dash-stat-icon-wrap red">🔴</div>
+                        <div class="dash-stat-body"><span class="dash-stat-label">Documents Pending</span><span class="dash-stat-value" id="enrolledPendingDocsCount">0</span></div>
+                    </div>
+                </div>
+                <div class="dash-table-card">
+                    <div class="dash-table-header">
+                        <span class="dash-table-title">Enrolled Masterlist</span>
+                        <div class="dash-filter-row">
+                            <input type="text" id="enrolledSearchInput" placeholder="🔍 Search name..." oninput="filterEnrolledStudents()">
+                        </div>
+                    </div>
+                    <div class="dash-table-scroll">
+                        <table class="dash-table">
+                            <thead>
+                                <tr>
+                                    <th>Student ID</th>
+                                    <th>Full Name</th>
+                                    <th>Grade</th>
+                                    <th>Parent</th>
+                                    <th>Contact</th>
+                                    <th>Date Applied</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="enrolledTableBody">
+                                <tr><td colspan="8" style="text-align:center;padding:40px;">Loading...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ===== TAB 2: REPORTS ===== -->
+            <div class="tab-content" id="tab-reports">
+                <div class="dash-table-card">
+                    <div class="dash-table-header" style="flex-direction: column; align-items: stretch; gap: 16px;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+                            <span class="dash-table-title">Registrar Enrollment Reports</span>
+                        </div>
+                        
+                        <!-- Filters row -->
+                        <div class="search-bar" style="margin-bottom: 0; display: flex; gap: 12px; flex-wrap: wrap; align-items: flex-end; width: 100%;">
+                            <div style="display: flex; flex-direction: column; gap: 4px; flex: 1; min-width: 150px;">
+                                <label style="font-size: 11px; font-weight: 700; color: var(--gray-500); text-transform: uppercase;">Grade Level</label>
+                                <select id="reportGradeLevel" style="width: 100%; height: 38px; border: 1.5px solid var(--gray-300); border-radius: 8px;">
+                                    <option value="All">All Grades</option>
+                                </select>
+                            </div>
+                            <div style="display: flex; flex-direction: column; gap: 4px; flex: 1; min-width: 150px;">
+                                <label style="font-size: 11px; font-weight: 700; color: var(--gray-500); text-transform: uppercase;">Status</label>
+                                <select id="reportStatus" style="width: 100%; height: 38px; border: 1.5px solid var(--gray-300); border-radius: 8px;">
+                                    <option value="All">All Statuses</option>
+                                    <option value="Pending">Pending</option>
+                                    <option value="For Payment Review">For Payment Review</option>
+                                    <option value="For Application Review">For Application Review</option>
+                                    <option value="Enrolled">Enrolled</option>
+                                    <option value="Enrolled (Doc. Pending)">Enrolled (Doc. Pending)</option>
+                                    <option value="Declined">Declined</option>
+                                    <option value="Dropped">Dropped</option>
+                                </select>
+                            </div>
+                            <div style="display: flex; flex-direction: column; gap: 4px; flex: 1; min-width: 150px;">
+                                <label style="font-size: 11px; font-weight: 700; color: var(--gray-500); text-transform: uppercase;">Start Date</label>
+                                <input type="date" id="reportStartDate" style="width: 100%; height: 38px; border: 1.5px solid var(--gray-300); border-radius: 8px; padding: 8px;">
+                            </div>
+                            <div style="display: flex; flex-direction: column; gap: 4px; flex: 1; min-width: 150px;">
+                                <label style="font-size: 11px; font-weight: 700; color: var(--gray-500); text-transform: uppercase;">End Date</label>
+                                <input type="date" id="reportEndDate" style="width: 100%; height: 38px; border: 1.5px solid var(--gray-300); border-radius: 8px; padding: 8px;">
+                            </div>
+                            <div style="display: flex; gap: 8px; min-width: 200px; height: 38px;">
+                                <button class="btn btn-primary" onclick="generateRegistrarReport()" style="padding: 0 16px; font-size: 13px; flex: 1; height: 100%;">🔍 Preview</button>
+                                <button class="btn btn-success" onclick="exportRegistrarReport()" style="padding: 0 16px; font-size: 13px; flex: 1; height: 100%; background: #16a34a; color: white;">📥 Export CSV</button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Preview Table -->
+                    <div class="dash-table-scroll" style="margin-top: 20px;">
+                        <table class="dash-table">
+                            <thead>
+                                <tr>
+                                    <th>Student ID</th>
+                                    <th>Full Name</th>
+                                    <th>Grade Level</th>
+                                    <th>Session Preference</th>
+                                    <th>Parent Name</th>
+                                    <th>Contact</th>
+                                    <th>Date Applied</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody id="reportTableBody">
+                                <tr>
+                                    <td colspan="8" style="text-align: center; color: var(--gray-500); padding: 40px;">Select filters and click "Preview" to load report data.</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
         </main>
@@ -310,6 +438,7 @@
         </div>
     </div>
 
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="main.js"></script>
     <script>
         /*
@@ -348,9 +477,37 @@
             document.querySelectorAll('.dot-dropdown.open').forEach(d => { if (d.id !== id) d.classList.remove('open'); });
             menu.classList.toggle('open');
         }
+        let reportGradeLevelsLoaded = false;
+        async function loadReportGradeLevels() {
+            if (reportGradeLevelsLoaded) return;
+            try {
+                const grades = await apiGet('api/lookups.php?action=grade-levels');
+                const select = document.getElementById('reportGradeLevel');
+                if (select) {
+                    select.innerHTML = '<option value="All">All Grades</option>';
+                    grades.forEach(g => {
+                        select.innerHTML += `<option value="${g.id}">${g.name}</option>`;
+                    });
+                    reportGradeLevelsLoaded = true;
+                }
+            } catch (err) {
+                console.warn('Failed to load grade levels for reports dropdown:', err);
+            }
+        }
+
         function switchTab(tabId) {
-            console.log('Switching to ' + tabId);
-            // Single-tab dashboard, nothing to switch.
+            document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.dash-nav-item').forEach(b => b.classList.remove('active'));
+            
+            const tabEl = document.getElementById('tab-' + tabId);
+            if (tabEl) tabEl.classList.add('active');
+            
+            const navEl = document.getElementById('nav-' + tabId);
+            if (navEl) navEl.classList.add('active');
+
+            if (tabId === 'reports') {
+                loadReportGradeLevels();
+            }
         }
 
         // --- Helper: get a colored status badge ---
@@ -375,7 +532,13 @@
             try {
                 allStudents = await apiGet('api/registrar.php?action=students');
                 updateStats(allStudents);
-                renderTable(allStudents);
+                
+                // Separate active applications and enrolled students
+                const activeApps = allStudents.filter(s => s.status !== 'Enrolled' && s.status !== 'Enrolled (Doc. Pending)');
+                renderTable(activeApps);
+                
+                const enrolled = allStudents.filter(s => s.status === 'Enrolled' || s.status === 'Enrolled (Doc. Pending)');
+                renderEnrolledStudents(enrolled);
             } catch (err) {
                 showAlert('alert', '❌ Failed to load students: ' + err.message);
             }
@@ -383,13 +546,21 @@
 
         // --- Update the stat cards ---
         function updateStats(records) {
-            document.getElementById('totalCount').textContent = records.length;
-            document.getElementById('pendingCount').textContent = records.filter(r => r.status === 'Pending').length;
-            document.getElementById('paymentReviewCount').textContent = records.filter(r => r.status === 'For Payment Review').length;
-            document.getElementById('appReviewCount').textContent = records.filter(r => r.status === 'For Application Review').length;
-            document.getElementById('enrolledCount').textContent = records.filter(r => r.status === 'Enrolled' || r.status === 'Enrolled (Doc. Pending)').length;
-            document.getElementById('declinedCount').textContent = records.filter(r => r.status === 'Declined').length;
-            document.getElementById('droppedCount').textContent = records.filter(r => r.status === 'Dropped').length;
+            const activeApps = records.filter(r => r.status !== 'Enrolled' && r.status !== 'Enrolled (Doc. Pending)');
+            document.getElementById('totalCount').textContent = activeApps.length;
+            document.getElementById('pendingCount').textContent = activeApps.filter(r => r.status === 'Pending').length;
+            document.getElementById('paymentReviewCount').textContent = activeApps.filter(r => r.status === 'For Payment Review').length;
+            document.getElementById('appReviewCount').textContent = activeApps.filter(r => r.status === 'For Application Review').length;
+            document.getElementById('declinedCount').textContent = activeApps.filter(r => r.status === 'Declined').length;
+            document.getElementById('droppedCount').textContent = activeApps.filter(r => r.status === 'Dropped').length;
+
+            // Master Enrolled Stats
+            const enrolled = records.filter(r => r.status === 'Enrolled' || r.status === 'Enrolled (Doc. Pending)');
+            const enrolledMasterCountEl = document.getElementById('enrolledMasterCount');
+            if (enrolledMasterCountEl) enrolledMasterCountEl.textContent = enrolled.length;
+            
+            const enrolledPendingDocsCountEl = document.getElementById('enrolledPendingDocsCount');
+            if (enrolledPendingDocsCountEl) enrolledPendingDocsCountEl.textContent = enrolled.filter(r => r.status === 'Enrolled (Doc. Pending)').length;
         }
 
         // --- Render the student table ---
@@ -450,7 +621,9 @@
             const search = document.getElementById('searchInput').value.toLowerCase();
             const statusFilter = document.getElementById('filterStatus').value;
 
-            let filtered = allStudents;
+            // Base list excludes enrolled
+            let baseList = allStudents.filter(s => s.status !== 'Enrolled' && s.status !== 'Enrolled (Doc. Pending)');
+            let filtered = baseList;
 
             if (search) {
                 filtered = filtered.filter(s =>
@@ -467,6 +640,59 @@
             renderTable(filtered);
         }
 
+        // --- Filter enrolled students by search text ---
+        function filterEnrolledStudents() {
+            const search = document.getElementById('enrolledSearchInput').value.toLowerCase();
+
+            // Base list includes only enrolled
+            let baseList = allStudents.filter(s => s.status === 'Enrolled' || s.status === 'Enrolled (Doc. Pending)');
+            let filtered = baseList;
+
+            if (search) {
+                filtered = filtered.filter(s =>
+                    nameMatches(s, search) ||
+                    s.student_no.toLowerCase().includes(search) ||
+                    (formatParentName(s.parent_first_name, s.parent_last_name, s.parent_middle_name)).toLowerCase().includes(search)
+                );
+            }
+
+            renderEnrolledStudents(filtered);
+        }
+
+        // --- Render the enrolled students table ---
+        function renderEnrolledStudents(students) {
+            const tbody = document.getElementById('enrolledTableBody');
+            if (!tbody) return;
+
+            if (students.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="8" style="text-align:center;color:var(--gray-500);padding:40px;">
+                    No enrolled students found.</td></tr>`;
+                return;
+            }
+
+            tbody.innerHTML = students.map(s => `
+                <tr>
+                    <td><strong style="font-family:'Courier New',monospace;">${s.student_no}</strong></td>
+                    <td>${formatStudentName(s)}</td>
+                    <td>${s.grade_level}</td>
+                    <td>${formatParentName(s.parent_first_name, s.parent_last_name, s.parent_middle_name)}</td>
+                    <td>${s.parent_mobile || '—'}${s.parent_telephone ? '<br><small style="color:var(--gray-500)">☎ ' + s.parent_telephone + '</small>' : ''}</td>
+                    <td style="white-space:nowrap;">${formatDate(s.applied_at)}</td>
+                    <td>
+                        ${getStatusBadge(s.status)}
+                        ${s.documents_pending == 1 ? '<span class="doc-pending-badge">🔴 Doc. Pending</span>' : ''}
+                    </td>
+                    <td>
+                        <div class="dash-action-group" style="flex-wrap:wrap;">
+                            <button class="btn-view" onclick="viewStudent(${s.enrollment_id})">👁 View</button>
+                            <button class="btn-view" style="border-color:#1e40af; color:#1e40af;" onclick="openEditModal(${s.enrollment_id})">✏️ Edit</button>
+                            <button class="btn-view" style="background:#fee2e2; border-color:#dc2626; color:#991b1b;" onclick="reviewApplication(${s.enrollment_id}, 'dropped')">🚫 Drop Student</button>
+                        </div>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
         // --- Approve or Decline an application ---
         async function reviewApplication(enrollmentId, decision) {
             const labels = {
@@ -478,15 +704,34 @@
             
             let reason = '';
             if (decision === 'declined' || decision === 'dropped') {
-                reason = prompt(`Please provide a reason for ${decision === 'declined' ? 'declining' : 'dropping'} this application:`);
-                if (reason === null) return; // User cancelled
-                if (!reason.trim()) {
-                    alert('A reason is required when declining or dropping.');
-                    return;
-                }
+                const { value: inputReason } = await Swal.fire({
+                    title: 'Reason Required',
+                    text: `Please provide a reason for ${decision === 'declined' ? 'declining' : 'dropping'} this application:`,
+                    input: 'text',
+                    inputPlaceholder: 'Enter reason here...',
+                    showCancelButton: true,
+                    confirmButtonColor: '#800000',
+                    cancelButtonColor: '#6e7881',
+                    inputValidator: (value) => {
+                        if (!value || !value.trim()) {
+                            return 'A reason is required!';
+                        }
+                    }
+                });
+                if (inputReason === undefined) return; // User cancelled
+                reason = inputReason.trim();
             }
 
-            if (!confirm(`Are you sure you want to ${labels[decision]}?`)) return;
+            const confirmResult = await Swal.fire({
+                title: 'Confirm Action',
+                text: `Are you sure you want to ${labels[decision]}?`,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#800000',
+                cancelButtonColor: '#6e7881',
+                confirmButtonText: 'Yes, proceed'
+            });
+            if (!confirmResult.isConfirmed) return;
 
             try {
                 const result = await apiPost('api/registrar.php?action=review_application', {
@@ -595,6 +840,25 @@
                         </div>
                     </div>
 
+                    ${s.custom_fields && s.custom_fields.length > 0 ? `
+                    <div style="grid-column:1/-1;font-size:13px;font-weight:700;color:var(--blue-dark);text-transform:uppercase;letter-spacing:0.5px;border-bottom:2px solid var(--blue-light);padding-bottom:6px;margin-top:12px;margin-bottom:4px;">Additional Information</div>
+                    ${s.custom_fields.map(cf => `
+                        <div class="info-item" style="${cf.field_type === 'file' || cf.field_type === 'textarea' ? 'grid-column:1/-1;' : ''}">
+                            <label>${cf.field_label}</label>
+                            <span>
+                                ${cf.field_type === 'file' 
+                                    ? (cf.field_value 
+                                        ? `<a href="${cf.field_value}" target="_blank" style="color:var(--blue-dark);font-weight:600;text-decoration:underline;">📄 View File</a>
+                                           ${cf.field_value.match(/\.(jpeg|jpg|gif|png)$/i) 
+                                                ? `<img src="${cf.field_value}" style="display:block;margin-top:6px;max-width:100%;max-height:180px;border-radius:6px;" onerror="this.style.display='none'">`
+                                                : ''}`
+                                        : '<span style="color:#dc2626">❌ Not uploaded</span>')
+                                    : (cf.field_value || '—')}
+                            </span>
+                        </div>
+                    `).join('')}
+                    ` : ''}
+
                     <div style="grid-column:1/-1;font-size:13px;font-weight:700;color:var(--blue-dark);text-transform:uppercase;letter-spacing:0.5px;border-bottom:2px solid var(--blue-light);padding-bottom:6px;margin-top:12px;margin-bottom:4px;">Review Status</div>
                     <div class="info-item"><label>Overall Status</label><span>${getStatusBadge(s.status)}</span></div>
                     <div class="info-item"><label>Registrar Review</label><span>${s.registrar_status}</span></div>
@@ -612,7 +876,12 @@
         async function uploadDocument(enrollmentId, studentId, docType, inputId) {
             const fileInput = document.getElementById(inputId);
             if (!fileInput || !fileInput.files[0]) {
-                alert('Please select a file first.');
+                Swal.fire({
+                    title: 'File Required',
+                    text: 'Please select a file first.',
+                    icon: 'warning',
+                    confirmButtonColor: '#800000'
+                });
                 return;
             }
             const formData = new FormData();
@@ -714,7 +983,16 @@
         }
 
         async function undoDrop(id) {
-            if (!confirm('Are you sure you want to undo the "Dropped" status for this student?')) return;
+            const confirmResult = await Swal.fire({
+                title: 'Confirm Action',
+                text: 'Are you sure you want to undo the "Dropped" status for this student?',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#800000',
+                cancelButtonColor: '#6e7881',
+                confirmButtonText: 'Yes, undo'
+            });
+            if (!confirmResult.isConfirmed) return;
 
             try {
                 const res = await apiPost('api/registrar.php?action=undo_drop', {
@@ -727,6 +1005,108 @@
             } catch (err) {
                 showAlert('alert', '❌ ' + err.message);
             }
+        }
+
+        // --- REPORTS LOGIC ---
+        let registrarReportData = [];
+
+        async function generateRegistrarReport() {
+            const gradeEl = document.getElementById('reportGradeLevel');
+            const statusEl = document.getElementById('reportStatus');
+            const startEl = document.getElementById('reportStartDate');
+            const endEl = document.getElementById('reportEndDate');
+
+            const params = new URLSearchParams({
+                action: 'registrar',
+                grade_level_id: gradeEl ? gradeEl.value : 'All',
+                status: statusEl ? statusEl.value : 'All',
+                start_date: startEl ? startEl.value : '',
+                end_date: endEl ? endEl.value : ''
+            });
+
+            const tbody = document.getElementById('reportTableBody');
+            tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;padding:40px;">Generating preview...</td></tr>';
+
+            try {
+                registrarReportData = await apiGet('api/reports.php?' + params.toString());
+                renderReportTable(registrarReportData);
+            } catch (err) {
+                tbody.innerHTML = `<tr><td colspan="8" style="text-align:center;color:#dc2626;padding:40px;">❌ Error: ${err.message}</td></tr>`;
+            }
+        }
+
+        function renderReportTable(data) {
+            const tbody = document.getElementById('reportTableBody');
+            if (data.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;color:var(--gray-500);padding:40px;">No records match the selected filters.</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = data.map(s => `
+                <tr>
+                    <td><strong style="font-family:'Courier New',monospace;">${s.student_no}</strong></td>
+                    <td>${formatStudentName(s)}</td>
+                    <td>${s.grade_level}</td>
+                    <td>${s.session_preference || '—'}</td>
+                    <td>${formatParentName(s.parent_first_name, s.parent_last_name, s.parent_middle_name)}</td>
+                    <td>${s.parent_mobile || '—'}</td>
+                    <td style="white-space:nowrap;">${formatDate(s.applied_at)}</td>
+                    <td>${getStatusBadge(s.status)}</td>
+                </tr>
+            `).join('');
+        }
+
+        function exportRegistrarReport() {
+            if (registrarReportData.length === 0) {
+                Swal.fire({
+                    title: 'No Data',
+                    text: 'No data to export. Please select filters and click "Preview" first.',
+                    icon: 'warning',
+                    confirmButtonColor: '#800000'
+                });
+                return;
+            }
+
+            const headers = ['Student ID', 'Last Name', 'First Name', 'Middle Name', 'Suffix', 'Grade Level', 'Session Preference', 'Parent Name', 'Contact Number', 'Date Applied', 'Status'];
+            const rows = registrarReportData.map(s => [
+                s.student_no,
+                s.last_name || '',
+                s.first_name || '',
+                s.middle_name || '',
+                s.suffix || '',
+                s.grade_level,
+                s.session_preference || '',
+                formatParentName(s.parent_first_name, s.parent_last_name, s.parent_middle_name),
+                s.parent_mobile || '',
+                formatDate(s.applied_at),
+                s.status
+            ]);
+
+            downloadCSV('Registrar_Report_' + new Date().toISOString().slice(0, 10) + '.csv', headers, rows);
+        }
+
+        function downloadCSV(filename, headers, rows) {
+            const csvRows = [headers.join(",")];
+            for (const row of rows) {
+                csvRows.push(row.map(val => {
+                    let str = String(val === null || val === undefined ? '' : val);
+                    str = str.replace(/"/g, '""');
+                    if (str.includes(",") || str.includes("\n") || str.includes("\r") || str.includes('"')) {
+                        str = `"${str}"`;
+                    }
+                    return str;
+                }).join(","));
+            }
+            const csvString = "\uFEFF" + csvRows.join("\r\n");
+            const blob = new Blob([csvString], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement("a");
+            link.setAttribute("href", url);
+            link.setAttribute("download", filename);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
         }
 
         // Load student data when the page opens

@@ -103,6 +103,8 @@
             justify-content: center;
             font-size: 20px;
             flex-shrink: 0;
+            background: #e2e8f0;
+            color: #475569;
         }
 
         .avatar-admin {
@@ -136,6 +138,8 @@
             font-weight: 700;
             text-transform: uppercase;
             letter-spacing: 0.5px;
+            background: #e2e8f0;
+            color: #475569;
         }
 
         .role-admin {
@@ -247,6 +251,37 @@
                 flex-wrap: wrap;
             }
         }
+
+        /* Eligible Grades Tags Style */
+        .eligible-grade-badge {
+            display: inline-flex;
+            align-items: center;
+            background: #fff5f6;
+            border: 1px solid #ffccd3;
+            color: var(--maroon-dark);
+            padding: 4px 10px;
+            border-radius: 16px;
+            font-size: 12.5px;
+            font-weight: 600;
+            gap: 6px;
+            margin: 2px;
+            transition: all 0.2s;
+        }
+
+        .eligible-grade-badge span {
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 14px;
+            line-height: 1;
+            color: #ff3b30;
+            display: inline-block;
+            padding: 0 2px;
+            transition: color 0.2s;
+        }
+
+        .eligible-grade-badge span:hover {
+            color: #bd2130;
+        }
     </style>
 </head>
 
@@ -280,6 +315,14 @@
                 <button class="dash-nav-item" id="nav-logs" onclick="switchTab('logs')">
                     <span class="dash-nav-icon">📜</span>
                     <span class="dash-nav-label">Logs</span>
+                </button>
+                <button class="dash-nav-item" id="nav-maintenance" onclick="switchTab('maintenance')">
+                    <span class="dash-nav-icon">🔧</span>
+                    <span class="dash-nav-label">Maintenance</span>
+                </button>
+                <button class="dash-nav-item" id="nav-reports" onclick="switchTab('reports')">
+                    <span class="dash-nav-icon">📊</span>
+                    <span class="dash-nav-label">Reports</span>
                 </button>
             </div>
 
@@ -568,8 +611,23 @@
                                         style="width:100%;">Create</button></div>
                             </div>
                         </div>
-                        <div class="dash-employee-grid" id="employeeGrid">
-                            <p style="text-align:center;padding:20px;">Loading...</p>
+                        <div class="dash-table-scroll">
+                            <table class="dash-table">
+                                <thead>
+                                    <tr>
+                                        <th>Employee Name</th>
+                                        <th>Username</th>
+                                        <th>Role</th>
+                                        <th>Status</th>
+                                        <th style="width:140px;">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="employeeTableBody">
+                                    <tr>
+                                        <td colspan="5" style="text-align:center;padding:20px;">Loading...</td>
+                                    </tr>
+                                </tbody>
+                            </table>
                         </div>
                     </div>
                 </div>
@@ -590,6 +648,9 @@
                                     <option value="Update Student">Update Student</option>
                                     <option value="Upload Document">Upload Document</option>
                                 </select>
+                                <input type="date" id="logsStartDate" onchange="filterLogs()" title="Start Date">
+                                <input type="date" id="logsEndDate" onchange="filterLogs()" title="End Date">
+                                <button class="btn" onclick="exportLogs()" style="height:38px; background:#16a34a; color:white; border:none; border-radius:8px; padding:0 16px; font-weight:600; cursor:pointer; display:inline-flex; align-items:center; gap:8px;">📥 Export Excel</button>
                             </div>
                         </div>
                         <div class="dash-table-scroll">
@@ -614,6 +675,166 @@
                     </div>
                 </div>
 
+                <!-- ==================== TAB 5: MAINTENANCE MODULE ==================== -->
+                <div class="tab-content" id="tab-maintenance">
+                    <div id="maintAlert" class="alert"></div>
+                    <div class="maint-layout">
+                        <!-- Category Sidebar -->
+                        <div class="maint-sidebar">
+                            <div class="maint-sidebar-title">Data Categories</div>
+                            <button class="maint-cat-btn active" data-table="payment_methods" onclick="selectCategory('payment_methods', this)">
+                                <span class="maint-cat-icon">💳</span>
+                                <span class="maint-cat-label">Payment Methods</span>
+                            </button>
+                            <button class="maint-cat-btn" data-table="payment_modes" onclick="selectCategory('payment_modes', this)">
+                                <span class="maint-cat-icon">📋</span>
+                                <span class="maint-cat-label">Payment Modes</span>
+                            </button>
+                            <button class="maint-cat-btn" data-table="grade_levels" onclick="selectCategory('grade_levels', this)">
+                                <span class="maint-cat-icon">📚</span>
+                                <span class="maint-cat-label">Grade Levels</span>
+                            </button>
+                            <button class="maint-cat-btn" data-table="school_years" onclick="selectCategory('school_years', this)">
+                                <span class="maint-cat-icon">📅</span>
+                                <span class="maint-cat-label">School Years</span>
+                            </button>
+                            <button class="maint-cat-btn" data-table="sessions" onclick="selectCategory('sessions', this)">
+                                <span class="maint-cat-icon">🕐</span>
+                                <span class="maint-cat-label">Sessions</span>
+                            </button>
+                            <button class="maint-cat-btn" data-table="relations" onclick="selectCategory('relations', this)">
+                                <span class="maint-cat-icon">👨‍👩‍👧</span>
+                                <span class="maint-cat-label">Parent Relations</span>
+                            </button>
+                            <button class="maint-cat-btn" data-table="income_ranges" onclick="selectCategory('income_ranges', this)">
+                                <span class="maint-cat-icon">💰</span>
+                                <span class="maint-cat-label">Income Ranges</span>
+                            </button>
+                            <button class="maint-cat-btn" data-table="roles" onclick="selectCategory('roles', this)">
+                                <span class="maint-cat-icon">🏷️</span>
+                                <span class="maint-cat-label">Employee Roles</span>
+                            </button>
+                            <button class="maint-cat-btn" data-table="form_fields" onclick="selectCategory('form_fields', this)">
+                                <span class="maint-cat-icon">📝</span>
+                                <span class="maint-cat-label">Enrollment Form Fields</span>
+                            </button>
+                        </div>
+
+                        <!-- Data Panel -->
+                        <div class="maint-panel">
+                            <div class="maint-panel-header">
+                                <div>
+                                    <h3 class="maint-panel-title" id="maintPanelTitle">Payment Methods</h3>
+                                    <p class="maint-panel-subtitle" id="maintPanelSubtitle">Manage payment method options available in the enrollment form.</p>
+                                </div>
+                                <button class="btn-dash-primary" onclick="openMaintAddModal()" id="maintAddBtn">+ Add New</button>
+                            </div>
+                            <div class="maint-info-bar" id="maintInfoBar">
+                                <span>⚠️ Items that are currently in use by existing records cannot be deleted.</span>
+                            </div>
+                            <div class="dash-table-scroll">
+                                <table class="dash-table" id="maintTable">
+                                    <thead id="maintTableHead">
+                                        <tr><th>#</th><th>Name</th><th>Actions</th></tr>
+                                    </thead>
+                                    <tbody id="maintTableBody">
+                                        <tr><td colspan="3" style="text-align:center;padding:40px;">Select a category to view data.</td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ==================== TAB 6: REPORTS ==================== -->
+                <div class="tab-content" id="tab-reports">
+                    <div class="dash-table-card">
+                        <div class="dash-table-header" style="flex-direction: column; align-items: stretch; gap: 16px;">
+                            <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+                                <span class="dash-table-title">System Report Generator</span>
+                                <div style="display: flex; background: var(--gray-100); padding: 4px; border-radius: 8px; gap: 4px;">
+                                    <button id="btn-report-type-registrar" onclick="setAdminReportType('registrar')" style="border: none; background: var(--white); color: var(--maroon-dark); padding: 6px 16px; border-radius: 6px; font-size: 13px; font-weight: 700; cursor: pointer; box-shadow: var(--shadow);">Registrar Report</button>
+                                    <button id="btn-report-type-cashier" onclick="setAdminReportType('cashier')" style="border: none; background: transparent; color: var(--gray-500); padding: 6px 16px; border-radius: 6px; font-size: 13px; font-weight: 600; cursor: pointer;">Cashier Report</button>
+                                </div>
+                            </div>
+                            
+                            <!-- Contextual Filters Row -->
+                            <div class="search-bar" style="margin-bottom: 0; display: flex; gap: 12px; flex-wrap: wrap; align-items: flex-end; width: 100%;">
+                                <!-- Registrar Filters -->
+                                <div id="adminReportRegFilters" style="display: flex; gap: 12px; flex: 1; flex-wrap: wrap;">
+                                    <div style="display: flex; flex-direction: column; gap: 4px; flex: 1; min-width: 150px;">
+                                        <label style="font-size: 11px; font-weight: 700; color: var(--gray-500); text-transform: uppercase;">Grade Level</label>
+                                        <select id="adminReportGradeLevel" style="width: 100%; height: 38px; border: 1.5px solid var(--gray-300); border-radius: 8px; background: white;">
+                                            <option value="All">All Grades</option>
+                                        </select>
+                                    </div>
+                                    <div style="display: flex; flex-direction: column; gap: 4px; flex: 1; min-width: 150px;">
+                                        <label style="font-size: 11px; font-weight: 700; color: var(--gray-500); text-transform: uppercase;">Status</label>
+                                        <select id="adminReportStatus" style="width: 100%; height: 38px; border: 1.5px solid var(--gray-300); border-radius: 8px; background: white;">
+                                            <option value="All">All Statuses</option>
+                                            <option value="Pending">Pending</option>
+                                            <option value="For Payment Review">For Payment Review</option>
+                                            <option value="For Application Review">For Application Review</option>
+                                            <option value="Enrolled">Enrolled</option>
+                                            <option value="Enrolled (Doc. Pending)">Enrolled (Doc. Pending)</option>
+                                            <option value="Declined">Declined</option>
+                                            <option value="Dropped">Dropped</option>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <!-- Cashier Filters -->
+                                <div id="adminReportCashFilters" style="display: none; gap: 12px; flex: 1; flex-wrap: wrap;">
+                                    <div style="display: flex; flex-direction: column; gap: 4px; flex: 1; min-width: 150px;">
+                                        <label style="font-size: 11px; font-weight: 700; color: var(--gray-500); text-transform: uppercase;">Payment Method</label>
+                                        <select id="adminReportPaymentMethod" style="width: 100%; height: 38px; border: 1.5px solid var(--gray-300); border-radius: 8px; background: white;">
+                                            <option value="All">All Methods</option>
+                                        </select>
+                                    </div>
+                                    <div style="display: flex; flex-direction: column; gap: 4px; flex: 1; min-width: 150px;">
+                                        <label style="font-size: 11px; font-weight: 700; color: var(--gray-500); text-transform: uppercase;">Payment Mode</label>
+                                        <select id="adminReportPaymentMode" style="width: 100%; height: 38px; border: 1.5px solid var(--gray-300); border-radius: 8px; background: white;">
+                                            <option value="All">All Modes</option>
+                                            <option value="Full Payment">Full Payment</option>
+                                            <option value="Monthly">Monthly</option>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <!-- Shared Date Filters -->
+                                <div style="display: flex; flex-direction: column; gap: 4px; width: 150px;">
+                                    <label style="font-size: 11px; font-weight: 700; color: var(--gray-500); text-transform: uppercase;">Start Date</label>
+                                    <input type="date" id="adminReportStartDate" style="width: 100%; height: 38px; border: 1.5px solid var(--gray-300); border-radius: 8px; padding: 8px; background: white;">
+                                </div>
+                                <div style="display: flex; flex-direction: column; gap: 4px; width: 150px;">
+                                    <label style="font-size: 11px; font-weight: 700; color: var(--gray-500); text-transform: uppercase;">End Date</label>
+                                    <input type="date" id="adminReportEndDate" style="width: 100%; height: 38px; border: 1.5px solid var(--gray-300); border-radius: 8px; padding: 8px; background: white;">
+                                </div>
+                                
+                                <div style="display: flex; gap: 8px; min-width: 200px; height: 38px;">
+                                    <button class="btn btn-primary" onclick="generateAdminReport()" style="padding: 0 16px; font-size: 13px; flex: 1; height: 100%;">🔍 Preview</button>
+                                    <button class="btn btn-success" onclick="exportAdminReport()" style="padding: 0 16px; font-size: 13px; flex: 1; height: 100%; background: #16a34a; color: white;">📥 Export CSV</button>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Preview Table -->
+                        <div class="dash-table-scroll" style="margin-top: 20px;">
+                            <table class="dash-table" id="adminReportTable">
+                                <thead id="adminReportTableHead">
+                                    <!-- Table headers dynamically loaded -->
+                                </thead>
+                                <tbody id="adminReportTableBody">
+                                    <tr>
+                                        <td colspan="8" style="text-align: center; color: var(--gray-500); padding: 40px;">Select filters and click "Preview" to load report data.</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+
             </main>
         </div><!-- /.dash-main -->
     </div><!-- /.dash-layout -->
@@ -631,6 +852,20 @@
         </div>
     </div>
 
+    <!-- ===== MODAL: Maintenance Add/Edit ===== -->
+    <div class="modal-overlay" id="maintModalOverlay" onclick="closeMaintModal()">
+        <div class="modal" onclick="event.stopPropagation()" style="max-width: 500px;">
+            <button class="modal-close" onclick="closeMaintModal()">✕</button>
+            <h3 id="maintModalTitle">🔧 Add Record</h3>
+            <div id="maintModalBody" style="margin-top: 16px;"></div>
+            <div style="margin-top:20px; display:flex; gap:10px; justify-content:flex-end;">
+                <button class="btn btn-outline" onclick="closeMaintModal()">Cancel</button>
+                <button class="btn-dash-primary" id="maintModalSaveBtn" onclick="saveMaintRecord()">Save</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="main.js"></script>
     <script>
         /*
@@ -697,6 +932,8 @@
                 loadRoles();
             }
             if (tab === 'logs') loadLogs();
+            if (tab === 'maintenance') loadMaintenanceData();
+            if (tab === 'reports') loadAdminReportFilters();
         }
 
         // ===============================================
@@ -892,6 +1129,25 @@
                         : '<span style="color:#dc2626">❌ Not uploaded</span>'}</span>
                     </div>
 
+                    ${s.custom_fields && s.custom_fields.length > 0 ? `
+                    <div style="grid-column:1/-1;font-size:13px;font-weight:700;color:var(--blue-dark);text-transform:uppercase;letter-spacing:0.5px;border-bottom:2px solid var(--blue-light);padding-bottom:6px;margin-top:12px;margin-bottom:4px;">Additional Information</div>
+                    ${s.custom_fields.map(cf => `
+                        <div class="info-item" style="${cf.field_type === 'file' || cf.field_type === 'textarea' ? 'grid-column:1/-1;' : ''}">
+                            <label>${cf.field_label}</label>
+                            <span>
+                                ${cf.field_type === 'file' 
+                                    ? (cf.field_value 
+                                        ? `<a href="${cf.field_value}" target="_blank" style="color:var(--blue-dark);font-weight:600;text-decoration:underline;">📄 View File</a>
+                                           ${cf.field_value.match(/\.(jpeg|jpg|gif|png)$/i) 
+                                                ? `<img src="${cf.field_value}" style="display:block;margin-top:6px;max-width:100%;max-height:180px;border-radius:6px;" onerror="this.style.display='none'">`
+                                                : ''}`
+                                        : '<span style="color:#dc2626">❌ Not uploaded</span>')
+                                    : (cf.field_value || '—')}
+                            </span>
+                        </div>
+                    `).join('')}
+                    ` : ''}
+
                     <div style="grid-column:1/-1;font-size:13px;font-weight:700;color:var(--blue-dark);text-transform:uppercase;letter-spacing:0.5px;border-bottom:2px solid var(--blue-light);padding-bottom:6px;margin-top:12px;margin-bottom:4px;">Review Status</div>
                     <div class="info-item"><label>Overall Status</label><span>${getStatusBadge(s.status)}</span></div>
                     <div class="info-item"><label>Registrar Review</label><span>${s.registrar_status}</span></div>
@@ -1001,9 +1257,31 @@
                 document.getElementById('adminHistoryContainer').innerHTML = '<p style="color:red; font-size:12px;">Failed to load history.</p>';
             }
         }
+        async function loadPaymentMethodsFilter() {
+            try {
+                const methods = await apiGet('api/lookups.php?action=payment-methods');
+                const select = document.getElementById('filterPaymentMethod');
+                if (select) {
+                    const currentVal = select.value;
+                    select.innerHTML = '<option value="All">All Methods</option>';
+                    methods.forEach(m => {
+                        select.innerHTML += `<option value="${m.name}">${m.name}</option>`;
+                    });
+                    select.innerHTML += '<option value="None">None</option>';
+                    if ([...select.options].some(opt => opt.value === currentVal)) {
+                        select.value = currentVal;
+                    } else {
+                        select.value = 'All';
+                    }
+                }
+            } catch (err) {
+                console.warn('Failed to load payment methods for filter', err);
+            }
+        }
 
         async function loadPayments() {
             try {
+                await loadPaymentMethodsFilter();
                 allPayments = await apiGet('api/registrar.php?action=payments');
 
                 // Update payment summary stats
@@ -1021,7 +1299,16 @@
         }
 
         async function undoRefund(id) {
-            if (!confirm('Are you sure you want to undo the "Refunded" status for this student?')) return;
+            const confirmResult = await Swal.fire({
+                title: 'Confirm Action',
+                text: 'Are you sure you want to undo the "Refunded" status for this student?',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#800000',
+                cancelButtonColor: '#6e7881',
+                confirmButtonText: 'Yes, undo'
+            });
+            if (!confirmResult.isConfirmed) return;
 
             try {
                 const res = await apiPost('api/registrar.php?action=undo_refund', {
@@ -1121,28 +1408,37 @@
         }
 
         function renderEmployees(employees) {
-            const grid = document.getElementById('employeeGrid');
+            const tbody = document.getElementById('employeeTableBody');
             if (employees.length === 0) {
-                grid.innerHTML = '<p style="color:var(--gray-500);padding:20px;">No employee accounts found.</p>';
+                tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;color:var(--gray-500);padding:20px;">No employee accounts found.</td></tr>';
                 return;
             }
-            grid.innerHTML = employees.map(e => `
-                <div class="employee-card" style="opacity: ${e.is_active == 1 ? 1 : 0.6}; transition: all 0.3s ease;">
-                    <div class="employee-avatar avatar-${e.role}">${getRoleIcon(e.role)}</div>
-                    <div class="employee-info">
-                        <h4 style="margin:0; font-size:14px; font-weight:700;">${e.employee_name || 'No Name'}</h4>
-                        <div style="font-size:12px; color:var(--gray-500); margin-bottom:4px;">@${e.username}</div>
-                        <span class="role-tag role-${e.role}">${e.role}</span>
-                        <div style="font-size: 10px; color: ${e.is_active == 1 ? '#16a34a' : '#dc2626'}; font-weight: 700; margin-top: 4px;">
-                            ${e.is_active == 1 ? '● ACTIVE' : '○ INACTIVE'}
-                        </div>
-                    </div>
-                    <button class="btn" style="padding:6px 10px; font-size:10px; border:1px solid ${e.is_active == 1 ? '#dc2626' : '#16a34a'}; color: ${e.is_active == 1 ? '#dc2626' : '#16a34a'}; background:transparent; border-radius:6px; cursor:pointer;"
-                            onclick="toggleEmployeeStatus(${e.id}, '${e.username}', ${e.is_active})">
-                        ${e.is_active == 1 ? 'Deactivate' : 'Activate'}
-                    </button>
-                </div>
-            `).join('');
+            tbody.innerHTML = employees.map(e => {
+                const isActive = e.is_active == 1;
+                return `
+                    <tr style="opacity: ${isActive ? 1 : 0.6}; transition: all 0.3s ease;">
+                        <td>
+                            <div style="display:flex; align-items:center; gap:10px;">
+                                <div class="employee-avatar avatar-${e.role}" style="width:32px; height:32px; font-size:14px; border-radius:50%; display:flex; align-items:center; justify-content:center; flex-shrink:0;">${getRoleIcon(e.role)}</div>
+                                <strong>${e.employee_name || 'No Name'}</strong>
+                            </div>
+                        </td>
+                        <td style="font-family:monospace;">@${e.username}</td>
+                        <td><span class="role-tag role-${e.role}">${e.role}</span></td>
+                        <td>
+                            <span style="font-size: 11px; color: ${isActive ? '#16a34a' : '#dc2626'}; font-weight: 700;">
+                                ${isActive ? '● ACTIVE' : '○ INACTIVE'}
+                            </span>
+                        </td>
+                        <td>
+                            <button class="btn" style="padding:6px 12px; font-size:11px; border:1px solid ${isActive ? '#dc2626' : '#16a34a'}; color: ${isActive ? '#dc2626' : '#16a34a'}; background:transparent; border-radius:6px; cursor:pointer; font-weight:600;"
+                                    onclick="toggleEmployeeStatus(${e.id}, '${e.username}', ${e.is_active})">
+                                ${isActive ? 'Deactivate' : 'Activate'}
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
         }
 
         function filterEmployees() {
@@ -1169,11 +1465,24 @@
         async function loadRoles() {
             try {
                 const roles = await apiGet('api/lookups.php?action=roles');
+                
+                // Populate Add Employee dropdown (values are role IDs)
                 const roleSelect = document.getElementById('newRole');
                 roleSelect.innerHTML = '<option value="">Select role...</option>';
                 roles.forEach(r => {
                     roleSelect.innerHTML += `<option value="${r.id}">${r.name.charAt(0).toUpperCase() + r.name.slice(1)}</option>`;
                 });
+
+                // Populate Filter Employee dropdown (values are lowercase role names)
+                const filterSelect = document.getElementById('empFilterRole');
+                if (filterSelect) {
+                    filterSelect.innerHTML = '<option value="All">All Roles</option>';
+                    roles.forEach(r => {
+                        const val = r.name.toLowerCase();
+                        const label = r.name.charAt(0).toUpperCase() + r.name.slice(1);
+                        filterSelect.innerHTML += `<option value="${val}">${label}</option>`;
+                    });
+                }
             } catch (err) {
                 console.warn('Failed to load roles');
             }
@@ -1234,7 +1543,16 @@
                 return;
             }
 
-            if (!confirm(`Are you sure you want to ${action} the account for '${username}'?`)) return;
+            const confirmResult = await Swal.fire({
+                title: 'Confirm Action',
+                text: `Are you sure you want to ${action} the account for '${username}'?`,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#800000',
+                cancelButtonColor: '#6e7881',
+                confirmButtonText: 'Yes, proceed'
+            });
+            if (!confirmResult.isConfirmed) return;
 
             try {
                 const adminId = sessionStorage.getItem('adminId');
@@ -1312,6 +1630,8 @@
         function filterLogs() {
             const search = document.getElementById('logsSearchInput').value.toLowerCase();
             const actionFilter = document.getElementById('logsFilterAction').value;
+            const startDateVal = document.getElementById('logsStartDate').value;
+            const endDateVal = document.getElementById('logsEndDate').value;
 
             let filtered = allLogs;
             if (search) {
@@ -1325,11 +1645,83 @@
             if (actionFilter !== 'All') {
                 filtered = filtered.filter(l => l.action_type === actionFilter);
             }
+            if (startDateVal) {
+                const start = new Date(startDateVal);
+                start.setHours(0, 0, 0, 0);
+                filtered = filtered.filter(l => new Date(l.created_at) >= start);
+            }
+            if (endDateVal) {
+                const end = new Date(endDateVal);
+                end.setHours(23, 59, 59, 999);
+                filtered = filtered.filter(l => new Date(l.created_at) <= end);
+            }
             renderLogs(filtered);
         }
 
+        function exportLogs() {
+            const search = document.getElementById('logsSearchInput').value.toLowerCase();
+            const actionFilter = document.getElementById('logsFilterAction').value;
+            const startDateVal = document.getElementById('logsStartDate').value;
+            const endDateVal = document.getElementById('logsEndDate').value;
+
+            let filtered = allLogs;
+            if (search) {
+                filtered = filtered.filter(l =>
+                    (l.employee_name || '').toLowerCase().includes(search) ||
+                    (l.target_name || '').toLowerCase().includes(search) ||
+                    (l.details || '').toLowerCase().includes(search) ||
+                    (l.action_type || '').toLowerCase().includes(search)
+                );
+            }
+            if (actionFilter !== 'All') {
+                filtered = filtered.filter(l => l.action_type === actionFilter);
+            }
+            if (startDateVal) {
+                const start = new Date(startDateVal);
+                start.setHours(0, 0, 0, 0);
+                filtered = filtered.filter(l => new Date(l.created_at) >= start);
+            }
+            if (endDateVal) {
+                const end = new Date(endDateVal);
+                end.setHours(23, 59, 59, 999);
+                filtered = filtered.filter(l => new Date(l.created_at) <= end);
+            }
+
+            if (filtered.length === 0) {
+                Swal.fire({
+                    title: 'No Data',
+                    text: 'No logs data to export matching current filters.',
+                    icon: 'warning',
+                    confirmButtonColor: '#800000'
+                });
+                return;
+            }
+
+            const headers = ['Date & Time', 'Employee', 'Role', 'Action Type', 'Target Student', 'Details'];
+            const rows = filtered.map(l => [
+                l.created_at,
+                l.employee_name || '',
+                l.employee_role || '',
+                l.action_type || '',
+                l.target_name || '',
+                l.details || ''
+            ]);
+
+            const filename = 'System_Logs_' + new Date().toISOString().slice(0, 10) + '.csv';
+            downloadCSV(filename, headers, rows);
+        }
+
         async function undoDrop(id) {
-            if (!confirm('Are you sure you want to undo the "Dropped" status for this student?')) return;
+            const confirmResult = await Swal.fire({
+                title: 'Confirm Action',
+                text: 'Are you sure you want to undo the "Dropped" status for this student?',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#800000',
+                cancelButtonColor: '#6e7881',
+                confirmButtonText: 'Yes, undo'
+            });
+            if (!confirmResult.isConfirmed) return;
 
             try {
                 const adminId = sessionStorage.getItem('adminId');
@@ -1347,6 +1739,1025 @@
 
         // Load enrollments on page load (default tab)
         loadStudents();
+
+
+        // ===============================================
+        // TAB 5: MAINTENANCE MODULE
+        // Full CRUD for all lookup/reference tables
+        // ===============================================
+        let maintCurrentTable = 'payment_methods';
+        let maintCurrentData = [];
+        let maintFieldConfig = {};
+        let maintFieldLabels = {};
+        let maintEditId = null; // null = add mode, number = edit mode
+
+        // Cache for all grade levels from lookup API
+        let allGradeLevels = [];
+        let currentSelectedGrades = [];
+
+        async function fetchGradeLevelsOnce() {
+            if (allGradeLevels.length > 0) return allGradeLevels;
+            try {
+                allGradeLevels = await apiGet('api/lookups.php?action=grade-levels');
+            } catch (err) {
+                console.error('Failed to fetch grade levels for maintenance:', err);
+            }
+            return allGradeLevels;
+        }
+
+        function populateEligibleGradesUI(selectedString) {
+            currentSelectedGrades = selectedString ? selectedString.split(',').map(g => g.trim()).filter(Boolean) : [];
+            renderEligibleGradesTags();
+            populateEligibleGradesDropdown();
+        }
+
+        function renderEligibleGradesTags() {
+            const container = document.getElementById('eligible_grades_tags_container');
+            if (!container) return;
+            
+            if (currentSelectedGrades.length === 0) {
+                container.innerHTML = `<span style="font-size:13px; color:var(--gray-400); padding: 4px 6px;">No grade levels selected</span>`;
+                return;
+            }
+            
+            container.innerHTML = currentSelectedGrades.map((grade, idx) => `
+                <span class="eligible-grade-badge">
+                    ${escapeHtml(grade)}
+                    <span onclick="removeEligibleGradeTag(${idx})">&times;</span>
+                </span>
+            `).join('');
+        }
+
+        function populateEligibleGradesDropdown() {
+            const dropdown = document.getElementById('eligible_grades_dropdown');
+            if (!dropdown) return;
+            
+            dropdown.innerHTML = '<option value="">-- Select Grade to Add --</option>';
+            allGradeLevels.forEach(g => {
+                if (!currentSelectedGrades.includes(g.name)) {
+                    dropdown.innerHTML += `<option value="${escapeHtml(g.name)}">${escapeHtml(g.name)}</option>`;
+                }
+            });
+        }
+
+        function addEligibleGradeTag() {
+            const dropdown = document.getElementById('eligible_grades_dropdown');
+            if (!dropdown) return;
+            
+            const selectedVal = dropdown.value;
+            if (!selectedVal) return;
+            
+            if (!currentSelectedGrades.includes(selectedVal)) {
+                currentSelectedGrades.push(selectedVal);
+                updateEligibleGradesHiddenInput();
+                renderEligibleGradesTags();
+                populateEligibleGradesDropdown();
+            }
+        }
+
+        function removeEligibleGradeTag(idx) {
+            currentSelectedGrades.splice(idx, 1);
+            updateEligibleGradesHiddenInput();
+            renderEligibleGradesTags();
+            populateEligibleGradesDropdown();
+        }
+
+        function updateEligibleGradesHiddenInput() {
+            const hiddenInput = document.getElementById('maint_field_eligible_grades');
+            if (hiddenInput) {
+                hiddenInput.value = currentSelectedGrades.join(',');
+            }
+        }
+
+        const maintCategoryDescriptions = {
+            payment_methods: 'Manage payment method options available in the enrollment form.',
+            payment_modes: 'Manage payment plan modes (e.g., Full, Monthly, Bi-Annual) per grade level. Set installment counts, amounts per installment, tuition fees, and books fees.',
+            grade_levels: 'Manage grade level names and display order.',
+            school_years: 'Manage school year periods. Only one can be active at a time.',
+            sessions: 'Manage session/schedule options for enrollment.',
+            relations: 'Manage parent/guardian relationship types.',
+            income_ranges: 'Manage income range options for parent information.',
+            roles: 'Manage employee role types used in the system.',
+            form_fields: 'Add or manage custom fields shown in the enrollment form. Changes take effect immediately.'
+        };
+
+        function selectCategory(table, btn) {
+            document.querySelectorAll('.maint-cat-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            maintCurrentTable = table;
+            loadMaintenanceData();
+        }
+
+        // ============================================================
+        //  FORM FIELDS builder state
+        // ============================================================
+        let formFieldsCurrentStep = 1;
+        let formFieldsData = [];
+        let formFieldEditId = null;
+        let formFieldOptions = []; // for select-type options builder
+
+        async function loadMaintenanceData() {
+            const subtitle = document.getElementById('maintPanelSubtitle');
+            subtitle.textContent = maintCategoryDescriptions[maintCurrentTable] || '';
+
+            // Clean up any extra filter elements in header
+            const filterContainer = document.getElementById('maintHeaderFilterContainer');
+            if (filterContainer) filterContainer.remove();
+
+            if (maintCurrentTable === 'form_fields') {
+                document.getElementById('maintPanelTitle').textContent = 'Enrollment Form Fields';
+                document.getElementById('maintAddBtn').onclick = () => openFormFieldModal();
+                renderFormFieldsPanel();
+                return;
+            }
+            if (maintCurrentTable === 'payment_modes') {
+                document.getElementById('maintAddBtn').onclick = () => openMaintAddModal();
+                
+                // Add a grade filter dropdown to the header
+                const header = document.querySelector('.maint-panel-header');
+                const div = document.createElement('div');
+                div.id = 'maintHeaderFilterContainer';
+                div.style = 'display:flex; gap:8px; align-items:center; margin-left:auto; margin-right:12px;';
+                await fetchGradeLevelsOnce();
+                div.innerHTML = `
+                    <span style="font-size:12px; font-weight:600; color:var(--gray-600);">Grade Level:</span>
+                    <select id="maintGradeLevelFilter" onchange="filterMaintTableByGrade()" style="padding:6px 12px; border:1.5px solid var(--gray-300); border-radius:8px; font-size:13px; font-family:inherit; background:#fff; outline:none; height:34px;">
+                        <option value="All">All Grades</option>
+                        ${allGradeLevels.map(gl => `<option value="${gl.id}">${gl.name}</option>`).join('')}
+                    </select>
+                `;
+                // Insert before the "+ Add New" button
+                header.insertBefore(div, document.getElementById('maintAddBtn'));
+            } else {
+                document.getElementById('maintAddBtn').onclick = () => openMaintAddModal();
+            }
+            try {
+                const res = await apiGet(`api/maintenance.php?action=list&table=${maintCurrentTable}`);
+                maintCurrentData = res.records;
+                maintFieldConfig = res.fields;
+                maintFieldLabels = res.fieldLabels;
+                document.getElementById('maintPanelTitle').textContent = res.label;
+                renderMaintenanceTable();
+                
+                // If filter dropdown exists, apply it
+                if (maintCurrentTable === 'payment_modes') {
+                    filterMaintTableByGrade();
+                }
+            } catch (err) {
+                showAlert('maintAlert', '❌ Failed to load data: ' + err.message);
+            }
+        }
+
+        function filterMaintTableByGrade() {
+            const select = document.getElementById('maintGradeLevelFilter');
+            if (!select) return;
+            const selectedVal = select.value;
+            const rows = document.querySelectorAll('#maintTableBody tr');
+            
+            rows.forEach(row => {
+                const gradeId = row.getAttribute('data-grade-id');
+                if (!gradeId) return;
+                if (selectedVal === 'All' || gradeId === selectedVal) {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+        }
+
+        // ============================================================
+        //  PAYMENT MODES — special toggle active button in table
+        // ============================================================
+        function renderMaintenanceTableExtra(row, idx) {
+            // Extra column for payment_modes: active toggle
+            if (maintCurrentTable === 'payment_modes') {
+                const isActive = row['is_active'] == 1;
+                return `<td>
+                    <div class="maint-action-btns">
+                        <button class="maint-btn-edit" onclick="openMaintEditModal(${row.id})" title="Edit">✏️ Edit</button>
+                        <button onclick="toggleMaintActive('payment_modes', ${row.id})" title="Toggle Active" style="padding:4px 10px;border-radius:6px;font-size:12px;border:1px solid ${isActive ? '#16a34a' : '#9ca3af'};background:${isActive ? '#dcfce7' : '#f3f4f6'};color:${isActive ? '#166534' : '#6b7280'};cursor:pointer;">${isActive ? '✅ Active' : '○ Inactive'}</button>
+                        <button class="maint-btn-delete" onclick="deleteMaintRecord(${row.id})" title="Delete">🗑️</button>
+                    </div>
+                </td>`;
+            }
+            return `<td>
+                <div class="maint-action-btns">
+                    <button class="maint-btn-edit" onclick="openMaintEditModal(${row.id})" title="Edit">✏️ Edit</button>
+                    <button class="maint-btn-delete" onclick="deleteMaintRecord(${row.id})" title="Delete">🗑️</button>
+                </div>
+            </td>`;
+        }
+
+        async function toggleMaintActive(table, id) {
+            try {
+                const res = await apiPost('api/maintenance.php?action=toggle_active', {
+                    table, id, admin_id: sessionStorage.getItem('adminId')
+                });
+                showAlert('maintAlert', '✅ ' + res.message, 'success');
+                loadMaintenanceData();
+            } catch (err) {
+                showAlert('maintAlert', '❌ ' + err.message);
+            }
+        }
+
+        // ============================================================
+        //  FORM FIELDS PANEL — Custom UI with step tabs
+        // ============================================================
+        async function renderFormFieldsPanel() {
+            const panel = document.getElementById('maintTableBody');
+            const thead = document.getElementById('maintTableHead');
+
+            // Step tabs
+            thead.innerHTML = `<tr><td colspan="6" style="padding:0;">
+                <div style="display:flex;gap:6px;padding:12px 0 8px;">
+                    ${[1,2,3,4].map(s => `
+                        <button onclick="switchFormFieldStep(${s})" id="ffTab${s}"
+                            style="padding:7px 16px;border-radius:6px;font-size:13px;font-weight:600;cursor:pointer;
+                                border:2px solid ${s===formFieldsCurrentStep?'var(--maroon-dark)':'var(--gray-300)'};
+                                background:${s===formFieldsCurrentStep?'var(--maroon-dark)':'#fff'};
+                                color:${s===formFieldsCurrentStep?'#fff':'var(--gray-700)'};"
+                        >${['Step 1 — Student','Step 2 — Parent','Step 3 — Docs','Step 4 — Payment'][s-1]}</button>
+                    `).join('')}
+                </div>
+            </td></tr>`;
+
+            try {
+                const fields = await apiGet(`api/maintenance.php?action=list_form_fields&step=${formFieldsCurrentStep}`);
+                formFieldsData = fields;
+
+                if (fields.length === 0) {
+                    panel.innerHTML = `<tr><td colspan="6" style="text-align:center;color:var(--gray-500);padding:32px;">No custom fields for this step yet. Click "+ Add New" to create one.</td></tr>`;
+                    return;
+                }
+
+                panel.innerHTML = `
+                    <tr style="background:var(--gray-50);">
+                        <th style="padding:10px 12px;font-size:12px;">#</th>
+                        <th style="padding:10px 12px;font-size:12px;">Label</th>
+                        <th style="padding:10px 12px;font-size:12px;">Type</th>
+                        <th style="padding:10px 12px;font-size:12px;">Required</th>
+                        <th style="padding:10px 12px;font-size:12px;">Status</th>
+                        <th style="padding:10px 12px;font-size:12px;">Actions</th>
+                    </tr>
+                    ${fields.map((f, i) => `
+                        <tr style="opacity:${f.is_active?1:0.55};">
+                            <td style="padding:10px 12px;font-weight:600;color:var(--gray-500);">${i+1}</td>
+                            <td style="padding:10px 12px;font-weight:500;">${escapeHtml(f.field_label)}<br><small style="color:var(--gray-500);font-size:11px;">${escapeHtml(f.field_name)}</small></td>
+                            <td style="padding:10px 12px;"><span style="background:var(--gray-100);padding:3px 8px;border-radius:12px;font-size:12px;">${f.field_type}</span></td>
+                            <td style="padding:10px 12px;">${f.is_required?'<span style="color:#16a34a;font-weight:600;">✅ Yes</span>':'<span style="color:#6b7280;">No</span>'}</td>
+                            <td style="padding:10px 12px;">
+                                <button onclick="toggleFormFieldActive(${f.id})" style="padding:3px 10px;border-radius:12px;font-size:12px;cursor:pointer;border:1px solid ${f.is_active?'#16a34a':'#9ca3af'};background:${f.is_active?'#dcfce7':'#f3f4f6'};color:${f.is_active?'#166534':'#6b7280'};">${f.is_active?'✅ Active':'○ Inactive'}</button>
+                            </td>
+                            <td style="padding:10px 12px;">
+                                <div class="maint-action-btns">
+                                    <button class="maint-btn-edit" onclick="openFormFieldModal(${f.id})">✏️ Edit</button>
+                                    <button class="maint-btn-delete" onclick="deleteFormField(${f.id})">🗑️</button>
+                                </div>
+                            </td>
+                        </tr>
+                    `).join('')}
+                `;
+            } catch(err) {
+                panel.innerHTML = `<tr><td colspan="6" style="text-align:center;color:#dc2626;">${err.message}</td></tr>`;
+            }
+        }
+
+        function switchFormFieldStep(step) {
+            formFieldsCurrentStep = step;
+            renderFormFieldsPanel();
+        }
+
+        async function toggleFormFieldActive(id) {
+            try {
+                const res = await apiPost('api/maintenance.php?action=toggle_active', {
+                    table: 'form_fields', id, admin_id: sessionStorage.getItem('adminId')
+                });
+                showAlert('maintAlert', '✅ ' + res.message, 'success');
+                renderFormFieldsPanel();
+            } catch(err) { showAlert('maintAlert', '❌ ' + err.message); }
+        }
+
+        async function deleteFormField(id) {
+            const confirmResult = await Swal.fire({
+                title: 'Confirm Deletion',
+                text: 'Delete this custom field? This cannot be undone if no student data exists.',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#800000',
+                cancelButtonColor: '#6e7881',
+                confirmButtonText: 'Yes, delete it'
+            });
+            if (!confirmResult.isConfirmed) return;
+            try {
+                const res = await apiPost('api/maintenance.php?action=delete_form_field', {
+                    id, admin_id: sessionStorage.getItem('adminId')
+                });
+                showAlert('maintAlert', '✅ ' + res.message, 'success');
+                renderFormFieldsPanel();
+            } catch(err) { showAlert('maintAlert', '❌ ' + err.message); }
+        }
+
+        // ============================================================
+        //  FORM FIELD MODAL — Add / Edit custom field
+        // ============================================================
+        function openFormFieldModal(id = null) {
+            formFieldEditId = id;
+            formFieldOptions = [];
+
+            const record = id ? formFieldsData.find(f => f.id == id) : null;
+            if (record && record.field_options) {
+                try { formFieldOptions = JSON.parse(record.field_options); } catch(e) { formFieldOptions = []; }
+            }
+
+            document.getElementById('maintModalTitle').textContent = id ? '✏️ Edit Custom Field' : '➕ Add Custom Field';
+            document.getElementById('maintModalSaveBtn').onclick = saveFormField;
+
+            const label    = record ? record.field_label  : '';
+            const type     = record ? record.field_type   : 'text';
+            const required = record ? record.is_required  : 0;
+            const sortOrd  = record ? record.sort_order   : 0;
+            const ph       = record ? (record.placeholder||'') : '';
+            const hint     = record ? (record.hint_text||'')   : '';
+            const stepVal  = record ? record.step : formFieldsCurrentStep;
+
+            document.getElementById('maintModalBody').innerHTML = `
+                <div style="margin-bottom:14px;">
+                    <label style="font-size:13px;font-weight:600;display:block;margin-bottom:4px;">Step</label>
+                    <select id="ff_step" style="width:100%;padding:8px;border:1px solid var(--gray-300);border-radius:6px;font-size:14px;" ${id?'disabled':''}>
+                        <option value="1" ${stepVal==1?'selected':''}>Step 1 — Student Information</option>
+                        <option value="2" ${stepVal==2?'selected':''}>Step 2 — Parent / Guardian</option>
+                        <option value="3" ${stepVal==3?'selected':''}>Step 3 — Documents</option>
+                        <option value="4" ${stepVal==4?'selected':''}>Step 4 — Payment</option>
+                    </select>
+                </div>
+                <div style="margin-bottom:14px;">
+                    <label style="font-size:13px;font-weight:600;display:block;margin-bottom:4px;">Field Label *</label>
+                    <input id="ff_label" value="${escapeHtml(label)}" placeholder="e.g., Place of Birth" style="width:100%;" oninput="autoSlugFieldName(this.value)">
+                </div>
+                <div style="margin-bottom:14px;">
+                    <label style="font-size:13px;font-weight:600;display:block;margin-bottom:4px;">Field Name (auto-generated)</label>
+                    <input id="ff_name" value="${escapeHtml(record ? record.field_name : '')}" placeholder="place_of_birth" style="width:100%;background:var(--gray-50);font-family:monospace;" ${id?'readonly':''}>
+                    <small style="color:var(--gray-500);font-size:11px;">Unique identifier (snake_case). Auto-filled from label.</small>
+                </div>
+                <div style="margin-bottom:14px;">
+                    <label style="font-size:13px;font-weight:600;display:block;margin-bottom:4px;">Field Type *</label>
+                    <select id="ff_type" onchange="onFieldTypeChange()" style="width:100%;padding:8px;border:1px solid var(--gray-300);border-radius:6px;font-size:14px;">
+                        <option value="text"     ${type==='text'?'selected':''}>Text</option>
+                        <option value="number"   ${type==='number'?'selected':''}>Number</option>
+                        <option value="date"     ${type==='date'?'selected':''}>Date</option>
+                        <option value="textarea" ${type==='textarea'?'selected':''}>Textarea (long text)</option>
+                        <option value="select"   ${type==='select'?'selected':''}>Dropdown (Select)</option>
+                        <option value="file"     ${type==='file'?'selected':''}>File Upload</option>
+                    </select>
+                </div>
+                <div id="ff_options_section" style="display:${type==='select'?'block':'none'};margin-bottom:14px;">
+                    <label style="font-size:13px;font-weight:600;display:block;margin-bottom:4px;">Dropdown Options *</label>
+                    <div id="ff_options_tags" style="display:flex;flex-wrap:wrap;gap:6px;min-height:36px;padding:6px;border:1px dashed var(--gray-300);border-radius:6px;background:var(--gray-50);align-items:center;margin-bottom:8px;"></div>
+                    <div style="display:flex;gap:8px;">
+                        <input id="ff_option_input" placeholder="Type an option and click Add" style="flex:1;" onkeydown="if(event.key==='Enter'){event.preventDefault();addSelectOption();return false;}">
+                        <button type="button" onclick="addSelectOption()" style="background:var(--maroon-dark);color:#fff;padding:0 14px;border:none;border-radius:6px;font-size:13px;cursor:pointer;font-weight:600;height:38px;">Add</button>
+                    </div>
+                </div>
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px;">
+                    <div>
+                        <label style="font-size:13px;font-weight:600;display:block;margin-bottom:4px;">Placeholder Text</label>
+                        <input id="ff_placeholder" value="${escapeHtml(ph)}" placeholder="e.g., Enter city name" style="width:100%;">
+                    </div>
+                    <div>
+                        <label style="font-size:13px;font-weight:600;display:block;margin-bottom:4px;">Sort Order</label>
+                        <input id="ff_sortorder" type="number" min="0" value="${sortOrd}" style="width:100%;">
+                    </div>
+                </div>
+                <div style="margin-bottom:14px;">
+                    <label style="font-size:13px;font-weight:600;display:block;margin-bottom:4px;">Helper Text (shown below field)</label>
+                    <input id="ff_hint" value="${escapeHtml(hint)}" placeholder="Optional note shown below the field" style="width:100%;">
+                </div>
+                <div style="display:flex;align-items:center;gap:10px;">
+                    <input type="checkbox" id="ff_required" ${required?'checked':''} style="width:16px;height:16px;">
+                    <label for="ff_required" style="font-size:13px;font-weight:600;margin:0;">Required field (student must fill this in)</label>
+                </div>
+            `;
+
+            renderSelectOptionTags();
+            document.getElementById('maintModalOverlay').classList.add('active');
+            document.body.classList.add('modal-open');
+            setTimeout(() => document.getElementById('ff_label').focus(), 100);
+        }
+
+        function autoSlugFieldName(val) {
+            const nameInput = document.getElementById('ff_name');
+            if (formFieldEditId) return; // don't overwrite when editing
+            nameInput.value = val.toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_+|_+$/g, '');
+        }
+
+        function onFieldTypeChange() {
+            const type = document.getElementById('ff_type').value;
+            document.getElementById('ff_options_section').style.display = type === 'select' ? 'block' : 'none';
+        }
+
+        function addSelectOption() {
+            const input = document.getElementById('ff_option_input');
+            const val = input.value.trim();
+            if (!val) return;
+            if (!formFieldOptions.includes(val)) formFieldOptions.push(val);
+            input.value = '';
+            renderSelectOptionTags();
+        }
+
+        function removeSelectOption(i) {
+            formFieldOptions.splice(i, 1);
+            renderSelectOptionTags();
+        }
+
+        function renderSelectOptionTags() {
+            const container = document.getElementById('ff_options_tags');
+            if (!container) return;
+            container.innerHTML = formFieldOptions.map((opt, i) =>
+                `<span style="background:#e0e7ff;color:#3730a3;padding:3px 10px;border-radius:12px;font-size:12px;display:flex;align-items:center;gap:4px;">${escapeHtml(opt)}<button type="button" onclick="removeSelectOption(${i})" style="border:none;background:none;cursor:pointer;color:#6b7280;font-size:14px;line-height:1;">×</button></span>`
+            ).join('');
+        }
+
+        async function saveFormField() {
+            const label = document.getElementById('ff_label').value.trim();
+            const fname = document.getElementById('ff_name').value.trim();
+            const type  = document.getElementById('ff_type').value;
+            const step  = parseInt(document.getElementById('ff_step').value);
+            const req   = document.getElementById('ff_required').checked ? 1 : 0;
+            const sort  = parseInt(document.getElementById('ff_sortorder').value) || 0;
+            const ph    = document.getElementById('ff_placeholder').value.trim();
+            const hint  = document.getElementById('ff_hint').value.trim();
+
+            if (!label || !fname) { showAlert('maintAlert', '❌ Field Label is required.'); return; }
+            if (type === 'select' && formFieldOptions.length === 0) { showAlert('maintAlert', '❌ Dropdown fields need at least one option.'); return; }
+
+            const payload = {
+                step, field_label: label, field_name: fname, field_type: type,
+                field_options: formFieldOptions, is_required: req, sort_order: sort,
+                placeholder: ph, hint_text: hint, admin_id: sessionStorage.getItem('adminId')
+            };
+            if (formFieldEditId) payload.id = formFieldEditId;
+
+            const action = formFieldEditId ? 'update_form_field' : 'add_form_field';
+            try {
+                const res = await apiPost(`api/maintenance.php?action=${action}`, payload);
+                showAlert('maintAlert', '✅ ' + res.message, 'success');
+                closeMaintModal();
+                formFieldsCurrentStep = step;
+                renderFormFieldsPanel();
+            } catch(err) { showAlert('maintAlert', '❌ ' + err.message); }
+        }
+
+        function renderMaintenanceTable() {
+            const thead = document.getElementById('maintTableHead');
+            const tbody = document.getElementById('maintTableBody');
+
+            let headerHtml = '<tr><th style="width:50px;">#</th>';
+            maintFieldConfig.forEach(field => {
+                if (field === 'is_active') return;
+                if (field === 'is_current') {
+                    headerHtml += '<th>Status</th>';
+                } else {
+                    headerHtml += `<th>${maintFieldLabels[field] || field}</th>`;
+                }
+            });
+            headerHtml += '<th style="width:140px;">Actions</th></tr>';
+            thead.innerHTML = headerHtml;
+
+            const totalCols = maintFieldConfig.filter(f => f !== 'is_active').length + 2;
+
+            // Build body
+            if (maintCurrentData.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="${totalCols}" style="text-align:center;color:var(--gray-500);padding:40px;">No records found. Click "+ Add New" to create one.</td></tr>`;
+                return;
+            }
+
+            tbody.innerHTML = maintCurrentData.map((row, idx) => {
+                let cells = `<td style="font-weight:600; color:var(--gray-500);">${idx + 1}</td>`;
+                maintFieldConfig.forEach(field => {
+                    if (field === 'is_current') {
+                        const isCurrent = row[field] == 1;
+                        cells += `<td>
+                            <button class="maint-status-toggle ${isCurrent ? 'active' : ''}" onclick="toggleSchoolYearCurrent(${row.id})">
+                                ${isCurrent ? '✅ Current' : '○ Set Active'}
+                            </button>
+                        </td>`;
+                    } else if (field === 'is_active') {
+                        // Skip — handled in actions column
+                    } else if (field === 'grade_level_id') {
+                        const gradeName = row['grade_level_name'] || '—';
+                        cells += `<td style="font-weight:600; color:var(--maroon-dark);">${escapeHtml(gradeName)}</td>`;
+                    } else {
+                        const displayVal = row[field] !== null && row[field] !== undefined ? row[field] : '—';
+                        cells += `<td style="font-weight:500;">${escapeHtml(String(displayVal))}</td>`;
+                    }
+                });
+                cells += renderMaintenanceTableExtra(row, idx);
+                const rowAttr = maintCurrentTable === 'payment_modes' ? ` data-grade-id="${row.grade_level_id}"` : '';
+                return `<tr${rowAttr}>${cells}</tr>`;
+            }).join('');
+        }
+
+        function escapeHtml(str) {
+            const div = document.createElement('div');
+            div.textContent = str;
+            return div.innerHTML;
+        }
+
+        // --- MODAL: Add ---
+        async function openMaintAddModal() {
+            maintEditId = null;
+            document.getElementById('maintModalTitle').textContent = '🔧 Add New Record';
+            await fetchGradeLevelsOnce();
+            renderMaintForm({});
+            document.getElementById('maintModalOverlay').classList.add('active');
+            document.body.classList.add('modal-open');
+        }
+
+        // --- MODAL: Edit ---
+        async function openMaintEditModal(id) {
+            const record = maintCurrentData.find(r => r.id == id);
+            if (!record) return;
+            maintEditId = id;
+            document.getElementById('maintModalTitle').textContent = '✏️ Edit Record';
+            await fetchGradeLevelsOnce();
+            renderMaintForm(record);
+            document.getElementById('maintModalOverlay').classList.add('active');
+            document.body.classList.add('modal-open');
+        }
+
+        function renderMaintForm(record) {
+            const body = document.getElementById('maintModalBody');
+            let html = '';
+            maintFieldConfig.forEach(field => {
+                if (field === 'is_current' || field === 'is_active') return;
+                const label = maintFieldLabels[field] || field;
+                const value = record[field] !== undefined ? record[field] : '';
+                
+                if (maintCurrentTable === 'sessions' && field === 'eligible_grades') {
+                    html += `
+                        <div class="form-group" style="margin-bottom:14px;">
+                            <label style="font-size:13px; font-weight:600; display:block; margin-bottom:4px;">${label}</label>
+                            <div id="eligible_grades_tags_container" style="display:flex; flex-wrap:wrap; gap:6px; margin-bottom:8px; min-height:38px; padding:6px; border:1px dashed var(--gray-300); border-radius:6px; background:var(--gray-50); align-items:center;"></div>
+                            <div style="display:flex; gap:8px;">
+                                <select id="eligible_grades_dropdown" style="flex:1; padding:8px; border:1px solid var(--gray-300); border-radius:6px; font-size:14px; background:#fff; height:38px;">
+                                    <option value="">-- Select Grade to Add --</option>
+                                </select>
+                                <button type="button" class="btn" onclick="addEligibleGradeTag()" style="background:var(--maroon-dark, #800000); color:#fff; padding:0 14px; border:none; border-radius:6px; font-size:13px; cursor:pointer; font-weight:600; height:38px;">Add</button>
+                            </div>
+                            <input type="hidden" id="maint_field_eligible_grades" value="${escapeHtml(String(value))}">
+                        </div>
+                    `;
+                } else if (maintCurrentTable === 'payment_modes' && field === 'grade_level_id') {
+                    html += `
+                        <div class="form-group" style="margin-bottom:14px;">
+                            <label style="font-size:13px; font-weight:600; display:block; margin-bottom:4px;">${label}</label>
+                            <select id="maint_field_grade_level_id" style="width:100%; padding:8px; border:1px solid var(--gray-300); border-radius:6px; font-size:14px;">
+                                <option value="">-- Select Grade Level --</option>
+                                ${allGradeLevels.map(gl => `<option value="${gl.id}" ${value == gl.id ? 'selected' : ''}>${gl.name}</option>`).join('')}
+                            </select>
+                        </div>
+                    `;
+                } else if (maintCurrentTable === 'payment_modes' && (field === 'installment_count' || field === 'installment_amount' || field === 'tuition_fee' || field === 'books_fee')) {
+                    let placeholder = '';
+                    let isReadOnly = '';
+                    let extraHint = '';
+                    if (field === 'installment_count') {
+                        placeholder = 'Leave blank for Full Payment';
+                        extraHint = '<small style="color:var(--gray-500);font-size:11px;">Leave blank if this mode is a Full Payment (no installments).</small>';
+                    } else if (field === 'installment_amount') {
+                        placeholder = 'e.g. 1700.00';
+                        extraHint = '<small style="color:var(--gray-500);font-size:11px;">The downpayment/installment amount per payment. Leave blank for Full Payment.</small>';
+                    } else if (field === 'tuition_fee') {
+                        placeholder = '0.00';
+                        const count = record['installment_count'];
+                        const amt = record['installment_amount'];
+                        if (count && amt) {
+                            isReadOnly = 'readonly style="background:var(--gray-50); cursor:not-allowed;"';
+                        }
+                        extraHint = '<small style="color:var(--gray-500);font-size:11px;" id="tuition_hint">Auto-calculated if installments are set. Otherwise enter directly.</small>';
+                    } else if (field === 'books_fee') {
+                        placeholder = '0.00';
+                        extraHint = '<small style="color:var(--gray-500);font-size:11px;">The books fee for this grade level and payment mode.</small>';
+                    }
+                    html += `
+                        <div class="form-group" style="margin-bottom:14px;">
+                            <label style="font-size:13px; font-weight:600; display:block; margin-bottom:4px;">${label}</label>
+                            <input type="number" id="maint_field_${field}" value="${escapeHtml(String(value))}" placeholder="${placeholder}" ${isReadOnly} min="0" step="${field === 'installment_count' ? '1' : '0.01'}" style="width:100%;" oninput="handlePaymentModesFeesCalculation()">
+                            ${extraHint}
+                        </div>
+                    `;
+                } else {
+                    let inputType = 'text';
+                    let stepAttr = '';
+                    let minAttr = '';
+                    if (field === 'sort_order') {
+                        inputType = 'number';
+                        minAttr = ' min="0"';
+                    }
+                    html += `
+                        <div class="form-group" style="margin-bottom:14px;">
+                            <label style="font-size:13px; font-weight:600; display:block; margin-bottom:4px;">${label}</label>
+                            <input type="${inputType}"${stepAttr}${minAttr} id="maint_field_${field}" value="${escapeHtml(String(value))}" placeholder="Enter ${label.toLowerCase()}" style="width:100%;">
+                        </div>
+                    `;
+                }
+            });
+            body.innerHTML = html;
+
+            if (maintCurrentTable === 'sessions') {
+                populateEligibleGradesUI(record.eligible_grades || '');
+            }
+
+            if (maintCurrentTable === 'payment_modes') {
+                handlePaymentModesFeesCalculation();
+            }
+
+            setTimeout(() => {
+                const firstInput = body.querySelector('input, select');
+                if (firstInput && firstInput.id !== 'eligible_grades_dropdown') firstInput.focus();
+            }, 100);
+        }
+
+        function closeMaintModal() {
+            document.getElementById('maintModalOverlay').classList.remove('active');
+            document.body.classList.remove('modal-open');
+            maintEditId = null;
+        }
+
+        async function saveMaintRecord() {
+            const fieldData = {};
+            maintFieldConfig.forEach(field => {
+                if (field === 'is_current') return;
+                const input = document.getElementById(`maint_field_${field}`);
+                if (input) fieldData[field] = input.value;
+            });
+
+            const adminId = sessionStorage.getItem('adminId');
+            const isEdit = maintEditId !== null;
+
+            try {
+                const payload = {
+                    table: maintCurrentTable,
+                    data: fieldData,
+                    admin_id: adminId
+                };
+                if (isEdit) payload.id = maintEditId;
+
+                const action = isEdit ? 'update' : 'add';
+                const res = await apiPost(`api/maintenance.php?action=${action}`, payload);
+
+                showAlert('maintAlert', '✅ ' + res.message, 'success');
+                closeMaintModal();
+                loadMaintenanceData();
+            } catch (err) {
+                showAlert('maintAlert', '❌ ' + err.message);
+            }
+        }
+
+        async function deleteMaintRecord(id) {
+            const record = maintCurrentData.find(r => r.id == id);
+            const displayName = record ? record[maintFieldConfig[0]] : 'this record';
+
+            const confirmResult = await Swal.fire({
+                title: 'Confirm Deletion',
+                text: `Are you sure you want to delete "${displayName}"?\n\nThis cannot be undone.`,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#800000',
+                cancelButtonColor: '#6e7881',
+                confirmButtonText: 'Yes, delete it'
+            });
+            if (!confirmResult.isConfirmed) return;
+
+            try {
+                const res = await apiPost('api/maintenance.php?action=delete', {
+                    table: maintCurrentTable,
+                    id: id,
+                    admin_id: sessionStorage.getItem('adminId')
+                });
+
+                showAlert('maintAlert', '✅ ' + res.message, 'success');
+                loadMaintenanceData();
+            } catch (err) {
+                showAlert('maintAlert', '❌ ' + err.message);
+            }
+        }
+
+        async function toggleSchoolYearCurrent(id) {
+            const confirmResult = await Swal.fire({
+                title: 'Confirm Action',
+                text: 'Set this school year as the current active year? This will deactivate all others.',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#800000',
+                cancelButtonColor: '#6e7881',
+                confirmButtonText: 'Yes, set active'
+            });
+            if (!confirmResult.isConfirmed) return;
+
+            try {
+                const res = await apiPost('api/maintenance.php?action=toggle_current', {
+                    id: id,
+                    admin_id: sessionStorage.getItem('adminId')
+                });
+
+                showAlert('maintAlert', '✅ ' + res.message, 'success');
+                loadMaintenanceData();
+            } catch (err) {
+                showAlert('maintAlert', '❌ ' + err.message);
+            }
+        }
+
+        function handlePaymentModesFeesCalculation() {
+            const countInput = document.getElementById('maint_field_installment_count');
+            const amountInput = document.getElementById('maint_field_installment_amount');
+            const tuitionInput = document.getElementById('maint_field_tuition_fee');
+            const hint = document.getElementById('tuition_hint');
+
+            if (!countInput || !amountInput || !tuitionInput) return;
+
+            const count = parseInt(countInput.value) || 0;
+            const amount = parseFloat(amountInput.value) || 0;
+
+            if (count > 0 && amount > 0) {
+                tuitionInput.value = (count * amount).toFixed(2);
+                tuitionInput.readOnly = true;
+                tuitionInput.style.background = 'var(--gray-50)';
+                tuitionInput.style.cursor = 'not-allowed';
+                if (hint) hint.textContent = 'Auto-calculated from installments: ' + count + ' × ₱' + amount.toFixed(2);
+            } else {
+                tuitionInput.readOnly = false;
+                tuitionInput.style.background = '';
+                tuitionInput.style.cursor = '';
+                if (hint) hint.textContent = 'Enter the total tuition fee directly for Full Payment.';
+            }
+        }
+
+        // --- REPORTS TAB LOGIC ---
+        let adminReportType = 'registrar';
+        let adminReportData = [];
+        let adminReportGradeLevelsLoaded = false;
+        let adminReportPaymentMethodsLoaded = false;
+
+        function setAdminReportType(type) {
+            adminReportType = type;
+            const btnReg = document.getElementById('btn-report-type-registrar');
+            const btnCash = document.getElementById('btn-report-type-cashier');
+            const regFilters = document.getElementById('adminReportRegFilters');
+            const cashFilters = document.getElementById('adminReportCashFilters');
+            const tbody = document.getElementById('adminReportTableBody');
+
+            tbody.innerHTML = `<tr><td colspan="${adminReportType === 'registrar' ? 8 : 9}" style="text-align: center; color: var(--gray-500); padding: 40px;">Select filters and click "Preview" to load report data.</td></tr>`;
+            adminReportData = [];
+
+            if (type === 'registrar') {
+                btnReg.style.background = 'var(--white)';
+                btnReg.style.color = 'var(--maroon-dark)';
+                btnReg.style.fontWeight = '700';
+                btnReg.style.boxShadow = 'var(--shadow)';
+
+                btnCash.style.background = 'transparent';
+                btnCash.style.color = 'var(--gray-500)';
+                btnCash.style.fontWeight = '600';
+                btnCash.style.boxShadow = 'none';
+
+                regFilters.style.display = 'flex';
+                cashFilters.style.display = 'none';
+            } else {
+                btnCash.style.background = 'var(--white)';
+                btnCash.style.color = 'var(--maroon-dark)';
+                btnCash.style.fontWeight = '700';
+                btnCash.style.boxShadow = 'var(--shadow)';
+
+                btnReg.style.background = 'transparent';
+                btnReg.style.color = 'var(--gray-500)';
+                btnReg.style.fontWeight = '600';
+                btnReg.style.boxShadow = 'none';
+
+                regFilters.style.display = 'none';
+                cashFilters.style.display = 'flex';
+            }
+            renderAdminReportHeaders();
+        }
+
+        function renderAdminReportHeaders() {
+            const thead = document.getElementById('adminReportTableHead');
+            if (adminReportType === 'registrar') {
+                thead.innerHTML = `
+                    <tr>
+                        <th>Student ID</th>
+                        <th>Full Name</th>
+                        <th>Grade Level</th>
+                        <th>Session Preference</th>
+                        <th>Parent Name</th>
+                        <th>Contact</th>
+                        <th>Date Applied</th>
+                        <th>Status</th>
+                    </tr>
+                `;
+            } else {
+                thead.innerHTML = `
+                    <tr>
+                        <th>Student ID</th>
+                        <th>Full Name</th>
+                        <th>Grade Level</th>
+                        <th>Method</th>
+                        <th>Mode</th>
+                        <th>Total Payable</th>
+                        <th>Amount Paid</th>
+                        <th>Balance</th>
+                        <th>Status</th>
+                    </tr>
+                `;
+            }
+        }
+
+        async function loadAdminReportFilters() {
+            renderAdminReportHeaders();
+            
+            // Load grade levels
+            if (!adminReportGradeLevelsLoaded) {
+                try {
+                    const grades = await apiGet('api/lookups.php?action=grade-levels');
+                    const select = document.getElementById('adminReportGradeLevel');
+                    if (select) {
+                        select.innerHTML = '<option value="All">All Grades</option>';
+                        grades.forEach(g => {
+                            select.innerHTML += `<option value="${g.id}">${g.name}</option>`;
+                        });
+                        adminReportGradeLevelsLoaded = true;
+                    }
+                } catch (err) {
+                    console.warn('Failed to load grade levels for report filters:', err);
+                }
+            }
+
+            // Load payment methods
+            if (!adminReportPaymentMethodsLoaded) {
+                try {
+                    const methods = await apiGet('api/lookups.php?action=payment-methods');
+                    const select = document.getElementById('adminReportPaymentMethod');
+                    if (select) {
+                        select.innerHTML = '<option value="All">All Methods</option>';
+                        methods.forEach(m => {
+                            select.innerHTML += `<option value="${m.id}">${m.name}</option>`;
+                        });
+                        adminReportPaymentMethodsLoaded = true;
+                    }
+                } catch (err) {
+                    console.warn('Failed to load payment methods for report filters:', err);
+                }
+            }
+        }
+
+        async function generateAdminReport() {
+            const startEl = document.getElementById('adminReportStartDate');
+            const endEl = document.getElementById('adminReportEndDate');
+            const tbody = document.getElementById('adminReportTableBody');
+
+            tbody.innerHTML = `<tr><td colspan="${adminReportType === 'registrar' ? 8 : 9}" style="text-align:center;padding:40px;">Generating preview...</td></tr>`;
+
+            let params = new URLSearchParams({
+                action: adminReportType,
+                start_date: startEl ? startEl.value : '',
+                end_date: endEl ? endEl.value : ''
+            });
+
+            if (adminReportType === 'registrar') {
+                const gradeEl = document.getElementById('adminReportGradeLevel');
+                const statusEl = document.getElementById('adminReportStatus');
+                params.append('grade_level_id', gradeEl ? gradeEl.value : 'All');
+                params.append('status', statusEl ? statusEl.value : 'All');
+            } else {
+                const methodEl = document.getElementById('adminReportPaymentMethod');
+                const modeEl = document.getElementById('adminReportPaymentMode');
+                params.append('payment_method_id', methodEl ? methodEl.value : 'All');
+                params.append('payment_mode', modeEl ? modeEl.value : 'All');
+            }
+
+            try {
+                adminReportData = await apiGet('api/reports.php?' + params.toString());
+                renderAdminReportTable(adminReportData);
+            } catch (err) {
+                tbody.innerHTML = `<tr><td colspan="${adminReportType === 'registrar' ? 8 : 9}" style="text-align:center;color:#dc2626;padding:40px;">❌ Error: ${err.message}</td></tr>`;
+            }
+        }
+
+        function renderAdminReportTable(data) {
+            const tbody = document.getElementById('adminReportTableBody');
+            if (data.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="${adminReportType === 'registrar' ? 8 : 9}" style="text-align:center;color:var(--gray-500);padding:40px;">No records match the selected filters.</td></tr>`;
+                return;
+            }
+
+            if (adminReportType === 'registrar') {
+                tbody.innerHTML = data.map(s => `
+                    <tr>
+                        <td><strong style="font-family:'Courier New',monospace;">${s.student_no}</strong></td>
+                        <td>${formatStudentName(s)}</td>
+                        <td>${s.grade_level}</td>
+                        <td>${s.session_preference || '—'}</td>
+                        <td>${formatParentName(s.parent_first_name, s.parent_last_name, s.parent_middle_name)}</td>
+                        <td>${s.parent_mobile || '—'}</td>
+                        <td style="white-space:nowrap;">${formatDate(s.applied_at)}</td>
+                        <td>${getStatusBadge(s.status)}</td>
+                    </tr>
+                `).join('');
+            } else {
+                tbody.innerHTML = data.map(r => `
+                    <tr>
+                        <td><strong style="font-family:'Courier New',monospace;">${r.student_no}</strong></td>
+                        <td>${formatStudentName(r)}</td>
+                        <td>${r.grade_level}</td>
+                        <td>${getPaymentBadge(r.payment_method)}</td>
+                        <td>${r.payment_mode || '—'}</td>
+                        <td style="font-weight:600;">${formatCurrency(r.total_amount || 0)}</td>
+                        <td style="color:#16a34a; font-weight:600;">${formatCurrency(r.total_paid || 0)}</td>
+                        <td style="color:${parseFloat(r.balance || 0) <= 0 ? '#16a34a' : '#dc2626'}; font-weight:700;">
+                            ${parseFloat(r.balance || 0) <= 0 ? '✅ Paid' : formatCurrency(r.balance || 0)}
+                        </td>
+                        <td>${getStatusBadge(r.status)}</td>
+                    </tr>
+                `).join('');
+            }
+        }
+
+        function exportAdminReport() {
+            if (adminReportData.length === 0) {
+                Swal.fire({
+                    title: 'No Data',
+                    text: 'No data to export. Please select filters and click "Preview" first.',
+                    icon: 'warning',
+                    confirmButtonColor: '#800000'
+                });
+                return;
+            }
+
+            let headers = [];
+            let rows = [];
+
+            if (adminReportType === 'registrar') {
+                headers = ['Student ID', 'Last Name', 'First Name', 'Middle Name', 'Suffix', 'Grade Level', 'Session Preference', 'Parent Name', 'Contact Number', 'Date Applied', 'Status'];
+                rows = adminReportData.map(s => [
+                    s.student_no,
+                    s.last_name || '',
+                    s.first_name || '',
+                    s.middle_name || '',
+                    s.suffix || '',
+                    s.grade_level,
+                    s.session_preference || '',
+                    formatParentName(s.parent_first_name, s.parent_last_name, s.parent_middle_name),
+                    s.parent_mobile || '',
+                    formatDate(s.applied_at),
+                    s.status
+                ]);
+            } else {
+                headers = ['Student ID', 'Student Name', 'Grade Level', 'Payment Method', 'Payment Mode', 'Total Tuition', 'Books Fee', 'Total Payable', 'Amount Paid', 'Remaining Balance', 'Reference Number', 'Status'];
+                rows = adminReportData.map(r => [
+                    r.student_no,
+                    formatStudentName(r),
+                    r.grade_level,
+                    r.payment_method || 'None',
+                    r.payment_mode || '',
+                    r.tuition_fee || '0.00',
+                    r.books_fee || '0.00',
+                    r.total_amount || '0.00',
+                    r.total_paid || '0.00',
+                    r.balance || '0.00',
+                    r.reference_number || '',
+                    r.status
+                ]);
+            }
+
+            const filename = (adminReportType === 'registrar' ? 'Admin_Registrar_Report_' : 'Admin_Cashier_Report_') + new Date().toISOString().slice(0, 10) + '.csv';
+            downloadCSV(filename, headers, rows);
+        }
+
+        function downloadCSV(filename, headers, rows) {
+            const csvRows = [headers.join(",")];
+            for (const row of rows) {
+                csvRows.push(row.map(val => {
+                    let str = String(val === null || val === undefined ? '' : val);
+                    str = str.replace(/"/g, '""');
+                    if (str.includes(",") || str.includes("\n") || str.includes("\r") || str.includes('"')) {
+                        str = `"${str}"`;
+                    }
+                    return str;
+                }).join(","));
+            }
+            const csvString = "\uFEFF" + csvRows.join("\r\n");
+            const blob = new Blob([csvString], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement("a");
+            link.setAttribute("href", url);
+            link.setAttribute("download", filename);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
+        }
+
+        // Load roles if employees is selected
     </script>
 </body>
 

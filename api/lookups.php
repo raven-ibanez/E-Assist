@@ -6,62 +6,106 @@
  *  WHAT THIS FILE DOES:
  *  - Provides data for dropdown menus in the enrollment form.
  *  - The frontend (HTML/JS) calls this file to get the list
- *    of grade levels and parent relationships.
+ *    of grade levels, sessions, payment methods, and custom fields.
  *
  *  HOW TO USE (from JavaScript):
- *    const grades = await apiGet('api/lookups.php?action=grade-levels');
- *    const relations = await apiGet('api/lookups.php?action=relations');
+ *    const grades   = await apiGet('api/lookups.php?action=grade-levels');
+ *    const modes    = await apiGet('api/lookups.php?action=payment-modes');
+ *    const fields   = await apiGet('api/lookups.php?action=form-fields&step=1');
  * ============================================================
  */
 
-// Connect to the database
 require_once '../db.php';
 
-// Read the "action" from the URL (e.g., ?action=grade-levels)
 $action = $_GET['action'] ?? '';
 
-// --- ACTION: Get all grade levels (for the enrollment form dropdown) ---
+// --- Grade Levels ---
 if ($action === 'grade-levels') {
     $result = $conn->query("SELECT id, name FROM grade_levels ORDER BY sort_order");
     sendJSON($result->fetch_all(MYSQLI_ASSOC));
 }
 
-// --- ACTION: Get all relationships (Mother, Father, Guardian, etc.) ---
+// --- Parent Relationships ---
 if ($action === 'relations') {
     $result = $conn->query("SELECT id, name FROM relations ORDER BY id");
     sendJSON($result->fetch_all(MYSQLI_ASSOC));
 }
 
-// --- ACTION: Get all income ranges ---
+// --- Income Ranges ---
 if ($action === 'income-ranges') {
     $result = $conn->query("SELECT id, range_label FROM income_ranges ORDER BY id");
     sendJSON($result->fetch_all(MYSQLI_ASSOC));
 }
 
-// --- ACTION: Get all sessions ---
+// --- Sessions ---
 if ($action === 'sessions') {
-    $result = $conn->query("SELECT id, name FROM sessions ORDER BY id");
+    $result = $conn->query("SELECT id, name, eligible_grades, note FROM sessions ORDER BY id");
     sendJSON($result->fetch_all(MYSQLI_ASSOC));
 }
 
-// --- ACTION: Get all payment methods ---
+// --- Payment Methods ---
 if ($action === 'payment-methods') {
-    $result = $conn->query("SELECT id, name FROM payment_methods ORDER BY id");
+    $result = $conn->query("SELECT id, name, details, icon FROM payment_methods ORDER BY id");
     sendJSON($result->fetch_all(MYSQLI_ASSOC));
 }
 
-// --- ACTION: Get all employee roles ---
+// --- Payment Modes (dynamic, configurable by admin, mapped to grade levels) ---
+if ($action === 'payment-modes') {
+    $grade_level_id = isset($_GET['grade_level_id']) ? intval($_GET['grade_level_id']) : 0;
+    if ($grade_level_id > 0) {
+        $stmt = $conn->prepare("SELECT id, grade_level_id, name, description, installment_count, installment_amount, tuition_fee, books_fee FROM payment_modes WHERE grade_level_id = ? AND is_active = 1 ORDER BY sort_order, id");
+        $stmt->bind_param("i", $grade_level_id);
+        $stmt->execute();
+        sendJSON($stmt->get_result()->fetch_all(MYSQLI_ASSOC));
+    } else {
+        $result = $conn->query("SELECT id, grade_level_id, name, description, installment_count, installment_amount, tuition_fee, books_fee FROM payment_modes WHERE is_active = 1 ORDER BY grade_level_id, sort_order, id");
+        sendJSON($result->fetch_all(MYSQLI_ASSOC));
+    }
+}
+
+// --- Custom Form Fields (per step) ---
+if ($action === 'form-fields') {
+    $step = isset($_GET['step']) ? intval($_GET['step']) : 0;
+    if ($step > 0) {
+        $stmt = $conn->prepare("SELECT id, field_name, field_label, field_type, field_options, is_required, placeholder, hint_text FROM form_fields WHERE step = ? AND is_active = 1 ORDER BY sort_order, id");
+        $stmt->bind_param("i", $step);
+        $stmt->execute();
+        $rows = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
+        // Decode field_options JSON for select types
+        foreach ($rows as &$row) {
+            if ($row['field_type'] === 'select' && $row['field_options']) {
+                $row['field_options'] = json_decode($row['field_options'], true) ?: [];
+            } else {
+                $row['field_options'] = [];
+            }
+        }
+        sendJSON($rows);
+    } else {
+        // All steps combined (for admin preview)
+        $result = $conn->query("SELECT id, step, field_name, field_label, field_type, field_options, is_required, is_active, sort_order, placeholder, hint_text FROM form_fields ORDER BY step, sort_order, id");
+        $rows = $result->fetch_all(MYSQLI_ASSOC);
+        foreach ($rows as &$row) {
+            if ($row['field_type'] === 'select' && $row['field_options']) {
+                $row['field_options'] = json_decode($row['field_options'], true) ?: [];
+            } else {
+                $row['field_options'] = [];
+            }
+        }
+        sendJSON($rows);
+    }
+}
+
+// --- Employee Roles ---
 if ($action === 'roles') {
     $result = $conn->query("SELECT id, name FROM roles ORDER BY id");
     sendJSON($result->fetch_all(MYSQLI_ASSOC));
 }
 
-// --- ACTION: Get all school years ---
+// --- School Years ---
 if ($action === 'school-years') {
     $result = $conn->query("SELECT id, label, is_current FROM school_years ORDER BY id DESC");
     sendJSON($result->fetch_all(MYSQLI_ASSOC));
 }
 
-// If no valid action was provided, return an error
 sendJSON(['error' => 'Invalid action'], 400);
 ?>

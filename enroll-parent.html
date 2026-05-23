@@ -115,6 +115,9 @@
                     </div>
                 </div>
 
+                <!-- Custom fields for Step 2 -->
+                <div id="custom-fields-step2"></div>
+
                 <div class="step-actions">
                     <button type="button" class="btn btn-prev"
                         onclick="window.location.href='enroll-student.html'">Back</button>
@@ -124,6 +127,7 @@
         </div>
     </div>
 
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="main.js"></script>
     <script>
         const savedData = JSON.parse(sessionStorage.getItem('enroll_data') || '{}');
@@ -172,9 +176,46 @@
             const formData = new FormData(e.target);
             const data = JSON.parse(sessionStorage.getItem('enroll_data') || '{}');
             formData.forEach((value, key) => data[key] = value);
+            // Save custom field values
+            document.querySelectorAll('#custom-fields-step2 [data-custom-field]').forEach(inp => {
+                if (inp.type !== 'file') data[inp.name] = inp.value;
+            });
             sessionStorage.setItem('enroll_data', JSON.stringify(data));
             window.location.href = 'enroll-docs.html';
         });
+
+        async function loadCustomFields() {
+            try {
+                const fields = await apiGet('api/lookups.php?action=form-fields&step=2');
+                const container = document.getElementById('custom-fields-step2');
+                if (!fields || fields.length === 0) return;
+                let html = '<div class="form-section" style="margin-top:20px;border-top:2px dashed var(--gray-200);padding-top:16px;">';
+                html += '<h4 style="margin-bottom:12px;color:var(--gray-700);">Additional Information</h4>';
+                fields.forEach(f => {
+                    const savedVal = savedData['custom_field_' + f.id] || '';
+                    const req = f.is_required ? 'required' : '';
+                    const ph = f.placeholder ? `placeholder="${f.placeholder}"` : '';
+                    html += `<div class="form-group" style="margin-bottom:14px;">`;
+                    html += `<label>${f.field_label}${f.is_required ? ' *' : ''}</label>`;
+                    if (f.field_type === 'textarea') {
+                        html += `<textarea name="custom_field_${f.id}" ${req} ${ph} data-custom-field="1" style="width:100%;min-height:80px;">${savedVal}</textarea>`;
+                    } else if (f.field_type === 'select') {
+                        html += `<select name="custom_field_${f.id}" ${req} data-custom-field="1"><option value="">-- Select --</option>`;
+                        (f.field_options || []).forEach(opt => { html += `<option value="${opt}" ${savedVal===opt?'selected':''}>${opt}</option>`; });
+                        html += '</select>';
+                    } else if (f.field_type === 'file') {
+                        html += `<p style="font-size:12px;color:var(--gray-500);">(File upload will be available on Step 4)</p>`;
+                    } else {
+                        html += `<input type="${f.field_type}" name="custom_field_${f.id}" value="${savedVal}" ${req} ${ph} data-custom-field="1" style="width:100%;">`;
+                    }
+                    if (f.hint_text) html += `<small style="color:var(--gray-500);font-size:11px;">${f.hint_text}</small>`;
+                    html += '</div>';
+                });
+                html += '</div>';
+                container.innerHTML = html;
+            } catch(e) { console.warn('Custom fields error:', e); }
+        }
+        loadCustomFields();
     </script>
 </body>
 

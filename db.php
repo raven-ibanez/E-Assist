@@ -19,6 +19,25 @@ ob_start();
 error_reporting(E_ALL);
 ini_set('display_errors', 0);
 
+// Global exception handler to guarantee that any uncaught PHP Error or Exception
+// is returned as a clean JSON response rather than crashing with an empty response.
+set_exception_handler(function ($exception) {
+    if (ob_get_length()) {
+        ob_clean();
+    }
+    http_response_code(500);
+    header('Content-Type: application/json; charset=utf-8');
+    echo json_encode([
+        'error' => 'Server error: ' . $exception->getMessage()
+    ]);
+    exit;
+});
+
+// Disable mysqli exception reporting (standard for codebases expecting execute() to return false).
+// This ensures local database validation and duplicate check code works as intended.
+mysqli_report(MYSQLI_REPORT_OFF);
+
+
 // --- STEP 2: Database login details ---
 // These must match your XAMPP MySQL settings.
 $host = 'localhost';       // The server (localhost = your computer)

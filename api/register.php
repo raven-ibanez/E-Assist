@@ -5,8 +5,10 @@
  * ============================================================
  *  WHAT THIS FILE DOES:
  *  - Receives all the enrollment form data from the browser.
- *  - Saves uploaded files (PSA, SF10) to the "uploads" folder.
- *  - Inserts the Parent, Student, and Enrollment records into the database.
+ *  - Saves uploaded files (PSA, SF10, 2x2, custom file fields)
+ *    to the "uploads" folder.
+ *  - Inserts the Parent, Student, and Enrollment records into DB.
+ *  - Saves custom form field values (enrollment_field_values).
  *  - Generates a unique Student Number (e.g., 2026-00001).
  *
  *  HOW IT'S CALLED:
@@ -15,16 +17,13 @@
  * ============================================================
  */
 
-// Connect to the database
 require_once '../db.php';
 
-// Only allow POST requests (form submissions)
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     sendJSON(['error' => 'Invalid request method.'], 400);
 }
 
-// --- STEP 1: Collect all form data ---
-// Each variable matches a "name" attribute in the HTML form inputs.
+// --- Standard enrollment fields ---
 $first_name         = $_POST['first_name'] ?? '';
 $last_name          = $_POST['last_name'] ?? '';
 $middle_name        = $_POST['middle_name'] ?? '';
@@ -49,31 +48,29 @@ $occupation         = $_POST['occupation'] ?? '';
 $income_range_id    = $_POST['income_range_id'] ?? '';
 $previous_school    = $_POST['previous_school'] ?? '';
 $payment_method_id  = $_POST['payment_method_id'] ?? '';
-$payment_mode       = $_POST['payment_mode'] ?? 'Monthly';
-$months_count       = ($payment_mode === 'Monthly') ? 10 : null;  // Monthly is always 10 months
+$payment_mode       = $_POST['payment_mode'] ?? 'Full Payment';
+$payment_mode_id    = $_POST['payment_mode_id'] ?? null;
+$months_count       = !empty($_POST['months_count']) ? intval($_POST['months_count']) : null;
 $tuition_fee        = $_POST['tuition_fee'] ?? null;
 $books_fee          = $_POST['books_fee'] ?? null;
 $reference_number   = $_POST['reference_number'] ?? '';
 $email              = $_POST['email'] ?? '';
 
-// --- STEP 2: Validate required fields ---
+// --- Validate required fields ---
 if (!$first_name || !$last_name || !$email || !$house_no_street || !$barangay || !$city_municipality || !$province || !$payment_method_id || !$school_year_id) {
     sendJSON(['error' => 'All required fields including Payment details and School Year must be filled.'], 400);
 }
 
-// Ensure 2x2 picture is uploaded
+// 2x2 picture is always required
 if (!isset($_FILES['picture_2x2']) || $_FILES['picture_2x2']['error'] !== UPLOAD_ERR_OK) {
     sendJSON(['error' => 'A 2x2 Picture is required to complete your enrollment.'], 400);
 }
 
-// --- STEP 3: Handle file uploads ---
-// Save uploaded files to the "api/uploads/" folder.
+// --- File upload setup ---
 $uploadDir = __DIR__ . '/uploads/';
-if (!is_dir($uploadDir)) {
-    mkdir($uploadDir, 0777, true);  // Create the folder if it doesn't exist
-}
+if (!is_dir($uploadDir)) mkdir($uploadDir, 0777, true);
 
-// Upload PSA Birth Certificate (optional)
+// --- Standard file uploads ---
 $psa_path = null;
 if (isset($_FILES['psa_birth_cert']) && $_FILES['psa_birth_cert']['error'] === UPLOAD_ERR_OK) {
     $filename = time() . '_psa_' . basename($_FILES['psa_birth_cert']['name']);
@@ -81,7 +78,6 @@ if (isset($_FILES['psa_birth_cert']) && $_FILES['psa_birth_cert']['error'] === U
     move_uploaded_file($_FILES['psa_birth_cert']['tmp_name'], $uploadDir . $filename);
 }
 
-// Upload SF10 / Form 137 (optional — for transferees only)
 $sf10_path = null;
 if (isset($_FILES['sf10_document']) && $_FILES['sf10_document']['error'] === UPLOAD_ERR_OK) {
     $filename = time() . '_sf10_' . basename($_FILES['sf10_document']['name']);
@@ -89,7 +85,6 @@ if (isset($_FILES['sf10_document']) && $_FILES['sf10_document']['error'] === UPL
     move_uploaded_file($_FILES['sf10_document']['tmp_name'], $uploadDir . $filename);
 }
 
-// Upload 2x2 Picture (optional)
 $picture_2x2_path = null;
 if (isset($_FILES['picture_2x2']) && $_FILES['picture_2x2']['error'] === UPLOAD_ERR_OK) {
     $filename = time() . '_2x2_' . basename($_FILES['picture_2x2']['name']);
@@ -97,41 +92,66 @@ if (isset($_FILES['picture_2x2']) && $_FILES['picture_2x2']['error'] === UPLOAD_
     move_uploaded_file($_FILES['picture_2x2']['tmp_name'], $uploadDir . $filename);
 }
 
-// --- STEP 4: Save everything to the database ---
+// --- Collect custom field values (text/number/date/select/textarea) ---
+// These arrive as custom_field_{id}=value in POST
+$customTextValues = [];
+foreach ($_POST as $key => $value) {
+    if (strpos($key, 'custom_field_') === 0) {
+        $fieldId = intval(substr($key, strlen('custom_field_')));
+        if ($fieldId > 0) {
+            $customTextValues[$fieldId] = $value;
+        }
+    }
+}
+
+// --- Collect custom file uploads (custom_file_{id}) ---
+$customFileValues = [];
+foreach ($_FILES as $key => $fileInfo) {
+    if (strpos($key, 'custom_file_') === 0 && $fileInfo['error'] === UPLOAD_ERR_OK) {
+        $fieldId = intval(substr($key, strlen('custom_file_')));
+        if ($fieldId > 0) {
+            $filename = time() . '_customfile' . $fieldId . '_' . basename($fileInfo['name']);
+            $filePath = 'api/uploads/' . $filename;
+            move_uploaded_file($fileInfo['tmp_name'], $uploadDir . $filename);
+            $customFileValues[$fieldId] = $filePath;
+        }
+    }
+}
+
+// --- Save to database ---
 try {
-    // Start a Transaction — if anything fails, nothing gets saved (all-or-nothing).
     $conn->begin_transaction();
 
-    // A. Insert the Parent record (no email uniqueness check — same parent can enroll multiple children)
+    // A. Insert parent record
     $stmt = $conn->prepare("INSERT INTO parents (first_name, last_name, middle_name, relation_id, mobile, telephone, occupation, income_range_id, email) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)");
-    $stmt->bind_param("sssississs", $parent_first_name, $parent_last_name, $parent_middle_name, $relation_id, $parent_contact, $parent_telephone, $occupation, $income_range_id, $email);
+    $stmt->bind_param("sssisssis", $parent_first_name, $parent_last_name, $parent_middle_name, $relation_id, $parent_contact, $parent_telephone, $occupation, $income_range_id, $email);
     $stmt->execute();
-    $parentId = $conn->insert_id;  // Get the new parent's ID
+    $parentId = $conn->insert_id;
 
-    // C. Generate a unique Student Number (format: YEAR-00001)
+    // B. Generate student number
     $stmtCount = $conn->query("SELECT COUNT(*) as total FROM students");
     $count = $stmtCount->fetch_assoc()['total'] + 1;
     $studentNo = date('Y') . '-' . str_pad($count, 5, '0', STR_PAD_LEFT);
 
-    // D. Insert the Student record (Linking to the Parent)
+    // C. Insert student record
     $stmt = $conn->prepare("INSERT INTO students (parent_id, student_no, first_name, last_name, middle_name, suffix, birth_date, gender, religion, house_no_street, barangay, city_municipality, province, previous_school, psa_birth_cert, sf10_document, picture_2x2) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
     $stmt->bind_param("issssssssssssssss", $parentId, $studentNo, $first_name, $last_name, $middle_name, $suffix, $birth_date, $gender, $religion, $house_no_street, $barangay, $city_municipality, $province, $previous_school, $psa_path, $sf10_path, $picture_2x2_path);
     $stmt->execute();
     $studentId = $conn->insert_id;
 
-    // E. Create the Enrollment record (linking to student and school year)
+    // D. Insert enrollment record
     $stmt = $conn->prepare("INSERT INTO enrollments (student_id, school_year_id, grade_level_id, session_id) VALUES (?, ?, ?, ?)");
     $stmt->bind_param("iiii", $studentId, $school_year_id, $grade_level_id, $session_id);
     $stmt->execute();
     $enrollmentId = $conn->insert_id;
 
-    // F. Create the Payment record (storing fees and month count)
-    $stmt = $conn->prepare("INSERT INTO payments (enrollment_id, payment_method_id, payment_mode, months_count, tuition_fee, books_fee, reference_number) VALUES (?, ?, ?, ?, ?, ?, ?)");
-    $stmt->bind_param("iisidds", $enrollmentId, $payment_method_id, $payment_mode, $months_count, $tuition_fee, $books_fee, $reference_number);
+    // E. Insert payment record (with payment_mode_id)
+    $stmt = $conn->prepare("INSERT INTO payments (enrollment_id, payment_method_id, payment_mode, payment_mode_id, months_count, tuition_fee, books_fee, reference_number) VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
+    $stmt->bind_param("iisiidds", $enrollmentId, $payment_method_id, $payment_mode, $payment_mode_id, $months_count, $tuition_fee, $books_fee, $reference_number);
     $stmt->execute();
     $paymentId = $conn->insert_id;
 
-    // G. Create the initial Payment Transaction
+    // F. Initial payment transaction
     $initial_payment = $_POST['initial_payment'] ?? 0;
     if ($initial_payment > 0) {
         $stmt = $conn->prepare("INSERT INTO payment_transactions (payment_id, amount_paid, payment_method_id, reference_number, notes) VALUES (?, ?, ?, ?, 'Initial Payment')");
@@ -139,22 +159,39 @@ try {
         $stmt->execute();
     }
 
-    // Save everything!
+    // G. Save custom text/select/textarea field values
+    if (!empty($customTextValues)) {
+        $stmtCf = $conn->prepare("INSERT INTO enrollment_field_values (enrollment_id, field_id, field_value) VALUES (?, ?, ?)");
+        foreach ($customTextValues as $fieldId => $value) {
+            if (trim($value) !== '') {
+                $stmtCf->bind_param("iis", $enrollmentId, $fieldId, $value);
+                $stmtCf->execute();
+            }
+        }
+    }
+
+    // H. Save custom file field values
+    if (!empty($customFileValues)) {
+        $stmtCf2 = $conn->prepare("INSERT INTO enrollment_field_values (enrollment_id, field_id, field_value) VALUES (?, ?, ?)");
+        foreach ($customFileValues as $fieldId => $filePath) {
+            $stmtCf2->bind_param("iis", $enrollmentId, $fieldId, $filePath);
+            $stmtCf2->execute();
+        }
+    }
+
     $conn->commit();
 
-    // --- Send Received Email ---
+    // Send status email in background
     require_once __DIR__ . '/email_config.php';
-    sendStatusEmail($conn, $enrollmentId, 'received', '');
+    sendStatusEmailInBackground($enrollmentId, 'received');
 
-    // Send success response back to the browser
     sendJSON([
-        'message' => 'Registration successful!',
+        'message'    => 'Registration successful!',
         'student_no' => $studentNo,
-        'name' => trim(preg_replace('/\s+/', ' ', "$last_name" . ($suffix ? " $suffix" : "") . ", $first_name $middle_name"))
+        'name'       => trim(preg_replace('/\s+/', ' ', "$last_name" . ($suffix ? " $suffix" : "") . ", $first_name $middle_name"))
     ]);
 
 } catch (Exception $e) {
-    // If anything went wrong, undo all database changes
     $conn->rollback();
     sendJSON(['error' => 'Something went wrong: ' . $e->getMessage()], 500);
 }

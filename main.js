@@ -175,3 +175,15 @@ function formatCurrency(amount) {
         maximumFractionDigits: 2 
     });
 }
+
+// Override native window.alert to use SweetAlert2 if Swal is loaded
+if (typeof Swal !== 'undefined') {
+    window.alert = function (message) {
+        Swal.fire({
+            title: 'Notice',
+            text: String(message),
+            icon: 'info',
+            confirmButtonColor: '#800000'
+        });
+    };
+}

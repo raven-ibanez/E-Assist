@@ -358,4 +358,46 @@ function sendStatusEmail($conn, $enrollment_id, $decision, $reason = '', $trigge
     }
     return ['success' => false, 'message' => 'Unknown decision or missing template.'];
 }
+
+/**
+ * sendStatusEmailInBackground() — Spawns a background PHP CLI process
+ * to send the status email, preventing network/SMTP latency from blocking
+ * the main HTTP request thread.
+ */
+function sendStatusEmailInBackground($enrollment_id, $decision, $reason = '', $triggeredBy = '', $admin_id = null)
+{
+    $phpPath = PHP_BINARY;
+    // Fallback if PHP_BINARY is not pointing to CLI, is invalid, or contains httpd
+    if (empty($phpPath) || !file_exists($phpPath) || stripos($phpPath, 'httpd') !== false) {
+        if (file_exists('C:\\xampp\\php\\php.exe')) {
+            $phpPath = 'C:\\xampp\\php\\php.exe';
+        } else {
+            $phpPath = 'php'; 
+        }
+    }
+    $cliScript = __DIR__ . '/send_email_cli.php';
+
+    // Prepare arguments
+    $args = [
+        $enrollment_id,
+        $decision,
+        $reason,
+        $triggeredBy,
+        $admin_id
+    ];
+
+    // Escape arguments for command line
+    $cmd = escapeshellarg($phpPath) . ' ' . escapeshellarg($cliScript);
+    foreach ($args as $arg) {
+        $cmd .= ' ' . escapeshellarg($arg !== null ? $arg : '');
+    }
+
+    if (stristr(PHP_OS, 'WIN')) {
+        // Windows background command execution (start /B runs it asynchronously)
+        pclose(popen("start /B " . $cmd, "r"));
+    } else {
+        // Unix/Linux background execution
+        exec($cmd . " > /dev/null 2>&1 &");
+    }
+}
 ?>

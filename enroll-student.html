@@ -137,6 +137,9 @@
                     </div>
                 </div>
 
+                <!-- Custom fields for Step 1 (injected dynamically by admin) -->
+                <div id="custom-fields-step1"></div>
+
                 <div class="step-actions">
                     <button type="button" class="btn btn-cancel" onclick="window.location.href='index.html'">Cancel</button>
                     <button type="submit" class="btn btn-next">Next: Parent Information</button>
@@ -145,6 +148,7 @@
         </div>
     </div>
 
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="main.js"></script>
     <script>
         const savedData = JSON.parse(sessionStorage.getItem('enroll_data') || '{}');
@@ -191,39 +195,47 @@
         if (savedData.birth_date) setTimeout(() => document.getElementById('birth_date').dispatchEvent(new Event('change')), 100);
 
         document.getElementById('grade_level_id').addEventListener('change', function (e) {
+            const gradeId = e.target.value;
             const gradeName = e.target.options[e.target.selectedIndex].text;
             const schedSelect = document.getElementById('session_id');
             const note = document.getElementById('schedule_note');
+            
             schedSelect.innerHTML = '';
             schedSelect.disabled = false;
             note.style.display = 'none';
-            const addOption = (name) => {
-                const session = allSessions.find(s => s.name === name);
-                if (session) {
-                    const sel = (savedData.session_id == session.id) ? 'selected' : '';
-                    schedSelect.innerHTML += `<option value="${session.id}" ${sel}>${session.name}</option>`;
-                }
-            };
-            if (gradeName.includes('Kinder')) {
-                schedSelect.innerHTML += `<option value="">-- Select Session --</option>`;
-                addOption('Kinder 1 (2.5 hrs)');
-                addOption('Kinder 2 - Session 1 (2.5 hrs)');
-                addOption('Kinder 2 - Session 2 (2.5 hrs)');
-            } else if (gradeName.includes('Grade 1')) {
-                schedSelect.innerHTML += `<option value="">-- Select Session --</option>`;
-                addOption('AM Session');
-                addOption('PM Session');
-            } else if (gradeName.includes('Grade 2') || gradeName.includes('Grade 3') || gradeName.includes('Grade 4')) {
-                addOption('Morning Session');
-                note.textContent = "Note: Grades 2, 3, and 4 are morning sessions.";
-                note.style.display = 'block';
-            } else if (gradeName.includes('Grade 5') || gradeName.includes('Grade 6')) {
-                addOption('Afternoon Session');
-                note.textContent = "Note: Grades 5 and 6 are afternoon sessions.";
-                note.style.display = 'block';
-            } else {
+            
+            if (!gradeId) {
                 schedSelect.innerHTML = `<option value="">-- Select Grade Level First --</option>`;
                 schedSelect.disabled = true;
+                return;
+            }
+
+            // Filter sessions from DB by comparing the selected grade name to the session's eligible_grades field
+            const eligibleSessions = allSessions.filter(session => {
+                if (!session.eligible_grades) return false;
+                const gradesArray = session.eligible_grades.split(',').map(g => g.trim());
+                return gradesArray.includes(gradeName);
+            });
+
+            if (eligibleSessions.length === 0) {
+                schedSelect.innerHTML = `<option value="">-- No Sessions Available for ${gradeName} --</option>`;
+                return;
+            }
+
+            schedSelect.innerHTML = `<option value="">-- Select Session --</option>`;
+            eligibleSessions.forEach(session => {
+                const sel = (savedData.session_id == session.id) ? 'selected' : '';
+                schedSelect.innerHTML += `<option value="${session.id}" ${sel}>${session.name}</option>`;
+            });
+
+            // Gather and display session notes
+            const notes = eligibleSessions
+                .map(s => s.note)
+                .filter(noteText => noteText && noteText.trim() !== '')
+                .map(noteText => noteText.trim());
+            if (notes.length > 0) {
+                note.textContent = notes.join(' | ');
+                note.style.display = 'block';
             }
         });
 
@@ -232,9 +244,51 @@
             const formData = new FormData(e.target);
             const data = JSON.parse(sessionStorage.getItem('enroll_data') || '{}');
             formData.forEach((value, key) => data[key] = value);
+            // Save custom field values (non-file)
+            document.querySelectorAll('#custom-fields-step1 [data-custom-field]').forEach(inp => {
+                if (inp.type !== 'file') data[inp.name] = inp.value;
+            });
             sessionStorage.setItem('enroll_data', JSON.stringify(data));
             window.location.href = 'enroll-parent.html';
         });
+
+        // Load and render custom fields for step 1
+        async function loadCustomFields() {
+            try {
+                const fields = await apiGet('api/lookups.php?action=form-fields&step=1');
+                const container = document.getElementById('custom-fields-step1');
+                if (!fields || fields.length === 0) return;
+
+                let html = '<div class="form-section" style="margin-top:20px;border-top:2px dashed var(--gray-200);padding-top:16px;">';
+                html += '<h4 style="margin-bottom:12px;color:var(--gray-700);">Additional Information</h4>';
+                fields.forEach(f => {
+                    const savedVal = savedData['custom_field_' + f.id] || '';
+                    const req = f.is_required ? 'required' : '';
+                    const ph = f.placeholder ? `placeholder="${f.placeholder}"` : '';
+                    html += `<div class="form-group" style="margin-bottom:14px;" data-field-id="${f.id}">`;
+                    html += `<label>${f.field_label}${f.is_required ? ' *' : ''}</label>`;
+                    if (f.field_type === 'textarea') {
+                        html += `<textarea name="custom_field_${f.id}" ${req} ${ph} data-custom-field="1" style="width:100%;min-height:80px;">${savedVal}</textarea>`;
+                    } else if (f.field_type === 'select') {
+                        html += `<select name="custom_field_${f.id}" ${req} data-custom-field="1">`;
+                        html += `<option value="">-- Select --</option>`;
+                        (f.field_options || []).forEach(opt => {
+                            html += `<option value="${opt}" ${savedVal===opt?'selected':''}>${opt}</option>`;
+                        });
+                        html += `</select>`;
+                    } else if (f.field_type === 'file') {
+                        html += `<p style="font-size:12px;color:var(--gray-500);">(File upload will be available on Step 4)</p>`;
+                    } else {
+                        html += `<input type="${f.field_type}" name="custom_field_${f.id}" value="${savedVal}" ${req} ${ph} data-custom-field="1" style="width:100%;">`;
+                    }
+                    if (f.hint_text) html += `<small style="color:var(--gray-500);font-size:11px;">${f.hint_text}</small>`;
+                    html += '</div>';
+                });
+                html += '</div>';
+                container.innerHTML = html;
+            } catch(e) { console.warn('Custom fields error:', e); }
+        }
+        loadCustomFields();
     </script>
 </body>
 </html>

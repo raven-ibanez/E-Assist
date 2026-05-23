@@ -68,6 +68,17 @@
                 width: 100%;
             }
         }
+        .tab-content {
+            display: none;
+        }
+        .tab-content.active {
+            display: block;
+            animation: fadeInTab 0.25s ease;
+        }
+        @keyframes fadeInTab {
+            from { opacity: 0; transform: translateY(5px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
     </style>
 </head>
 
@@ -85,6 +96,10 @@
                 <button class="dash-nav-item active" id="nav-payments" onclick="switchTab('payments')">
                     <span class="dash-nav-icon">💳</span>
                     <span class="dash-nav-label">Payments</span>
+                </button>
+                <button class="dash-nav-item" id="nav-reports" onclick="switchTab('reports')">
+                    <span class="dash-nav-icon">📊</span>
+                    <span class="dash-nav-label">Reports</span>
                 </button>
             </div>
 
@@ -119,91 +134,159 @@
             <!-- Content -->
             <main class="dash-content">
 
-                <!-- Stats Summary -->
-                <div class="dash-stats">
-                    <div class="dash-stat-card">
-                        <div class="dash-stat-icon-wrap blue">💳</div>
-                        <div class="dash-stat-body"><span class="dash-stat-label">Total Records</span><span
-                                class="dash-stat-value" id="totalCount">0</span></div>
-                    </div>
-                    <div class="dash-stat-card">
-                        <div class="dash-stat-icon-wrap green">✅</div>
-                        <div class="dash-stat-body"><span class="dash-stat-label">Enrolled</span><span
-                                class="dash-stat-value" id="enrolledCount">0</span></div>
-                    </div>
-                    <div class="dash-stat-card">
-                        <div class="dash-stat-icon-wrap purple">💸</div>
-                        <div class="dash-stat-body"><span class="dash-stat-label">Refunded</span><span
-                                class="dash-stat-value" id="refundedCount">0</span></div>
-                    </div>
-                    <div class="dash-stat-card">
-                        <div class="dash-stat-icon-wrap blue">📱</div>
-                        <div class="dash-stat-body"><span class="dash-stat-label">GCash</span><span
-                                class="dash-stat-value" id="gcashCount">0</span></div>
-                    </div>
-                    <div class="dash-stat-card">
-                        <div class="dash-stat-icon-wrap green">💵</div>
-                        <div class="dash-stat-body"><span class="dash-stat-label">Cash</span><span
-                                class="dash-stat-value" id="cashCount">0</span></div>
-                    </div>
-                    <div class="dash-stat-card">
-                        <div class="dash-stat-icon-wrap yellow">🏦</div>
-                        <div class="dash-stat-body"><span class="dash-stat-label">Bank Transfer</span><span
-                                class="dash-stat-value" id="bankCount">0</span></div>
-                    </div>
-                </div>
-
                 <div id="alert" class="alert"></div>
 
-                <div class="dash-table-card">
-                    <div class="dash-table-header">
-                        <span class="dash-table-title">Enrollee Payment Records</span>
-                        <!-- Search & Filter -->
-                        <div class="dash-filter-row">
-                            <input type="text" id="searchInput" placeholder="Search by name or ID..."
-                                onkeyup="filterPayments()">
-                            <select id="filterPayment" onchange="filterPayments()">
-                                <option value="All">All Payment Methods</option>
-                                <option value="GCash">GCash</option>
-                                <option value="Maya">Maya</option>
-                                <option value="Bank Transfer">Bank Transfer</option>
-                            </select>
-                            <select id="filterStatus" onchange="filterPayments()">
-                                <option value="All">All Status</option>
-                                <option value="Pending">Pending</option>
-                                <option value="For Payment Review">For Payment Review</option>
-                                <option value="For Application Review">For Application Review</option>
-                                <option value="Enrolled">Enrolled</option>
-                                <option value="Enrolled (Doc. Pending)">Enrolled (Doc. Pending)</option>
-                                <option value="Declined">Declined</option>
-                                <option value="Refunded">Refunded</option>
-                            </select>
+                <!-- ===== TAB 1: PAYMENTS ===== -->
+                <div class="tab-content active" id="tab-payments">
+                    <!-- Stats Summary -->
+                    <div class="dash-stats">
+                        <div class="dash-stat-card">
+                            <div class="dash-stat-icon-wrap blue">💳</div>
+                            <div class="dash-stat-body"><span class="dash-stat-label">Total Records</span><span
+                                    class="dash-stat-value" id="totalCount">0</span></div>
+                        </div>
+                        <div class="dash-stat-card">
+                            <div class="dash-stat-icon-wrap green">✅</div>
+                            <div class="dash-stat-body"><span class="dash-stat-label">Enrolled</span><span
+                                    class="dash-stat-value" id="enrolledCount">0</span></div>
+                        </div>
+                        <div class="dash-stat-card">
+                            <div class="dash-stat-icon-wrap purple">💸</div>
+                            <div class="dash-stat-body"><span class="dash-stat-label">Refunded</span><span
+                                    class="dash-stat-value" id="refundedCount">0</span></div>
+                        </div>
+                        <div class="dash-stat-card">
+                            <div class="dash-stat-icon-wrap blue">📱</div>
+                            <div class="dash-stat-body"><span class="dash-stat-label">GCash</span><span
+                                    class="dash-stat-value" id="gcashCount">0</span></div>
+                        </div>
+                        <div class="dash-stat-card">
+                            <div class="dash-stat-icon-wrap green">💵</div>
+                            <div class="dash-stat-body"><span class="dash-stat-label">Cash</span><span
+                                    class="dash-stat-value" id="cashCount">0</span></div>
+                        </div>
+                        <div class="dash-stat-card">
+                            <div class="dash-stat-icon-wrap yellow">🏦</div>
+                            <div class="dash-stat-body"><span class="dash-stat-label">Bank Transfer</span><span
+                                    class="dash-stat-value" id="bankCount">0</span></div>
                         </div>
                     </div>
 
-                    <!-- Payments Table -->
-                    <div class="dash-table-scroll">
-                        <table class="dash-table">
-                            <thead>
-                                <tr>
-                                    <th>Student ID</th>
-                                    <th>Full Name</th>
-                                    <th>Grade</th>
-                                    <th>Method</th>
-                                    <th>Mode</th>
-                                    <th>Total</th>
-                                    <th>Paid</th>
-                                    <th>Balance</th>
-                                    <th>Status</th>
-                                    <th>Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody id="paymentsTableBody">
-                                <tr>
-                                    <td colspan="9" style="text-align:center;padding:40px;">Loading...</td>
-                                </tr>
-                            </tbody>
-                        </table>
+                    <div class="dash-table-card">
+                        <div class="dash-table-header">
+                            <span class="dash-table-title">Enrollee Payment Records</span>
+                            <!-- Search & Filter -->
+                            <div class="dash-filter-row">
+                                <input type="text" id="searchInput" placeholder="Search by name or ID..."
+                                    onkeyup="filterPayments()">
+                                <select id="filterPayment" onchange="filterPayments()">
+                                    <option value="All">All Payment Methods</option>
+                                    <option value="GCash">GCash</option>
+                                    <option value="Maya">Maya</option>
+                                    <option value="Bank Transfer">Bank Transfer</option>
+                                </select>
+                                <select id="filterStatus" onchange="filterPayments()">
+                                    <option value="All">All Status</option>
+                                    <option value="Pending">Pending</option>
+                                    <option value="For Payment Review">For Payment Review</option>
+                                    <option value="For Application Review">For Application Review</option>
+                                    <option value="Enrolled">Enrolled</option>
+                                    <option value="Enrolled (Doc. Pending)">Enrolled (Doc. Pending)</option>
+                                    <option value="Declined">Declined</option>
+                                    <option value="Refunded">Refunded</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- Payments Table -->
+                        <div class="dash-table-scroll">
+                            <table class="dash-table">
+                                <thead>
+                                    <tr>
+                                        <th>Student ID</th>
+                                        <th>Full Name</th>
+                                        <th>Grade</th>
+                                        <th>Method</th>
+                                        <th>Mode</th>
+                                        <th>Total</th>
+                                        <th>Paid</th>
+                                        <th>Balance</th>
+                                        <th>Status</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="paymentsTableBody">
+                                    <tr>
+                                        <td colspan="9" style="text-align:center;padding:40px;">Loading...</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ===== TAB 2: REPORTS ===== -->
+                <div class="tab-content" id="tab-reports">
+                    <div class="dash-table-card">
+                        <div class="dash-table-header" style="flex-direction: column; align-items: stretch; gap: 16px;">
+                            <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+                                <span class="dash-table-title">Cashier Payment &amp; Accounts Reports</span>
+                            </div>
+                            
+                            <!-- Filters row -->
+                            <div class="search-bar" style="margin-bottom: 0; display: flex; gap: 12px; flex-wrap: wrap; align-items: flex-end; width: 100%;">
+                                <div style="display: flex; flex-direction: column; gap: 4px; flex: 1; min-width: 150px;">
+                                    <label style="font-size: 11px; font-weight: 700; color: var(--gray-500); text-transform: uppercase;">Payment Method</label>
+                                    <select id="reportPaymentMethod" style="width: 100%; height: 38px; border: 1.5px solid var(--gray-300); border-radius: 8px;">
+                                        <option value="All">All Methods</option>
+                                    </select>
+                                </div>
+                                <div style="display: flex; flex-direction: column; gap: 4px; flex: 1; min-width: 150px;">
+                                    <label style="font-size: 11px; font-weight: 700; color: var(--gray-500); text-transform: uppercase;">Payment Mode</label>
+                                    <select id="reportPaymentMode" style="width: 100%; height: 38px; border: 1.5px solid var(--gray-300); border-radius: 8px;">
+                                        <option value="All">All Modes</option>
+                                        <option value="Full Payment">Full Payment</option>
+                                        <option value="Monthly">Monthly</option>
+                                    </select>
+                                </div>
+                                <div style="display: flex; flex-direction: column; gap: 4px; flex: 1; min-width: 150px;">
+                                    <label style="font-size: 11px; font-weight: 700; color: var(--gray-500); text-transform: uppercase;">Start Date</label>
+                                    <input type="date" id="reportStartDate" style="width: 100%; height: 38px; border: 1.5px solid var(--gray-300); border-radius: 8px; padding: 8px;">
+                                </div>
+                                <div style="display: flex; flex-direction: column; gap: 4px; flex: 1; min-width: 150px;">
+                                    <label style="font-size: 11px; font-weight: 700; color: var(--gray-500); text-transform: uppercase;">End Date</label>
+                                    <input type="date" id="reportEndDate" style="width: 100%; height: 38px; border: 1.5px solid var(--gray-300); border-radius: 8px; padding: 8px;">
+                                </div>
+                                <div style="display: flex; gap: 8px; min-width: 200px; height: 38px;">
+                                    <button class="btn btn-primary" onclick="generateCashierReport()" style="padding: 0 16px; font-size: 13px; flex: 1; height: 100%;">🔍 Preview</button>
+                                    <button class="btn btn-success" onclick="exportCashierReport()" style="padding: 0 16px; font-size: 13px; flex: 1; height: 100%; background: #16a34a; color: white;">📥 Export CSV</button>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Preview Table -->
+                        <div class="dash-table-scroll" style="margin-top: 20px;">
+                            <table class="dash-table">
+                                <thead>
+                                    <tr>
+                                        <th>Student ID</th>
+                                        <th>Full Name</th>
+                                        <th>Grade Level</th>
+                                        <th>Method</th>
+                                        <th>Mode</th>
+                                        <th>Total Payable</th>
+                                        <th>Amount Paid</th>
+                                        <th>Balance</th>
+                                        <th>Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="reportTableBody">
+                                    <tr>
+                                        <td colspan="9" style="text-align: center; color: var(--gray-500); padding: 40px;">Select filters and click "Preview" to load report data.</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
                 </div>
             </main>
@@ -269,6 +352,7 @@
         </div>
     </div>
 
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="main.js"></script>
     <script>
         /*
@@ -314,9 +398,31 @@
             return `<span class="status-badge ${cls}">${status}</span>`;
         }
 
+        async function loadPaymentMethodsFilter() {
+            try {
+                const methods = await apiGet('api/lookups.php?action=payment-methods');
+                const select = document.getElementById('filterPayment');
+                if (select) {
+                    const currentVal = select.value;
+                    select.innerHTML = '<option value="All">All Payment Methods</option>';
+                    methods.forEach(m => {
+                        select.innerHTML += `<option value="${m.name}">${m.name}</option>`;
+                    });
+                    if ([...select.options].some(opt => opt.value === currentVal)) {
+                        select.value = currentVal;
+                    } else {
+                        select.value = 'All';
+                    }
+                }
+            } catch (err) {
+                console.warn('Failed to load payment methods for filter', err);
+            }
+        }
+
         // --- Load all payment records from the database ---
         async function loadPayments() {
             try {
+                await loadPaymentMethodsFilter();
                 allPayments = await apiGet('api/registrar.php?action=payments');
                 updateStats(allPayments);
                 renderTable(allPayments);
@@ -438,20 +544,36 @@
                 'approved': 'approve this payment',
                 'declined': 'decline this payment',
                 'refunded': 'mark this payment as REFUNDED'
-            };
-
-            let reason = '';
+            };            let reason = '';
             if (decision === 'declined' || decision === 'refunded') {
-                reason = prompt(`Please provide a reason for ${decision === 'declined' ? 'declining' : 'refunding'} this payment:`);
-                if (reason === null) return; // User cancelled
-                if (!reason.trim()) {
-                    alert('A reason is required when declining or refunding.');
-                    return;
-                }
+                const { value: inputReason } = await Swal.fire({
+                    title: 'Reason Required',
+                    text: `Please provide a reason for ${decision === 'declined' ? 'declining' : 'refunding'} this payment:`,
+                    input: 'text',
+                    inputPlaceholder: 'Enter reason here...',
+                    showCancelButton: true,
+                    confirmButtonColor: '#800000',
+                    cancelButtonColor: '#6e7881',
+                    inputValidator: (value) => {
+                        if (!value || !value.trim()) {
+                            return 'A reason is required!';
+                        }
+                    }
+                });
+                if (inputReason === undefined) return; // User cancelled
+                reason = inputReason.trim();
             }
 
-            if (!confirm(`Are you sure you want to ${labels[decision]}?`)) return;
-
+            const confirmResult = await Swal.fire({
+                title: 'Confirm Action',
+                text: `Are you sure you want to ${labels[decision]}?`,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#800000',
+                cancelButtonColor: '#6e7881',
+                confirmButtonText: 'Yes, proceed'
+            });
+            if (!confirmResult.isConfirmed) return;
             try {
                 const result = await apiPost('api/registrar.php?action=review_payment', {
                     enrollment_id: enrollmentId,
@@ -467,7 +589,16 @@
         }
 
         async function undoRefund(id) {
-            if (!confirm('Are you sure you want to undo the "Refunded" status for this student?')) return;
+            const confirmResult = await Swal.fire({
+                title: 'Confirm Action',
+                text: 'Are you sure you want to undo the "Refunded" status for this student?',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#800000',
+                cancelButtonColor: '#6e7881',
+                confirmButtonText: 'Yes, undo'
+            });
+            if (!confirmResult.isConfirmed) return;
 
             try {
                 const res = await apiPost('api/registrar.php?action=undo_refund', {
@@ -630,11 +761,155 @@
                 closeUpdateModal();
                 loadPayments();
             } catch (err) {
-                alert('Error: ' + err.message);
+                Swal.fire({
+                    title: 'Error',
+                    text: err.message,
+                    icon: 'error',
+                    confirmButtonColor: '#800000'
+                });
             } finally {
                 setLoading('submitPaymentBtn', false, 'Save Payment');
             }
         });
+
+        let reportPaymentMethodsLoaded = false;
+        async function loadReportPaymentMethods() {
+            if (reportPaymentMethodsLoaded) return;
+            try {
+                const methods = await apiGet('api/lookups.php?action=payment-methods');
+                const select = document.getElementById('reportPaymentMethod');
+                if (select) {
+                    select.innerHTML = '<option value="All">All Methods</option>';
+                    methods.forEach(m => {
+                        select.innerHTML += `<option value="${m.id}">${m.name}</option>`;
+                    });
+                    reportPaymentMethodsLoaded = true;
+                }
+            } catch (err) {
+                console.warn('Failed to load payment methods for report dropdown:', err);
+            }
+        }
+
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.dash-nav-item').forEach(b => b.classList.remove('active'));
+            
+            const tabEl = document.getElementById('tab-' + tabId);
+            if (tabEl) tabEl.classList.add('active');
+            
+            const navEl = document.getElementById('nav-' + tabId);
+            if (navEl) navEl.classList.add('active');
+
+            if (tabId === 'reports') {
+                loadReportPaymentMethods();
+            }
+        }
+
+        // --- REPORTS LOGIC ---
+        let cashierReportData = [];
+
+        async function generateCashierReport() {
+            const methodEl = document.getElementById('reportPaymentMethod');
+            const modeEl = document.getElementById('reportPaymentMode');
+            const startEl = document.getElementById('reportStartDate');
+            const endEl = document.getElementById('reportEndDate');
+
+            const params = new URLSearchParams({
+                action: 'cashier',
+                payment_method_id: methodEl ? methodEl.value : 'All',
+                payment_mode: modeEl ? modeEl.value : 'All',
+                start_date: startEl ? startEl.value : '',
+                end_date: endEl ? endEl.value : ''
+            });
+
+            const tbody = document.getElementById('reportTableBody');
+            tbody.innerHTML = '<tr><td colspan="9" style="text-align:center;padding:40px;">Generating preview...</td></tr>';
+
+            try {
+                cashierReportData = await apiGet('api/reports.php?' + params.toString());
+                renderReportTable(cashierReportData);
+            } catch (err) {
+                tbody.innerHTML = `<tr><td colspan="9" style="text-align:center;color:#dc2626;padding:40px;">❌ Error: ${err.message}</td></tr>`;
+            }
+        }
+
+        function renderReportTable(data) {
+            const tbody = document.getElementById('reportTableBody');
+            if (data.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="9" style="text-align:center;color:var(--gray-500);padding:40px;">No records match the selected filters.</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = data.map(r => `
+                <tr>
+                    <td><strong style="font-family:'Courier New',monospace;">${r.student_no}</strong></td>
+                    <td>${formatStudentName(r)}</td>
+                    <td>${r.grade_level}</td>
+                    <td>${getPaymentBadge(r.payment_method)}</td>
+                    <td>${r.payment_mode || '—'}</td>
+                    <td style="font-weight:600;">${formatCurrency(r.total_amount || 0)}</td>
+                    <td style="color:#16a34a; font-weight:600;">${formatCurrency(r.total_paid || 0)}</td>
+                    <td style="color:${parseFloat(r.balance || 0) <= 0 ? '#16a34a' : '#dc2626'}; font-weight:700;">
+                        ${parseFloat(r.balance || 0) <= 0 ? '✅ Paid' : formatCurrency(r.balance || 0)}
+                    </td>
+                    <td>${getStatusBadge(r.status)}</td>
+                </tr>
+            `).join('');
+        }
+
+        function exportCashierReport() {
+            if (cashierReportData.length === 0) {
+                Swal.fire({
+                    title: 'No Data',
+                    text: 'No data to export. Please select filters and click "Preview" first.',
+                    icon: 'warning',
+                    confirmButtonColor: '#800000'
+                });
+                return;
+            }
+
+            const headers = ['Student ID', 'Student Name', 'Grade Level', 'Payment Method', 'Payment Mode', 'Total Tuition', 'Books Fee', 'Total Payable', 'Amount Paid', 'Remaining Balance', 'Reference Number', 'Status'];
+            const rows = cashierReportData.map(r => [
+                r.student_no,
+                formatStudentName(r),
+                r.grade_level,
+                r.payment_method || 'None',
+                r.payment_mode || '',
+                r.tuition_fee || '0.00',
+                r.books_fee || '0.00',
+                r.total_amount || '0.00',
+                r.total_paid || '0.00',
+                r.balance || '0.00',
+                r.reference_number || '',
+                r.status
+            ]);
+
+            downloadCSV('Cashier_Report_' + new Date().toISOString().slice(0, 10) + '.csv', headers, rows);
+        }
+
+        function downloadCSV(filename, headers, rows) {
+            const csvRows = [headers.join(",")];
+            for (const row of rows) {
+                csvRows.push(row.map(val => {
+                    let str = String(val === null || val === undefined ? '' : val);
+                    str = str.replace(/"/g, '""');
+                    if (str.includes(",") || str.includes("\n") || str.includes("\r") || str.includes('"')) {
+                        str = `"${str}"`;
+                    }
+                    return str;
+                }).join(","));
+            }
+            const csvString = "\uFEFF" + csvRows.join("\r\n");
+            const blob = new Blob([csvString], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement("a");
+            link.setAttribute("href", url);
+            link.setAttribute("download", filename);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
+        }
 
         // Load payment data when the page opens
         loadPayments();

@@ -227,6 +227,20 @@ if ($action === 'detail') {
     if ($result && $row = $result->fetch_assoc()) {
         $row['status'] = calculateStatus($row['registrar_status'], $row['cashier_status'], $row['documents_pending']);
         $row['balance'] = ($row['total_amount'] ?? 0) - ($row['total_paid'] ?? 0);
+
+        // Fetch custom form field values for this enrollment
+        $enrollId = $row['enrollment_id'];
+        $cfStmt = $conn->prepare("
+            SELECT ff.field_label, ff.field_type, ff.step, efv.field_value
+            FROM enrollment_field_values efv
+            JOIN form_fields ff ON efv.field_id = ff.id
+            WHERE efv.enrollment_id = ?
+            ORDER BY ff.step, ff.sort_order, ff.id
+        ");
+        $cfStmt->bind_param("i", $enrollId);
+        $cfStmt->execute();
+        $row['custom_fields'] = $cfStmt->get_result()->fetch_all(MYSQLI_ASSOC);
+
         sendJSON($row);
     } else {
         sendJSON(['error' => 'Enrollment not found or query error.'], 404);
@@ -362,21 +376,19 @@ if ($action === 'review_application') {
         $emailDecision = 'declined';
     }
 
-    $emailResult = ['success' => false, 'message' => 'Email not applicable for this action.'];
+    $emailSent = false;
+    $emailMsg = 'Email not applicable for this action.';
     if ($emailDecision !== '') {
-        $emailResult = sendStatusEmail($conn, $enrollment_id, $emailDecision, $reason, 'Registrar');
-    }
-
-    // Log the email attempt
-    if ($emailResult['success']) {
-        logAction($admin_id, "Email Sent", $enrollment_id, $studentName, "Auto-sent status update email. " . $emailResult['message']);
+        sendStatusEmailInBackground($enrollment_id, $emailDecision, $reason, 'Registrar', $admin_id);
+        $emailSent = true;
+        $emailMsg = 'Email sending queued in the background.';
     }
 
     sendJSON([
         'message'    => 'Registrar review saved.',
         'new_status' => $newOverallStatus,
-        'email_sent' => $emailResult['success'],
-        'email_msg'  => $emailResult['message']
+        'email_sent' => $emailSent,
+        'email_msg'  => $emailMsg
     ]);
 }
 
@@ -451,21 +463,19 @@ if ($action === 'review_payment') {
         $emailDecision = 'declined';
     }
 
-    $emailResult = ['success' => false, 'message' => 'Email not applicable for this action.'];
+    $emailSent = false;
+    $emailMsg = 'Email not applicable for this action.';
     if ($emailDecision !== '') {
-        $emailResult = sendStatusEmail($conn, $enrollment_id, $emailDecision, $reason, 'Cashier');
-    }
-
-    // Log the email attempt
-    if ($emailResult['success']) {
-        logAction($admin_id, "Email Sent", $enrollment_id, $studentName, "Auto-sent status update email (cashier). " . $emailResult['message']);
+        sendStatusEmailInBackground($enrollment_id, $emailDecision, $reason, 'Cashier', $admin_id);
+        $emailSent = true;
+        $emailMsg = 'Email sending queued in the background.';
     }
 
     sendJSON([
         'message'    => 'Cashier review saved.',
         'new_status' => $newOverallStatus,
-        'email_sent' => $emailResult['success'],
-        'email_msg'  => $emailResult['message']
+        'email_sent' => $emailSent,
+        'email_msg'  => $emailMsg
     ]);
 }
 
@@ -595,7 +605,7 @@ if ($action === 'upload_document') {
         $stmtFlag->execute();
         
         // --- AUTO-SEND EMAIL NOTIFICATION ---
-        sendStatusEmail($conn, $enrollment_id, 'approved', '', 'Registrar');
+        sendStatusEmailInBackground($enrollment_id, 'approved', '', 'Registrar', $admin_id);
         
         sendJSON(['message' => 'Document uploaded. All documents complete — flag cleared!', 'path' => $webPath, 'flag_cleared' => true]);
     } else {
@@ -1038,7 +1048,7 @@ if ($action === 'add_payment') {
     logAction($admin_id, "Update Payment", $enrollment_id, $studentName, "Added payment of ₱" . number_format($amount, 2) . ". Ref: $ref");
 
     // --- AUTO-SEND EMAIL NOTIFICATION ---
-    sendStatusEmail($conn, $enrollment_id, 'payment_updated', $amount, 'Cashier');
+    sendStatusEmailInBackground($enrollment_id, 'payment_updated', $amount, 'Cashier', $admin_id);
 
     sendJSON(['message' => 'Payment updated successfully.']);
 }

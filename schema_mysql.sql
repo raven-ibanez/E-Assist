@@ -17,6 +17,8 @@ USE enrollment_db;
 --  CLEAN START: Remove old tables if they exist
 -- ============================================================
 SET FOREIGN_KEY_CHECKS = 0;
+DROP TABLE IF EXISTS enrollment_field_values;
+DROP TABLE IF EXISTS form_fields;
 DROP TABLE IF EXISTS system_logs;
 DROP TABLE IF EXISTS payment_transactions;
 DROP TABLE IF EXISTS enrollment_reviews;
@@ -27,6 +29,7 @@ DROP TABLE IF EXISTS parents;
 DROP TABLE IF EXISTS admin;
 DROP TABLE IF EXISTS roles;
 DROP TABLE IF EXISTS payment_methods;
+DROP TABLE IF EXISTS payment_modes;
 DROP TABLE IF EXISTS sessions;
 DROP TABLE IF EXISTS income_ranges;
 DROP TABLE IF EXISTS relations;
@@ -113,20 +116,25 @@ INSERT IGNORE INTO income_ranges (range_label) VALUES
 -- ============================================================
 --  TABLE: sessions
 --  Stores the available school sessions.
+--  eligible_grades: comma-separated grade level names that can use this session
+--                   e.g., "Kinder" or "Grade 2,Grade 3,Grade 4"
+--  note: optional note displayed to the enrollee when this session is auto-selected
 -- ============================================================
 CREATE TABLE IF NOT EXISTS sessions (
-    id   INT AUTO_INCREMENT PRIMARY KEY,
-    name VARCHAR(100) NOT NULL UNIQUE
+    id               INT AUTO_INCREMENT PRIMARY KEY,
+    name             VARCHAR(100) NOT NULL UNIQUE,
+    eligible_grades  VARCHAR(500) DEFAULT NULL,    -- e.g., "Kinder" or "Grade 5,Grade 6"
+    note             VARCHAR(255) DEFAULT NULL     -- e.g., "Grades 5 and 6 are afternoon sessions."
 );
 
-INSERT IGNORE INTO sessions (name) VALUES
-    ('Kinder 1 (2.5 hrs)'),
-    ('Kinder 2 - Session 1 (2.5 hrs)'),
-    ('Kinder 2 - Session 2 (2.5 hrs)'),
-    ('AM Session'),
-    ('PM Session'),
-    ('Morning Session'),
-    ('Afternoon Session');
+INSERT IGNORE INTO sessions (name, eligible_grades, note) VALUES
+    ('Kinder 1 (2.5 hrs)',              'Kinder',                         NULL),
+    ('Kinder 2 - Session 1 (2.5 hrs)',  'Kinder',                         NULL),
+    ('Kinder 2 - Session 2 (2.5 hrs)',  'Kinder',                         NULL),
+    ('AM Session',                      'Grade 1',                        NULL),
+    ('PM Session',                      'Grade 1',                        NULL),
+    ('Morning Session',                 'Grade 2,Grade 3,Grade 4',        'Note: Grades 2, 3, and 4 are morning sessions.'),
+    ('Afternoon Session',               'Grade 5,Grade 6',                'Note: Grades 5 and 6 are afternoon sessions.');
 
 
 -- ============================================================
@@ -177,14 +185,16 @@ CREATE TABLE IF NOT EXISTS students (
 );
 
 CREATE TABLE IF NOT EXISTS payment_methods (
-    id   INT AUTO_INCREMENT PRIMARY KEY,
-    name VARCHAR(50) NOT NULL UNIQUE
+    id      INT AUTO_INCREMENT PRIMARY KEY,
+    name    VARCHAR(50) NOT NULL UNIQUE,
+    details VARCHAR(255) DEFAULT NULL,       -- Account number or payment instructions
+    icon    VARCHAR(10) DEFAULT NULL          -- Emoji icon for display (e.g., 📱, 💵, 🏦)
 );
 
-INSERT IGNORE INTO payment_methods (name) VALUES
-    ('GCash'),
-    ('Cash'),
-    ('Bank Transfer');
+INSERT IGNORE INTO payment_methods (name, details, icon) VALUES
+    ('GCash',         '09686101591', '📱'),
+    ('Cash',          'Pay at the school office', '💵'),
+    ('Bank Transfer', 'Bank details are to be followed', '🏦');
 
 -- ============================================================
 --  TABLE: enrollments
@@ -306,10 +316,86 @@ CREATE TABLE IF NOT EXISTS enrollment_reviews (
 CREATE TABLE IF NOT EXISTS system_logs (
     id          INT AUTO_INCREMENT PRIMARY KEY,
     admin_id    INT NOT NULL,
-    action_type VARCHAR(100) NOT NULL, -- e.g., "Registrar Approved", "Cashier Refunded", "Student Update"
-    target_id   INT DEFAULT NULL,     -- Enrollment ID or Student ID
-    target_name VARCHAR(255) DEFAULT NULL, -- Student Name for quick reference
-    details     TEXT DEFAULT NULL,    -- Extra info
+    action_type VARCHAR(100) NOT NULL,
+    target_id   INT DEFAULT NULL,
+    target_name VARCHAR(255) DEFAULT NULL,
+    details     TEXT DEFAULT NULL,
     created_at  TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (admin_id) REFERENCES admin(id) ON DELETE CASCADE
+);
+
+
+-- ============================================================
+--  TABLE: payment_modes  (NEW)
+--  Admin-configurable payment plan options shown in enrollment form.
+--  installment_count = NULL means FULL payment (pay all at once).
+--  installment_amount = the downpayment / per-installment amount set by admin.
+-- ============================================================
+CREATE TABLE IF NOT EXISTS payment_modes (
+    id                 INT AUTO_INCREMENT PRIMARY KEY,
+    grade_level_id     INT NOT NULL,
+    name               VARCHAR(100) NOT NULL,            -- e.g., "Full Payment", "Monthly", "Bi-Annual"
+    description        VARCHAR(255) DEFAULT NULL,       -- Short description shown to enrollee
+    installment_count  INT DEFAULT NULL,                -- NULL = full payment; e.g., 10 for monthly
+    installment_amount DECIMAL(10,2) DEFAULT NULL,      -- Amount per installment (downpayment)
+    tuition_fee        DECIMAL(10,2) NOT NULL DEFAULT 0.00,
+    books_fee          DECIMAL(10,2) NOT NULL DEFAULT 0.00,
+    is_active          TINYINT(1) NOT NULL DEFAULT 1,
+    sort_order         INT NOT NULL DEFAULT 0,
+    FOREIGN KEY (grade_level_id) REFERENCES grade_levels(id) ON DELETE CASCADE,
+    UNIQUE KEY uq_grade_mode (grade_level_id, name)
+);
+
+-- Seed default payment modes per grade level:
+-- Kinder (id=1), Grade 1 (id=2), Grade 2 (id=3), Grade 3 (id=4), Grade 4 (id=5), Grade 5 (id=6), Grade 6 (id=7)
+INSERT IGNORE INTO payment_modes (grade_level_id, name, description, installment_count, installment_amount, tuition_fee, books_fee, is_active, sort_order) VALUES
+    (1, 'Full Payment', 'Pay the entire amount at once', NULL, NULL, 21000.00, 5000.00, 1, 1),
+    (1, 'Monthly', 'Pay in 10 monthly installments', 10, 1500.00, 15000.00, 5000.00, 1, 2),
+    (2, 'Full Payment', 'Pay the entire amount at once', NULL, NULL, 23500.00, 6500.00, 1, 1),
+    (2, 'Monthly', 'Pay in 10 monthly installments', 10, 1700.00, 17000.00, 6500.00, 1, 2),
+    (3, 'Full Payment', 'Pay the entire amount at once', NULL, NULL, 23500.00, 6500.00, 1, 1),
+    (3, 'Monthly', 'Pay in 10 monthly installments', 10, 1700.00, 17000.00, 6500.00, 1, 2),
+    (4, 'Full Payment', 'Pay the entire amount at once', NULL, NULL, 23500.00, 6500.00, 1, 1),
+    (4, 'Monthly', 'Pay in 10 monthly installments', 10, 1700.00, 17000.00, 6500.00, 1, 2),
+    (5, 'Full Payment', 'Pay the entire amount at once', NULL, NULL, 23500.00, 7000.00, 1, 1),
+    (5, 'Monthly', 'Pay in 10 monthly installments', 10, 1700.00, 17000.00, 7000.00, 1, 2),
+    (6, 'Full Payment', 'Pay the entire amount at once', NULL, NULL, 23500.00, 7000.00, 1, 1),
+    (6, 'Monthly', 'Pay in 10 monthly installments', 10, 1700.00, 17000.00, 7000.00, 1, 2),
+    (7, 'Full Payment', 'Pay the entire amount at once', NULL, NULL, 23500.00, 7000.00, 1, 1),
+    (7, 'Monthly', 'Pay in 10 monthly installments', 10, 1700.00, 17000.00, 7000.00, 1, 2);
+
+
+-- ============================================================
+--  TABLE: form_fields  (NEW)
+--  Admin-configurable custom fields for the enrollment form.
+--  step: 1=Student, 2=Parent, 3=Docs, 4=Payment
+--  field_type: text, number, date, select, textarea, file
+--  field_options: JSON array for select type e.g. ["Option A","Option B"]
+-- ============================================================
+CREATE TABLE IF NOT EXISTS form_fields (
+    id           INT AUTO_INCREMENT PRIMARY KEY,
+    step         TINYINT NOT NULL,
+    field_name   VARCHAR(100) NOT NULL UNIQUE,
+    field_label  VARCHAR(200) NOT NULL,
+    field_type   ENUM('text','number','date','select','textarea','file') NOT NULL DEFAULT 'text',
+    field_options TEXT DEFAULT NULL,
+    is_required  TINYINT(1) NOT NULL DEFAULT 0,
+    is_active    TINYINT(1) NOT NULL DEFAULT 1,
+    sort_order   INT NOT NULL DEFAULT 0,
+    placeholder  VARCHAR(255) DEFAULT NULL,
+    hint_text    VARCHAR(255) DEFAULT NULL
+);
+
+
+-- ============================================================
+--  TABLE: enrollment_field_values  (NEW)
+--  Stores student-submitted values for each custom form field.
+-- ============================================================
+CREATE TABLE IF NOT EXISTS enrollment_field_values (
+    id            INT AUTO_INCREMENT PRIMARY KEY,
+    enrollment_id INT NOT NULL,
+    field_id      INT NOT NULL,
+    field_value   TEXT DEFAULT NULL,    -- For files: stores the path; for others: the text value
+    FOREIGN KEY (enrollment_id) REFERENCES enrollments(id) ON DELETE CASCADE,
+    FOREIGN KEY (field_id) REFERENCES form_fields(id) ON DELETE CASCADE
 );
