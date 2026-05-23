@@ -61,6 +61,10 @@
                 <span class="dash-nav-icon">✅</span>
                 <span class="dash-nav-label">Enrolled</span>
             </button>
+            <button class="dash-nav-item" id="nav-archive" onclick="switchTab('archive')">
+                <span class="dash-nav-icon">🗂️</span>
+                <span class="dash-nav-label">Archive</span>
+            </button>
             <button class="dash-nav-item" id="nav-reports" onclick="switchTab('reports')">
                 <span class="dash-nav-icon">📊</span>
                 <span class="dash-nav-label">Reports</span>
@@ -216,7 +220,38 @@
                 </div>
             </div>
 
-            <!-- ===== TAB 2: REPORTS ===== -->
+            <!-- ===== TAB 3: ARCHIVE ===== -->
+            <div class="tab-content" id="tab-archive">
+                <div class="dash-table-card">
+                    <div class="dash-table-header">
+                        <span class="dash-table-title">Archived Students</span>
+                        <div class="dash-filter-row">
+                            <input type="text" id="archiveSearchInput" placeholder="Search archived by name or ID..." onkeyup="filterArchivedStudents()">
+                        </div>
+                    </div>
+                    <div class="dash-table-scroll">
+                        <table class="dash-table">
+                            <thead>
+                                <tr>
+                                    <th>Student ID</th>
+                                    <th>Full Name</th>
+                                    <th>Grade</th>
+                                    <th>Parent</th>
+                                    <th>Contact</th>
+                                    <th>Archived Date</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="archivedStudentsTableBody">
+                                <tr><td colspan="8" style="text-align:center;padding:40px;">Loading archived students...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ===== TAB 4: REPORTS ===== -->
             <div class="tab-content" id="tab-reports">
                 <div class="dash-table-card">
                     <div class="dash-table-header" style="flex-direction: column; align-items: stretch; gap: 16px;">
@@ -507,6 +542,8 @@
 
             if (tabId === 'reports') {
                 loadReportGradeLevels();
+            } else if (tabId === 'archive') {
+                loadArchivedStudents();
             }
         }
 
@@ -598,14 +635,17 @@
                                         <button class="btn-view" style="background:#dcfce7; border-color:#16a34a; color:#166534;" onclick="reviewApplication(${s.enrollment_id}, 'approved')">✅ Approve</button>
                                         <button class="btn-view" style="background:#fef9c3; border-color:#ca8a04; color:#854d0e;" onclick="reviewApplication(${s.enrollment_id}, 'approved_dtf')">📋 Appr. DTF</button>
                                         <button class="btn-view" style="background:#fee2e2; border-color:#dc2626; color:#991b1b;" onclick="reviewApplication(${s.enrollment_id}, 'declined')">❌ Decline</button>
+                                        <button class="btn-view" style="background:#f5f3ff; border-color:#9333ea; color:#7e22ce;" onclick="archiveStudent(${s.student_id})">🗂️ Archive</button>
                                     `;
                                 } else if (s.registrar_status === 'approved' && s.status !== 'Dropped') {
                                     return `
                                         <button class="btn-view" style="background:#fee2e2; border-color:#dc2626; color:#991b1b;" onclick="reviewApplication(${s.enrollment_id}, 'dropped')">🚫 Drop Student</button>
+                                        <button class="btn-view" style="background:#f5f3ff; border-color:#9333ea; color:#7e22ce;" onclick="archiveStudent(${s.student_id})">🗂️ Archive</button>
                                     `;
                                 } else if (s.status === 'Dropped') {
                                     return `
                                         <button class="btn-view" style="background:#dcfce7; border-color:#16a34a; color:#166534;" onclick="undoDrop(${s.enrollment_id})">↩ Undo Drop</button>
+                                        <button class="btn-view" style="background:#f5f3ff; border-color:#9333ea; color:#7e22ce;" onclick="archiveStudent(${s.student_id})">🗂️ Archive</button>
                                     `;
                                 }
                                 return '';
@@ -1005,6 +1045,126 @@
             } catch (err) {
                 showAlert('alert', '❌ ' + err.message);
             }
+        }
+
+        // --- ARCHIVE STUDENT ---
+        async function archiveStudent(studentId) {
+            const confirmResult = await Swal.fire({
+                title: 'Archive Student?',
+                text: 'This student record will be moved to the Archive. You can restore it later.',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#800000',
+                cancelButtonColor: '#6e7881',
+                confirmButtonText: 'Yes, Archive'
+            });
+            if (!confirmResult.isConfirmed) return;
+
+            try {
+                const res = await apiPost('api/registrar.php?action=archive_student', {
+                    student_id: studentId,
+                    admin_id: sessionStorage.getItem('adminId')
+                });
+
+                showAlert('alert', '✅ ' + res.message, 'success');
+                loadStudents();
+                if (document.getElementById('enrolledStudentsTableBody')) {
+                    loadEnrolledStudents();
+                }
+            } catch (err) {
+                showAlert('alert', '❌ ' + err.message);
+            }
+        }
+
+        // --- RESTORE STUDENT ---
+        async function restoreStudent(studentId) {
+            const confirmResult = await Swal.fire({
+                title: 'Restore Student?',
+                text: 'This student record will be moved back to the Active list.',
+                icon: 'info',
+                showCancelButton: true,
+                confirmButtonColor: '#800000',
+                cancelButtonColor: '#6e7881',
+                confirmButtonText: 'Yes, Restore'
+            });
+            if (!confirmResult.isConfirmed) return;
+
+            try {
+                const res = await apiPost('api/registrar.php?action=restore_student', {
+                    student_id: studentId,
+                    admin_id: sessionStorage.getItem('adminId')
+                });
+
+                showAlert('alert', '✅ ' + res.message, 'success');
+                loadArchivedStudents();
+            } catch (err) {
+                showAlert('alert', '❌ ' + err.message);
+            }
+        }
+
+        // --- LOAD ARCHIVED STUDENTS ---
+        async function loadArchivedStudents() {
+            const tbody = document.getElementById('archivedStudentsTableBody');
+            if (!tbody) return;
+            
+            tbody.innerHTML = '<tr><td colspan="9" style="text-align:center;padding:40px;">Loading archived students...</td></tr>';
+
+            try {
+                const students = await apiGet('api/registrar.php?action=archived_students');
+                renderArchivedStudentsTable(students);
+            } catch (err) {
+                tbody.innerHTML = `<tr><td colspan="9" style="text-align:center;color:#dc2626;padding:40px;">❌ Error: ${err.message}</td></tr>`;
+            }
+        }
+
+        // --- RENDER ARCHIVED STUDENTS TABLE ---
+        function renderArchivedStudentsTable(students) {
+            const tbody = document.getElementById('archivedStudentsTableBody');
+            if (!tbody) return;
+
+            if (students.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="9" style="text-align:center;color:var(--gray-500);padding:40px;">No archived students.</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = students.map(s => `
+                <tr>
+                    <td><strong style="font-family:'Courier New',monospace;">${s.student_no}</strong></td>
+                    <td>${formatStudentName(s)}</td>
+                    <td>${s.grade_level}</td>
+                    <td>${formatParentName(s.parent_first_name, s.parent_last_name, s.parent_middle_name)}</td>
+                    <td>${s.parent_mobile || '—'}</td>
+                    <td style="white-space:nowrap;">${formatDate(s.applied_at)}</td>
+                    <td>${getStatusBadge(s.status)}</td>
+                    <td>
+                        <div class="dash-action-group" style="flex-wrap:wrap;">
+                            <button class="btn-view" onclick="viewStudent(${s.enrollment_id})">👁 View</button>
+                            <button class="btn-view" style="background:#dcfce7; border-color:#16a34a; color:#166534;" onclick="restoreStudent(${s.student_id})">↩️ Restore</button>
+                        </div>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        // --- FILTER ARCHIVED STUDENTS ---
+        function filterArchivedStudents() {
+            const input = document.getElementById('archiveSearchInput');
+            const tbody = document.getElementById('archivedStudentsTableBody');
+            const rows = tbody.querySelectorAll('tr');
+            const searchTerm = input.value.toLowerCase().trim();
+
+            rows.forEach(row => {
+                if (row.cells.length < 2) return;
+                
+                const studentNo = row.cells[0].textContent.toLowerCase();
+                const studentName = row.cells[1].textContent.toLowerCase();
+                
+                if (studentNo.includes(searchTerm) || studentName.includes(searchTerm)) {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
+                }
+            });
         }
 
         // --- REPORTS LOGIC ---

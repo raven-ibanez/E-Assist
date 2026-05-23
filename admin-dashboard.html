@@ -312,6 +312,10 @@
                     <span class="dash-nav-icon">👥</span>
                     <span class="dash-nav-label">Employees</span>
                 </button>
+                <button class="dash-nav-item" id="nav-archive-emp" onclick="switchTab('archive-emp')">
+                    <span class="dash-nav-icon">🗂️</span>
+                    <span class="dash-nav-label">Archive</span>
+                </button>
                 <button class="dash-nav-item" id="nav-logs" onclick="switchTab('logs')">
                     <span class="dash-nav-icon">📜</span>
                     <span class="dash-nav-label">Logs</span>
@@ -746,7 +750,43 @@
                     </div>
                 </div>
 
-                <!-- ==================== TAB 6: REPORTS ==================== -->
+                <!-- ==================== TAB 5: ARCHIVED EMPLOYEES ==================== -->
+                <div class="tab-content" id="tab-archive-emp">
+                    <div id="archiveEmpAlert" class="alert"></div>
+                    <div class="dash-table-card">
+                        <div class="dash-table-header">
+                            <span class="dash-table-title">Archived Employee Accounts</span>
+                            <div class="dash-filter-row">
+                                <input type="text" id="archiveEmpSearchInput" placeholder="🔍 Search user..."
+                                    oninput="filterArchivedEmployees()">
+                                <select id="archiveEmpFilterRole" onchange="filterArchivedEmployees()">
+                                    <option value="All">All Roles</option>
+                                    <option value="admin">Admin</option>
+                                    <option value="registrar">Registrar</option>
+                                    <option value="cashier">Cashier</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="dash-table-scroll">
+                            <table class="dash-table">
+                                <thead>
+                                    <tr>
+                                        <th>Username</th>
+                                        <th>Employee Name</th>
+                                        <th>Role</th>
+                                        <th>Status</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="archivedEmployeesTableBody">
+                                    <tr><td colspan="5" style="text-align:center;padding:40px;">Loading archived employees...</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ==================== TAB 6: REPORTS ====================-->
                 <div class="tab-content" id="tab-reports">
                     <div class="dash-table-card">
                         <div class="dash-table-header" style="flex-direction: column; align-items: stretch; gap: 16px;">
@@ -930,6 +970,9 @@
             if (tab === 'employees') {
                 if (allEmployees.length === 0) loadEmployees();
                 loadRoles();
+            }
+            if (tab === 'archive-emp') {
+                loadArchivedEmployees();
             }
             if (tab === 'logs') loadLogs();
             if (tab === 'maintenance') loadMaintenanceData();
@@ -1431,9 +1474,13 @@
                             </span>
                         </td>
                         <td>
-                            <button class="btn" style="padding:6px 12px; font-size:11px; border:1px solid ${isActive ? '#dc2626' : '#16a34a'}; color: ${isActive ? '#dc2626' : '#16a34a'}; background:transparent; border-radius:6px; cursor:pointer; font-weight:600;"
+                            <button class="btn" style="padding:6px 12px; font-size:11px; border:1px solid ${isActive ? '#dc2626' : '#16a34a'}; color: ${isActive ? '#dc2626' : '#16a34a'}; background:transparent; border-radius:6px; cursor:pointer; font-weight:600; margin-right:4px;"
                                     onclick="toggleEmployeeStatus(${e.id}, '${e.username}', ${e.is_active})">
                                 ${isActive ? 'Deactivate' : 'Activate'}
+                            </button>
+                            <button class="btn" style="padding:6px 12px; font-size:11px; border:1px solid #9333ea; color:#7e22ce; background:#f5f3ff; border-radius:6px; cursor:pointer; font-weight:600;"
+                                    onclick="archiveEmployee(${e.id}, '${e.username}')">
+                                🗂️ Archive
                             </button>
                         </td>
                     </tr>
@@ -1561,6 +1608,127 @@
                 loadEmployees();
             } catch (err) {
                 showAlert('empAlert', '❌ ' + err.message);
+            }
+        }
+
+        // ===============================================
+        // TAB 3.5: ARCHIVED EMPLOYEES
+        // ===============================================
+        let allArchivedEmployees = [];
+
+        async function loadArchivedEmployees() {
+            const tbody = document.getElementById('archivedEmployeesTableBody');
+            if (!tbody) return;
+
+            tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;padding:40px;">Loading archived employees...</td></tr>';
+
+            try {
+                allArchivedEmployees = await apiGet('api/registrar.php?action=archived_employees');
+                renderArchivedEmployees(allArchivedEmployees);
+            } catch (err) {
+                tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;color:#dc2626;padding:40px;">❌ Error: ${err.message}</td></tr>`;
+            }
+        }
+
+        function renderArchivedEmployees(employees) {
+            const tbody = document.getElementById('archivedEmployeesTableBody');
+            if (!tbody) return;
+
+            if (employees.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;color:var(--gray-500);padding:40px;">No archived employees.</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = employees.map(e => `
+                <tr>
+                    <td><strong style="font-family:'Courier New',monospace;">${e.username}</strong></td>
+                    <td>${e.employee_name || '—'}</td>
+                    <td>
+                        <span class="role-tag role-${e.role.toLowerCase()}" style="font-size:11px;padding:4px 10px;border-radius:4px;">
+                            ${e.role.charAt(0).toUpperCase() + e.role.slice(1)}
+                        </span>
+                    </td>
+                    <td>${e.is_active == 1 ? '✅ Active' : '○ Inactive'}</td>
+                    <td>
+                        <div class="dash-action-group" style="flex-wrap:wrap;">
+                            <button class="btn-view" style="background:#dcfce7; border-color:#16a34a; color:#166534;" onclick="restoreEmployee(${e.id}, '${e.username}')">↩️ Restore</button>
+                        </div>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        function filterArchivedEmployees() {
+            const search = document.getElementById('archiveEmpSearchInput').value.toLowerCase();
+            const roleFilter = document.getElementById('archiveEmpFilterRole').value;
+
+            const tbody = document.getElementById('archivedEmployeesTableBody');
+            const rows = tbody.querySelectorAll('tr');
+
+            rows.forEach(row => {
+                if (row.cells.length < 2) return;
+                
+                const username = row.cells[0].textContent.toLowerCase();
+                const employeeName = row.cells[1].textContent.toLowerCase();
+                const role = row.cells[2].textContent.toLowerCase();
+
+                let match = (username.includes(search) || employeeName.includes(search));
+                
+                if (roleFilter !== 'All') {
+                    match = match && role.includes(roleFilter.toLowerCase());
+                }
+
+                row.style.display = match ? '' : 'none';
+            });
+        }
+
+        async function archiveEmployee(id, username) {
+            const confirmResult = await Swal.fire({
+                title: 'Archive Employee?',
+                text: `This account '${username}' will be moved to the Archive. You can restore it later.`,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#800000',
+                cancelButtonColor: '#6e7881',
+                confirmButtonText: 'Yes, Archive'
+            });
+            if (!confirmResult.isConfirmed) return;
+
+            try {
+                const res = await apiPost('api/registrar.php?action=archive_employee', {
+                    id: id,
+                    admin_id: sessionStorage.getItem('adminId')
+                });
+
+                showAlert('empAlert', '✅ ' + res.message, 'success');
+                loadEmployees();
+            } catch (err) {
+                showAlert('empAlert', '❌ ' + err.message);
+            }
+        }
+
+        async function restoreEmployee(id, username) {
+            const confirmResult = await Swal.fire({
+                title: 'Restore Employee?',
+                text: `This account '${username}' will be moved back to the active list.`,
+                icon: 'info',
+                showCancelButton: true,
+                confirmButtonColor: '#800000',
+                cancelButtonColor: '#6e7881',
+                confirmButtonText: 'Yes, Restore'
+            });
+            if (!confirmResult.isConfirmed) return;
+
+            try {
+                const res = await apiPost('api/registrar.php?action=restore_employee', {
+                    id: id,
+                    admin_id: sessionStorage.getItem('adminId')
+                });
+
+                showAlert('archiveEmpAlert', '✅ ' + res.message, 'success');
+                loadArchivedEmployees();
+            } catch (err) {
+                showAlert('archiveEmpAlert', '❌ ' + err.message);
             }
         }
 
