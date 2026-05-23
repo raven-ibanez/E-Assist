@@ -1356,6 +1356,137 @@ if ($action === 'restore_employee') {
     }
 }
 
+// =============================================================
+//  ACTION: GET DELETED STUDENTS
+//  - Returns a list of all deleted enrollment applications (status='deleted' only).
+// =============================================================
+if ($action === 'deleted_students') {
+    $result = $conn->query("
+        SELECT 
+            e.id AS enrollment_id, 
+            e.applied_at,
+            e.documents_pending,
+            s.id AS student_id,
+            s.student_no, 
+            s.first_name, 
+            s.last_name,
+            s.middle_name,
+            s.suffix,
+            gl.name AS grade_level,
+            p.id AS parent_id,
+            p.first_name AS parent_first_name,
+            p.last_name AS parent_last_name,
+            p.middle_name AS parent_middle_name,
+            p.mobile AS parent_mobile,
+            p.telephone AS parent_telephone,
+            COALESCE((SELECT SUM(amount_paid) FROM payment_transactions pt JOIN payments pay ON pt.payment_id = pay.id WHERE pay.enrollment_id = e.id), 0) AS total_paid,
+            COALESCE((SELECT decision FROM enrollment_reviews WHERE enrollment_id = e.id AND review_type = 'Registrar' ORDER BY created_at DESC LIMIT 1), 'pending') AS registrar_status,
+            COALESCE((SELECT decision FROM enrollment_reviews WHERE enrollment_id = e.id AND review_type = 'Cashier' ORDER BY created_at DESC LIMIT 1), 'pending') AS cashier_status
+        FROM enrollments e
+        JOIN students s            ON e.student_id    = s.id
+        JOIN parents p             ON s.parent_id     = p.id
+        JOIN grade_levels gl       ON e.grade_level_id = gl.id
+        WHERE s.status = 'deleted'
+        ORDER BY e.applied_at DESC
+    ");
+
+    if (!$result) {
+        sendJSON(['error' => 'Failed to fetch deleted students: ' . $conn->error], 500);
+    }
+
+    $rows = $result->fetch_all(MYSQLI_ASSOC);
+    foreach ($rows as &$item) {
+        $item['status'] = calculateStatus($item['registrar_status'], $item['cashier_status'], $item['documents_pending']);
+    }
+
+    sendJSON($rows);
+}
+
+// =============================================================
+//  ACTION: GET DELETED EMPLOYEES
+//  - Returns a list of deleted employee accounts (status='deleted' only).
+// =============================================================
+if ($action === 'deleted_employees') {
+    $result = $conn->query("
+        SELECT a.id, a.username, a.employee_name, a.is_active, a.status, r.name AS role 
+        FROM admin a
+        JOIN roles r ON a.role_id = r.id
+        WHERE a.status = 'deleted'
+        ORDER BY r.name, a.username
+    ");
+
+    if (!$result) {
+        sendJSON(['error' => 'Failed to fetch deleted employees: ' . $conn->error], 500);
+    }
+
+    sendJSON($result->fetch_all(MYSQLI_ASSOC));
+}
+
+// =============================================================
+//  ACTION: RESTORE STUDENT FROM DELETE
+//  - Restores a deleted student record back to active status.
+// =============================================================
+if ($action === 'restore_student_from_deleted') {
+    $student_id = $data['student_id'] ?? '';
+    $admin_id   = $data['admin_id'] ?? '';
+
+    if (!$student_id || !$admin_id) {
+        sendJSON(['error' => 'Student ID and Admin ID are required.'], 400);
+    }
+
+    $stmt = $conn->prepare("UPDATE students SET status = 'active' WHERE id = ? AND status = 'deleted'");
+    $stmt->bind_param("i", $student_id);
+    $stmt->execute();
+
+    if ($stmt->affected_rows > 0) {
+        $stmtName = $conn->prepare("SELECT first_name, last_name, middle_name, suffix FROM students WHERE id = ?");
+        $stmtName->bind_param("i", $student_id);
+        $stmtName->execute();
+        $nameRes = $stmtName->get_result()->fetch_assoc();
+        $studentName = 'Unknown';
+        if ($nameRes) {
+            $suffixStr = !empty($nameRes['suffix']) ? ' ' . $nameRes['suffix'] : '';
+            $middleStr = !empty($nameRes['middle_name']) ? ' ' . $nameRes['middle_name'] : '';
+            $studentName = $nameRes['last_name'] . $suffixStr . ', ' . $nameRes['first_name'] . $middleStr;
+        }
+
+        logAction($admin_id, "Restore Student From Delete", $student_id, $studentName, "Student record restored from deleted status to active.");
+        sendJSON(['message' => 'Student record restored successfully.']);
+    } else {
+        sendJSON(['error' => 'Student not found or not deleted.'], 404);
+    }
+}
+
+// =============================================================
+//  ACTION: RESTORE EMPLOYEE FROM DELETE
+//  - Restores a deleted employee record back to active status.
+// =============================================================
+if ($action === 'restore_employee_from_deleted') {
+    $id       = $data['id'] ?? '';
+    $admin_id = $data['admin_id'] ?? '';
+
+    if (!$id || !$admin_id) {
+        sendJSON(['error' => 'Employee ID and Admin ID are required.'], 400);
+    }
+
+    $stmt = $conn->prepare("UPDATE admin SET status = 'active' WHERE id = ? AND status = 'deleted'");
+    $stmt->bind_param("i", $id);
+    $stmt->execute();
+
+    if ($stmt->affected_rows > 0) {
+        $stmtName = $conn->prepare("SELECT username FROM admin WHERE id = ?");
+        $stmtName->bind_param("i", $id);
+        $stmtName->execute();
+        $nameRes = $stmtName->get_result()->fetch_assoc();
+        $employeeName = $nameRes['username'] ?? 'Unknown';
+
+        logAction($admin_id, "Restore Employee From Delete", $id, $employeeName, "Employee record restored from deleted status to active.");
+        sendJSON(['message' => 'Employee record restored successfully.']);
+    } else {
+        sendJSON(['error' => 'Employee not found or not deleted.'], 404);
+    }
+}
+
 
 // If no valid action matched, return an error
 sendJSON(['error' => 'Invalid action'], 400);
