@@ -61,6 +61,11 @@ if (!$first_name || !$last_name || !$email || !$house_no_street || !$barangay ||
     sendJSON(['error' => 'All required fields including Payment details and School Year must be filled.'], 400);
 }
 
+// --- Validate telephone: if provided, must be exactly 8 digits ---
+if (!empty($parent_telephone) && !preg_match('/^\d{8}$/', $parent_telephone)) {
+    sendJSON(['error' => 'Telephone number must be exactly 8 digits (numbers only).'], 400);
+}
+
 // 2x2 picture is always required
 if (!isset($_FILES['picture_2x2']) || $_FILES['picture_2x2']['error'] !== UPLOAD_ERR_OK) {
     sendJSON(['error' => 'A 2x2 Picture is required to complete your enrollment.'], 400);
@@ -124,6 +129,9 @@ try {
 
     // A. Insert parent record
     $stmt = $conn->prepare("INSERT INTO parents (first_name, last_name, middle_name, relation_id, mobile, telephone, occupation, income_range_id, email) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)");
+    if (!$stmt) {
+        throw new Exception('DB prepare failed (parents insert): ' . $conn->error);
+    }
     $stmt->bind_param("sssisssis", $parent_first_name, $parent_last_name, $parent_middle_name, $relation_id, $parent_contact, $parent_telephone, $occupation, $income_range_id, $email);
     $stmt->execute();
     $parentId = $conn->insert_id;
@@ -135,26 +143,77 @@ try {
 
     // C. Insert student record
     $stmt = $conn->prepare("INSERT INTO students (parent_id, student_no, first_name, last_name, middle_name, suffix, birth_date, gender, religion, house_no_street, barangay, city_municipality, province, previous_school, psa_birth_cert, sf10_document, picture_2x2) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+    if (!$stmt) {
+        throw new Exception('DB prepare failed (students insert): ' . $conn->error);
+    }
     $stmt->bind_param("issssssssssssssss", $parentId, $studentNo, $first_name, $last_name, $middle_name, $suffix, $birth_date, $gender, $religion, $house_no_street, $barangay, $city_municipality, $province, $previous_school, $psa_path, $sf10_path, $picture_2x2_path);
     $stmt->execute();
     $studentId = $conn->insert_id;
 
     // D. Insert enrollment record
     $stmt = $conn->prepare("INSERT INTO enrollments (student_id, school_year_id, grade_level_id, session_id) VALUES (?, ?, ?, ?)");
+    if (!$stmt) {
+        throw new Exception('DB prepare failed (enrollments insert): ' . $conn->error);
+    }
     $stmt->bind_param("iiii", $studentId, $school_year_id, $grade_level_id, $session_id);
     $stmt->execute();
     $enrollmentId = $conn->insert_id;
 
-    // E. Insert payment record (with payment_mode_id)
-    $stmt = $conn->prepare("INSERT INTO payments (enrollment_id, payment_method_id, payment_mode, payment_mode_id, months_count, tuition_fee, books_fee, reference_number) VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
-    $stmt->bind_param("iisiidds", $enrollmentId, $payment_method_id, $payment_mode, $payment_mode_id, $months_count, $tuition_fee, $books_fee, $reference_number);
-    $stmt->execute();
-    $paymentId = $conn->insert_id;
+    // E. Insert payment record — detect if payments.payment_mode_id column exists in schema
+    $hasPaymentModeId = false;
+    $colCheck = $conn->query("SHOW COLUMNS FROM payments LIKE 'payment_mode_id'");
+    if ($colCheck && $colCheck->num_rows > 0) $hasPaymentModeId = true;
+
+    if ($hasPaymentModeId) {
+        // Older schema with payment_mode_id column
+        $stmt = $conn->prepare("INSERT INTO payments (enrollment_id, payment_method_id, payment_mode, payment_mode_id, months_count, tuition_fee, books_fee, reference_number) VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
+        if ($stmt) {
+            $stmt->bind_param("iisiidds", $enrollmentId, $payment_method_id, $payment_mode, $payment_mode_id, $months_count, $tuition_fee, $books_fee, $reference_number);
+            $stmt->execute();
+            $paymentId = $conn->insert_id;
+        } else {
+            // Fallback INSERT with payment_mode_id
+            $pmode = $conn->real_escape_string($payment_mode);
+            $pref = $conn->real_escape_string($reference_number);
+            $p_mode_id = is_null($payment_mode_id) ? 'NULL' : intval($payment_mode_id);
+            $m_count = is_null($months_count) ? 'NULL' : intval($months_count);
+            $t_fee = is_null($tuition_fee) || $tuition_fee === '' ? 'NULL' : floatval(str_replace(',', '', $tuition_fee));
+            $b_fee = is_null($books_fee) || $books_fee === '' ? 'NULL' : floatval(str_replace(',', '', $books_fee));
+            $sql = "INSERT INTO payments (enrollment_id, payment_method_id, payment_mode, payment_mode_id, months_count, tuition_fee, books_fee, reference_number) VALUES (" . intval($enrollmentId) . ", " . intval($payment_method_id) . ", '" . $pmode . "', " . $p_mode_id . ", " . $m_count . ", " . ($t_fee === 'NULL' ? 'NULL' : $t_fee) . ", " . ($b_fee === 'NULL' ? 'NULL' : $b_fee) . ", '" . $pref . "')";
+            if (!$conn->query($sql)) {
+                throw new Exception('DB insert failed (payments insert fallback): ' . $conn->error);
+            }
+            $paymentId = $conn->insert_id;
+        }
+    } else {
+        // Newer schema without payment_mode_id column
+        $stmt = $conn->prepare("INSERT INTO payments (enrollment_id, payment_method_id, payment_mode, months_count, tuition_fee, books_fee, reference_number) VALUES (?, ?, ?, ?, ?, ?, ?)");
+        if ($stmt) {
+            $stmt->bind_param("iisidds", $enrollmentId, $payment_method_id, $payment_mode, $months_count, $tuition_fee, $books_fee, $reference_number);
+            $stmt->execute();
+            $paymentId = $conn->insert_id;
+        } else {
+            // Fallback INSERT without payment_mode_id
+            $pmode = $conn->real_escape_string($payment_mode);
+            $pref = $conn->real_escape_string($reference_number);
+            $m_count = is_null($months_count) ? 'NULL' : intval($months_count);
+            $t_fee = is_null($tuition_fee) || $tuition_fee === '' ? 'NULL' : floatval(str_replace(',', '', $tuition_fee));
+            $b_fee = is_null($books_fee) || $books_fee === '' ? 'NULL' : floatval(str_replace(',', '', $books_fee));
+            $sql = "INSERT INTO payments (enrollment_id, payment_method_id, payment_mode, months_count, tuition_fee, books_fee, reference_number) VALUES (" . intval($enrollmentId) . ", " . intval($payment_method_id) . ", '" . $pmode . "', " . $m_count . ", " . ($t_fee === 'NULL' ? 'NULL' : $t_fee) . ", " . ($b_fee === 'NULL' ? 'NULL' : $b_fee) . ", '" . $pref . "')";
+            if (!$conn->query($sql)) {
+                throw new Exception('DB insert failed (payments insert fallback): ' . $conn->error);
+            }
+            $paymentId = $conn->insert_id;
+        }
+    }
 
     // F. Initial payment transaction
     $initial_payment = $_POST['initial_payment'] ?? 0;
     if ($initial_payment > 0) {
         $stmt = $conn->prepare("INSERT INTO payment_transactions (payment_id, amount_paid, payment_method_id, reference_number, notes) VALUES (?, ?, ?, ?, 'Initial Payment')");
+        if (!$stmt) {
+            throw new Exception('DB prepare failed (payment_transactions insert): ' . $conn->error);
+        }
         $stmt->bind_param("idis", $paymentId, $initial_payment, $payment_method_id, $reference_number);
         $stmt->execute();
     }
@@ -162,6 +221,9 @@ try {
     // G. Save custom text/select/textarea field values
     if (!empty($customTextValues)) {
         $stmtCf = $conn->prepare("INSERT INTO enrollment_field_values (enrollment_id, field_id, field_value) VALUES (?, ?, ?)");
+        if (!$stmtCf) {
+            throw new Exception('DB prepare failed (enrollment_field_values insert - text): ' . $conn->error);
+        }
         foreach ($customTextValues as $fieldId => $value) {
             if (trim($value) !== '') {
                 $stmtCf->bind_param("iis", $enrollmentId, $fieldId, $value);
@@ -173,6 +235,9 @@ try {
     // H. Save custom file field values
     if (!empty($customFileValues)) {
         $stmtCf2 = $conn->prepare("INSERT INTO enrollment_field_values (enrollment_id, field_id, field_value) VALUES (?, ?, ?)");
+        if (!$stmtCf2) {
+            throw new Exception('DB prepare failed (enrollment_field_values insert - file): ' . $conn->error);
+        }
         foreach ($customFileValues as $fieldId => $filePath) {
             $stmtCf2->bind_param("iis", $enrollmentId, $fieldId, $filePath);
             $stmtCf2->execute();

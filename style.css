@@ -3402,61 +3402,61 @@ textarea:focus {
 /* --- Layout: Sidebar + Data Panel --- */
 .maint-layout {
     display: grid;
-    grid-template-columns: 240px 1fr;
+    grid-template-columns: minmax(220px, 260px) 1fr;
     gap: 20px;
     min-height: 500px;
+    align-items: start;
 }
 
 /* --- Category Sidebar --- */
 .maint-sidebar {
-    background: #fff;
-    border: 1.5px solid #f0f0f4;
-    border-radius: 12px;
-    padding: 16px 12px;
+    background: transparent;
+    border: none;
+    border-radius: 0;
+    padding: 0;
     display: flex;
     flex-direction: column;
-    gap: 4px;
+    gap: 6px;
 }
 
 .maint-sidebar-title {
-    font-size: 11px;
+    font-size: 12px;
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.8px;
     color: var(--gray-500);
-    padding: 4px 12px 10px;
-    border-bottom: 1px solid #f3f4f6;
-    margin-bottom: 6px;
+    padding: 0 0 8px;
+    border-bottom: none;
+    margin-bottom: 10px;
 }
 
 .maint-cat-btn {
     display: flex;
     align-items: center;
     gap: 10px;
-    padding: 10px 14px;
+    padding: 12px 14px;
     border: none;
     background: transparent;
-    border-radius: 10px;
+    border-radius: 12px;
     font-size: 13px;
-    font-weight: 500;
+    font-weight: 600;
     color: var(--gray-700);
     cursor: pointer;
-    transition: all 0.15s ease;
+    transition: background 0.15s ease, color 0.15s ease;
     font-family: inherit;
     text-align: left;
     width: 100%;
 }
 
 .maint-cat-btn:hover {
-    background: #f9fafb;
+    background: #f8f1f3;
     color: var(--gray-900);
 }
 
 .maint-cat-btn.active {
-    background: linear-gradient(135deg, #fef2f4, #fce7ec);
-    color: var(--maroon-dark);
+    background: #f3e0e5;
+    color: #7B1030;
     font-weight: 700;
-    box-shadow: 0 2px 8px rgba(122, 18, 48, 0.08);
 }
 
 .maint-cat-icon {
@@ -3477,7 +3477,7 @@ textarea:focus {
 .maint-panel {
     background: #fff;
     border: 1.5px solid #f0f0f4;
-    border-radius: 12px;
+    border-radius: 14px;
     overflow: hidden;
     display: flex;
     flex-direction: column;
@@ -3487,7 +3487,7 @@ textarea:focus {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 20px 24px 16px;
+    padding: 22px 24px 18px;
     border-bottom: 1px solid #f3f4f6;
     flex-wrap: wrap;
     gap: 12px;
@@ -3496,14 +3496,14 @@ textarea:focus {
 .maint-panel-title {
     font-size: 18px;
     font-weight: 800;
-    color: var(--gray-900);
+    color: #1a1a2e;
     margin: 0;
 }
 
 .maint-panel-subtitle {
     font-size: 13px;
     color: var(--gray-500);
-    margin: 4px 0 0;
+    margin: 6px 0 0;
     font-weight: 400;
 }
 
@@ -3512,12 +3512,81 @@ textarea:focus {
     display: flex;
     align-items: center;
     gap: 8px;
-    padding: 10px 24px;
-    background: #fffbeb;
-    border-bottom: 1px solid #fef3c7;
-    font-size: 12px;
+    padding: 12px 24px;
+    background: #fff7dd;
+    border-bottom: 1px solid #f7e2a3;
+    font-size: 13px;
     color: #92400e;
     font-weight: 500;
+}
+
+.icon-btn {
+    border: 1px solid transparent;
+    background: #f8fafc;
+    width: 34px;
+    height: 34px;
+    border-radius: 10px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--gray-700);
+    cursor: pointer;
+    transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+    font-size: 14px;
+}
+
+.icon-btn:hover {
+    background: #fff;
+    border-color: #d1d5db;
+}
+
+.icon-btn-delete {
+    color: #9f1239;
+}
+
+.icon-btn-delete:hover {
+    background: #fee2e2;
+    border-color: #fca5a5;
+    color: #b91c1c;
+}
+
+.mode-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 4px 10px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 700;
+    white-space: nowrap;
+}
+
+.mode-badge.full {
+    background: #dbeafe;
+    color: #1d4ed8;
+}
+
+.mode-badge.monthly {
+    background: #dcfce7;
+    color: #166534;
+}
+
+.mode-badge.default {
+    background: #e5e7eb;
+    color: #374151;
+}
+
+.payment-group-header td {
+    background: #f7e5e9;
+    color: #7B1030;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    border-bottom: 1px solid #eddee1;
+    padding: 12px 16px;
+}
+
+.dash-table tbody td.muted {
+    color: var(--gray-500);
 }
 
 /* --- Action Buttons --- */
@@ -3527,10 +3596,15 @@ textarea:focus {
     gap: 6px;
 }
 
+.maint-btn-edit,
+.maint-btn-delete,
+.maint-status-toggle {
+    border-radius: 10px;
+}
+
 .maint-btn-edit {
-    padding: 5px 12px;
+    padding: 6px 14px;
     border: 1.5px solid #d1d5db;
-    border-radius: 7px;
     background: #fff;
     color: #374151;
     font-size: 12px;
@@ -3540,19 +3614,18 @@ textarea:focus {
     transition: all 0.15s;
     display: inline-flex;
     align-items: center;
-    gap: 4px;
+    gap: 6px;
 }
 
 .maint-btn-edit:hover {
     border-color: var(--maroon-dark);
     color: var(--maroon-dark);
-    background: #fef2f4;
+    background: #fdf2f4;
 }
 
 .maint-btn-delete {
-    padding: 5px 10px;
+    padding: 6px 14px;
     border: 1.5px solid #fca5a5;
-    border-radius: 7px;
     background: #fff;
     color: #dc2626;
     font-size: 12px;
@@ -3569,9 +3642,8 @@ textarea:focus {
 
 /* --- School Year Current Toggle --- */
 .maint-status-toggle {
-    padding: 4px 12px;
+    padding: 5px 14px;
     border: 1.5px solid #d1d5db;
-    border-radius: 999px;
     background: #fff;
     font-size: 11px;
     font-weight: 700;
@@ -3663,4 +3735,4 @@ textarea:focus {
 .eligible-grade-badge span:hover {
     color: var(--maroon-dark);
 }
-
+

@@ -96,9 +96,9 @@
                         </div>
                         <div class="form-group">
                             <label for="parent_telephone">Telephone / Landline</label>
-                            <input type="tel" id="parent_telephone" name="parent_telephone" placeholder="(02) 1234-5678"
-                                title="Optional landline number">
-                            <small class="form-note">Optional. e.g., (02) 1234-5678</small>
+                            <input type="tel" id="parent_telephone" name="parent_telephone" placeholder="12345678"
+                                title="Optional landline number" pattern="\d{8}" maxlength="8">
+                            <small class="form-note">Optional. 8 digits only (numbers only).</small>
                         </div>
                     </div>
 
@@ -159,6 +159,14 @@
         document.getElementById('parent_contact').addEventListener('input', function () {
             this.value = this.value.replace(/[^0-9]/g, '');
         });
+
+        // Ensure telephone is digits-only and limited to 8 characters
+        const telInput = document.getElementById('parent_telephone');
+        if (telInput) {
+            telInput.addEventListener('input', function () {
+                this.value = this.value.replace(/[^0-9]/g, '').slice(0, 8);
+            });
+        }
 
         document.getElementById('step2Form').addEventListener('submit', function (e) {
             e.preventDefault();

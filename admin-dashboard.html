@@ -316,6 +316,14 @@
                     <span class="dash-nav-icon">🗂️</span>
                     <span class="dash-nav-label">Archive</span>
                 </button>
+                <button class="dash-nav-item" id="nav-deleted-emp" onclick="switchTab('deleted-emp')">
+                    <span class="dash-nav-icon">🗑️</span>
+                    <span class="dash-nav-label">Delete</span>
+                </button>
+                <button class="dash-nav-item" id="nav-deleted-students" onclick="switchTab('deleted-students')">
+                    <span class="dash-nav-icon">🗑️</span>
+                    <span class="dash-nav-label">Delete (Students)</span>
+                </button>
                 <button class="dash-nav-item" id="nav-logs" onclick="switchTab('logs')">
                     <span class="dash-nav-icon">📜</span>
                     <span class="dash-nav-label">Logs</span>
@@ -786,6 +794,74 @@
                     </div>
                 </div>
 
+                <!-- ==================== TAB 5.5: DELETED EMPLOYEES ==================== -->
+                <div class="tab-content" id="tab-deleted-emp">
+                    <div id="deletedEmpAlert" class="alert"></div>
+                    <div class="dash-table-card">
+                        <div class="dash-table-header">
+                            <span class="dash-table-title">Deleted Employee Accounts</span>
+                            <div class="dash-filter-row">
+                                <input type="text" id="deletedEmpSearchInput" placeholder="🔍 Search user..."
+                                    oninput="filterDeletedEmployees()">
+                                <select id="deletedEmpFilterRole" onchange="filterDeletedEmployees()">
+                                    <option value="All">All Roles</option>
+                                    <option value="admin">Admin</option>
+                                    <option value="registrar">Registrar</option>
+                                    <option value="cashier">Cashier</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="dash-table-scroll">
+                            <table class="dash-table">
+                                <thead>
+                                    <tr>
+                                        <th>Username</th>
+                                        <th>Employee Name</th>
+                                        <th>Role</th>
+                                        <th>Status</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="deletedEmployeesTableBody">
+                                    <tr><td colspan="5" style="text-align:center;padding:40px;">Loading deleted employees...</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ==================== TAB 5.6: DELETED STUDENTS ==================== -->
+                <div class="tab-content" id="tab-deleted-students">
+                    <div id="deletedStudentsAlert" class="alert"></div>
+                    <div class="dash-table-card">
+                        <div class="dash-table-header">
+                            <span class="dash-table-title">Deleted Student Records</span>
+                            <div class="dash-filter-row">
+                                <input type="text" id="deletedStudentsSearchInput" placeholder="🔍 Search deleted by name or ID..." oninput="filterDeletedStudentsAdmin()">
+                            </div>
+                        </div>
+                        <div class="dash-table-scroll">
+                            <table class="dash-table">
+                                <thead>
+                                    <tr>
+                                        <th>Student ID</th>
+                                        <th>Full Name</th>
+                                        <th>Grade</th>
+                                        <th>Parent</th>
+                                        <th>Contact</th>
+                                        <th>Date Applied</th>
+                                        <th>Status</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="deletedStudentsTableBody">
+                                    <tr><td colspan="8" style="text-align:center;padding:40px;">Loading deleted students...</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- ==================== TAB 6: REPORTS ====================-->
                 <div class="tab-content" id="tab-reports">
                     <div class="dash-table-card">
@@ -974,6 +1050,13 @@
             if (tab === 'archive-emp') {
                 loadArchivedEmployees();
             }
+
+            if (tab === 'deleted-emp') {
+                loadDeletedEmployees();
+            }
+            if (tab === 'deleted-students') {
+                loadDeletedStudentsAdmin();
+            }
             if (tab === 'logs') loadLogs();
             if (tab === 'maintenance') loadMaintenanceData();
             if (tab === 'reports') loadAdminReportFilters();
@@ -1033,6 +1116,7 @@
                     <td>
                         <div class="dash-action-group">
                             <button class="btn-view" onclick="viewStudent(${s.enrollment_id})">👁 View</button>
+                            <button class="btn-view" style="background:#fef2f2; border-color:#dc2626; color:#b91c1c; margin-left:6px;" onclick="deleteStudentAdmin(${s.student_id})">🗑️ Delete</button>
                             ${s.status === 'Dropped' ? `
                             <div class="dot-menu-wrapper">
                                 <button class="btn-dots" onclick="toggleDotMenu('dm-s-${s.enrollment_id}')">⋮</button>
@@ -1482,6 +1566,10 @@
                                     onclick="archiveEmployee(${e.id}, '${e.username}')">
                                 🗂️ Archive
                             </button>
+                            <button class="btn" style="padding:6px 12px; font-size:11px; border:1px solid #dc2626; color:#b91c1c; background:#fef2f2; border-radius:6px; cursor:pointer; font-weight:600;"
+                                    onclick="deleteEmployee(${e.id}, '${e.username}')">
+                                    🗑️ Delete
+                            </button>
                         </td>
                     </tr>
                 `;
@@ -1731,6 +1819,203 @@
                 showAlert('archiveEmpAlert', '❌ ' + err.message);
             }
         }
+
+        async function deleteEmployee(id, username) {
+    const confirmResult = await Swal.fire({
+        title: 'Delete Employee?',
+        text: `This account '${username}' will be moved to the Delete Module. You can undo this later.`,
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#dc2626',
+        cancelButtonColor: '#6e7881',
+        confirmButtonText: 'Yes, Delete'
+    });
+
+    if (!confirmResult.isConfirmed) return;
+
+    try {
+        const res = await apiPost('api/registrar.php?action=delete_employee', {
+            id: id,
+            admin_id: sessionStorage.getItem('adminId')
+        });
+
+        showAlert('empAlert', '✅ ' + res.message, 'success');
+        loadEmployees();
+
+    } catch (err) {
+        showAlert('empAlert', '❌ ' + err.message);
+    }
+}
+
+        // =====================
+        // DELETED EMPLOYEES (Load / Render / Restore)
+        // =====================
+        async function loadDeletedEmployees() {
+            const tbody = document.getElementById('deletedEmployeesTableBody');
+            if (!tbody) return;
+            tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;padding:40px;">Loading deleted employees...</td></tr>';
+            try {
+                const employees = await apiGet('api/registrar.php?action=deleted_employees');
+                renderDeletedEmployees(employees);
+            } catch (err) {
+                tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;color:#dc2626;padding:40px;">❌ Error: ${err.message}</td></tr>`;
+            }
+        }
+
+        function renderDeletedEmployees(employees) {
+            const tbody = document.getElementById('deletedEmployeesTableBody');
+            if (!tbody) return;
+            if (employees.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;color:var(--gray-500);padding:40px;">No deleted employees.</td></tr>';
+                return;
+            }
+            tbody.innerHTML = employees.map(e => `
+                <tr>
+                    <td><strong style="font-family:'Courier New',monospace;">${e.username}</strong></td>
+                    <td>${e.employee_name || '—'}</td>
+                    <td><span class="role-tag role-${e.role.toLowerCase()}">${e.role}</span></td>
+                    <td>${e.is_active == 1 ? '✅ Active' : '○ Inactive'}</td>
+                    <td>
+                        <div class="dash-action-group">
+                            <button class="btn-view" style="background:#dcfce7; border-color:#16a34a; color:#166534;" onclick="restoreEmployeeFromDeleted(${e.id}, '${e.username}')">↩️ Restore</button>
+                        </div>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        function filterDeletedEmployees() {
+            const search = document.getElementById('deletedEmpSearchInput').value.toLowerCase();
+            const roleFilter = document.getElementById('deletedEmpFilterRole').value;
+            const tbody = document.getElementById('deletedEmployeesTableBody');
+            const rows = tbody.querySelectorAll('tr');
+            rows.forEach(row => {
+                if (row.cells.length < 2) return;
+                const username = row.cells[0].textContent.toLowerCase();
+                const name = row.cells[1].textContent.toLowerCase();
+                const role = row.cells[2].textContent.toLowerCase();
+                let match = (username.includes(search) || name.includes(search));
+                if (roleFilter !== 'All') match = match && role.includes(roleFilter.toLowerCase());
+                row.style.display = match ? '' : 'none';
+            });
+        }
+
+        async function restoreEmployeeFromDeleted(id, username) {
+            const confirmResult = await Swal.fire({
+                title: 'Restore Employee?',
+                text: `This account '${username}' will be moved back to the active list.`,
+                icon: 'info',
+                showCancelButton: true,
+                confirmButtonColor: '#800000',
+                cancelButtonColor: '#6e7881',
+                confirmButtonText: 'Yes, Restore'
+            });
+            if (!confirmResult.isConfirmed) return;
+            try {
+                const res = await apiPost('api/registrar.php?action=restore_employee_from_deleted', { id, admin_id: sessionStorage.getItem('adminId') });
+                showAlert('deletedEmpAlert', '✅ ' + res.message, 'success');
+                loadDeletedEmployees();
+                loadArchivedEmployees();
+            } catch (err) {
+                showAlert('deletedEmpAlert', '❌ ' + err.message);
+            }
+        }
+
+        // =====================
+        // STUDENT DELETE MODULE (Admin)
+        // =====================
+        async function deleteStudentAdmin(studentId) {
+            const confirmResult = await Swal.fire({
+                title: 'Delete Student?',
+                text: 'This student record will be moved to the Delete Module. You can restore it later.',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#dc2626',
+                cancelButtonColor: '#6e7881',
+                confirmButtonText: 'Yes, Delete'
+            });
+            if (!confirmResult.isConfirmed) return;
+            try {
+                const res = await apiPost('api/registrar.php?action=delete_student', { student_id: studentId, admin_id: sessionStorage.getItem('adminId') });
+                showAlert('enrollAlert', '✅ ' + res.message, 'success');
+                loadStudents();
+            } catch (err) {
+                showAlert('enrollAlert', '❌ ' + err.message);
+            }
+        }
+
+        async function loadDeletedStudentsAdmin() {
+            const tbody = document.getElementById('deletedStudentsTableBody');
+            if (!tbody) return;
+            tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;padding:40px;">Loading deleted students...</td></tr>';
+            try {
+                const students = await apiGet('api/registrar.php?action=deleted_students');
+                renderDeletedStudentsAdmin(students);
+            } catch (err) {
+                tbody.innerHTML = `<tr><td colspan="8" style="text-align:center;color:#dc2626;padding:40px;">❌ Error: ${err.message}</td></tr>`;
+            }
+        }
+
+        function renderDeletedStudentsAdmin(students) {
+            const tbody = document.getElementById('deletedStudentsTableBody');
+            if (!tbody) return;
+            if (students.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;color:var(--gray-500);padding:40px;">No deleted students.</td></tr>';
+                return;
+            }
+            tbody.innerHTML = students.map(s => `
+                <tr>
+                    <td><strong style="font-family:'Courier New',monospace;">${s.student_no}</strong></td>
+                    <td>${formatStudentName(s)}</td>
+                    <td>${s.grade_level}</td>
+                    <td>${formatParentName(s.parent_first_name, s.parent_last_name, s.parent_middle_name)}</td>
+                    <td>${s.parent_mobile || '—'}</td>
+                    <td style="white-space:nowrap;">${s.applied_at ? formatDate(s.applied_at) : '—'}</td>
+                    <td>${getStatusBadge(s.status)}</td>
+                    <td>
+                        <div class="dash-action-group">
+                            <button class="btn-view" onclick="viewStudent(${s.enrollment_id})">👁 View</button>
+                            <button class="btn-view" style="background:#dcfce7; border-color:#16a34a; color:#166534; margin-left:6px;" onclick="restoreDeletedStudentAdmin(${s.student_id})">↩️ Restore</button>
+                        </div>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        function filterDeletedStudentsAdmin() {
+            const search = document.getElementById('deletedStudentsSearchInput').value.toLowerCase();
+            const tbody = document.getElementById('deletedStudentsTableBody');
+            const rows = tbody.querySelectorAll('tr');
+            rows.forEach(row => {
+                if (row.cells.length < 2) return;
+                const studentNo = row.cells[0].textContent.toLowerCase();
+                const studentName = row.cells[1].textContent.toLowerCase();
+                row.style.display = (studentNo.includes(search) || studentName.includes(search)) ? '' : 'none';
+            });
+        }
+
+        async function restoreDeletedStudentAdmin(studentId) {
+            const confirmResult = await Swal.fire({
+                title: 'Restore Student?',
+                text: 'This student record will be moved back to the Active list.',
+                icon: 'info',
+                showCancelButton: true,
+                confirmButtonColor: '#800000',
+                cancelButtonColor: '#6e7881',
+                confirmButtonText: 'Yes, Restore'
+            });
+            if (!confirmResult.isConfirmed) return;
+            try {
+                const res = await apiPost('api/registrar.php?action=restore_student_from_deleted', { student_id: studentId, admin_id: sessionStorage.getItem('adminId') });
+                showAlert('deletedStudentsAlert', '✅ ' + res.message, 'success');
+                loadDeletedStudentsAdmin();
+                loadStudents();
+            } catch (err) {
+                showAlert('deletedStudentsAlert', '❌ ' + err.message);
+            }
+        }
+
+        
 
         // ===============================================
         // SHARED UTILITIES (used by all tabs)
@@ -2084,12 +2369,23 @@
             
             rows.forEach(row => {
                 const gradeId = row.getAttribute('data-grade-id');
-                if (!gradeId) return;
-                if (selectedVal === 'All' || gradeId === selectedVal) {
-                    row.style.display = '';
-                } else {
-                    row.style.display = 'none';
+                const groupGradeId = row.getAttribute('data-group-grade-id');
+                if (groupGradeId !== null) {
+                    row.style.display = (selectedVal === 'All' || groupGradeId === selectedVal) ? '' : 'none';
+                    return;
                 }
+                if (!gradeId) return;
+                row.style.display = (selectedVal === 'All' || gradeId === selectedVal) ? '' : 'none';
+            });
+            updateGradeColumnVisibility();
+        }
+
+        function updateGradeColumnVisibility() {
+            const select = document.getElementById('maintGradeLevelFilter');
+            if (!select) return;
+            const hide = select.value !== 'All';
+            document.querySelectorAll('#maintTableHead th.grade-column, #maintTableBody td.grade-column').forEach(el => {
+                el.style.display = hide ? 'none' : '';
             });
         }
 
@@ -2097,14 +2393,11 @@
         //  PAYMENT MODES — special toggle active button in table
         // ============================================================
         function renderMaintenanceTableExtra(row, idx) {
-            // Extra column for payment_modes: active toggle
             if (maintCurrentTable === 'payment_modes') {
-                const isActive = row['is_active'] == 1;
                 return `<td>
                     <div class="maint-action-btns">
-                        <button class="maint-btn-edit" onclick="openMaintEditModal(${row.id})" title="Edit">✏️ Edit</button>
-                        <button onclick="toggleMaintActive('payment_modes', ${row.id})" title="Toggle Active" style="padding:4px 10px;border-radius:6px;font-size:12px;border:1px solid ${isActive ? '#16a34a' : '#9ca3af'};background:${isActive ? '#dcfce7' : '#f3f4f6'};color:${isActive ? '#166534' : '#6b7280'};cursor:pointer;">${isActive ? '✅ Active' : '○ Inactive'}</button>
-                        <button class="maint-btn-delete" onclick="deleteMaintRecord(${row.id})" title="Delete">🗑️</button>
+                        <button class="icon-btn" onclick="openMaintEditModal(${row.id})" title="Edit">✏️</button>
+                        <button class="icon-btn icon-btn-delete" onclick="deleteMaintRecord(${row.id})" title="Delete">🗑️</button>
                     </div>
                 </td>`;
             }
@@ -2379,6 +2672,80 @@
             const thead = document.getElementById('maintTableHead');
             const tbody = document.getElementById('maintTableBody');
 
+            if (maintCurrentTable === 'payment_modes') {
+                const gradeFilter = document.getElementById('maintGradeLevelFilter');
+                const showGradeColumn = !gradeFilter || gradeFilter.value === 'All';
+                const displayFields = [];
+                if (showGradeColumn) {
+                    displayFields.push('grade_level_name');
+                }
+                displayFields.push('mode_name');
+                maintFieldConfig.forEach(field => {
+                    if (['is_active', 'grade_level_id', 'grade_level_name', 'mode_name'].includes(field)) return;
+                    displayFields.push(field);
+                });
+
+                let headerHtml = '<tr><th style="width:50px;">#</th>';
+                displayFields.forEach(field => {
+                    if (field === 'grade_level_name') {
+                        headerHtml += `<th class="grade-column">${maintFieldLabels[field] || 'Grade Level'}</th>`;
+                    } else if (field === 'mode_name') {
+                        headerHtml += `<th>${maintFieldLabels[field] || 'Mode Name'}</th>`;
+                    } else if (field === 'is_current') {
+                        headerHtml += '<th>Status</th>';
+                    } else {
+                        headerHtml += `<th>${maintFieldLabels[field] || field}</th>`;
+                    }
+                });
+                headerHtml += '<th style="width:100px;">Actions</th></tr>';
+                thead.innerHTML = headerHtml;
+
+                const totalCols = displayFields.length + 2;
+                if (maintCurrentData.length === 0) {
+                    tbody.innerHTML = `<tr><td colspan="${totalCols}" style="text-align:center;color:var(--gray-500);padding:40px;">No records found. Click "+ Add New" to create one.</td></tr>`;
+                    updateGradeColumnVisibility();
+                    return;
+                }
+
+                const rows = [...maintCurrentData].sort((a, b) => {
+                    const ga = String(a.grade_level_name || a.grade_level || '').localeCompare(String(b.grade_level_name || b.grade_level || ''));
+                    if (ga !== 0) return ga;
+                    return String(a.mode_name || a.name || '').localeCompare(String(b.mode_name || b.name || ''));
+                });
+
+                let currentGrade = null;
+                let rowIndex = 0;
+                tbody.innerHTML = rows.map(row => {
+                    const gradeName = row.grade_level_name || row.grade_level || 'Ungraded';
+                    let rowHtml = '';
+                    if (gradeName !== currentGrade) {
+                        currentGrade = gradeName;
+                        rowHtml += `<tr class="payment-group-header" data-group-grade-id="${escapeHtml(String(row.grade_level_id || ''))}"><td colspan="${totalCols}">${escapeHtml(gradeName)}</td></tr>`;
+                    }
+                    rowIndex += 1;
+                    let cells = `<td style="font-weight:600; color:var(--gray-500);">${rowIndex}</td>`;
+                    displayFields.forEach(field => {
+                        if (field === 'grade_level_name') {
+                            const gradeName = row.grade_level_name || row.grade_level || '—';
+                            cells += `<td class="grade-column">${escapeHtml(gradeName)}</td>`;
+                        } else if (field === 'mode_name') {
+                            const mode = String(row[field] || row.name || '—');
+                            const badgeType = mode.toLowerCase().includes('full') ? 'full' : mode.toLowerCase().includes('monthly') ? 'monthly' : 'default';
+                            cells += `<td><span class="mode-badge ${badgeType}">${escapeHtml(mode)}</span></td>`;
+                        } else if (field === 'description') {
+                            cells += `<td class="muted">${escapeHtml(row[field] || '—')}</td>`;
+                        } else {
+                            const value = row[field] !== null && row[field] !== undefined ? row[field] : '—';
+                            cells += `<td>${escapeHtml(String(value))}</td>`;
+                        }
+                    });
+                    cells += renderMaintenanceTableExtra(row, rowIndex - 1);
+                    return `<tr data-grade-id="${row.grade_level_id || ''}">${cells}</tr>`;
+                }).join('');
+                updateGradeColumnVisibility();
+                return;
+            }
+
             let headerHtml = '<tr><th style="width:50px;">#</th>';
             maintFieldConfig.forEach(field => {
                 if (field === 'is_active') return;
@@ -2393,7 +2760,6 @@
 
             const totalCols = maintFieldConfig.filter(f => f !== 'is_active').length + 2;
 
-            // Build body
             if (maintCurrentData.length === 0) {
                 tbody.innerHTML = `<tr><td colspan="${totalCols}" style="text-align:center;color:var(--gray-500);padding:40px;">No records found. Click "+ Add New" to create one.</td></tr>`;
                 return;

@@ -101,6 +101,10 @@
                     <span class="dash-nav-icon">🗂️</span>
                     <span class="dash-nav-label">Archive</span>
                 </button>
+                <button class="dash-nav-item" id="nav-deleted" onclick="switchTab('deleted')">
+                    <span class="dash-nav-icon">🗑️</span>
+                    <span class="dash-nav-label">Delete</span>
+                </button>
                 <button class="dash-nav-item" id="nav-reports" onclick="switchTab('reports')">
                     <span class="dash-nav-icon">📊</span>
                     <span class="dash-nav-label">Reports</span>
@@ -230,6 +234,36 @@
                 </div>
 
                 <!-- ===== TAB 2: REPORTS ===== -->
+                <div class="tab-content" id="tab-deleted">
+                    <div class="dash-table-card">
+                        <div class="dash-table-header">
+                            <span class="dash-table-title">Deleted Students</span>
+                            <div class="dash-filter-row">
+                                <input type="text" id="deletedSearchInput" placeholder="Search deleted by name or ID..." oninput="filterDeletedStudentsCashier()">
+                            </div>
+                        </div>
+                        <div class="dash-table-scroll">
+                            <table class="dash-table">
+                                <thead>
+                                    <tr>
+                                        <th>Student ID</th>
+                                        <th>Full Name</th>
+                                        <th>Grade</th>
+                                        <th>Parent</th>
+                                        <th>Contact</th>
+                                        <th>Deleted Date</th>
+                                        <th>Status</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="deletedStudentsTableBody">
+                                    <tr><td colspan="8" style="text-align:center;padding:40px;">Loading deleted students...</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
                 <div class="tab-content" id="tab-reports">
                     <div class="dash-table-card">
                         <div class="dash-table-header" style="flex-direction: column; align-items: stretch; gap: 16px;">
@@ -806,6 +840,8 @@
 
             if (tabId === 'reports') {
                 loadReportPaymentMethods();
+            } else if (tabId === 'deleted') {
+                loadDeletedStudentsCashier();
             }
         }
 
@@ -917,6 +953,76 @@
 
         // Load payment data when the page opens
         loadPayments();
+        async function loadDeletedStudentsCashier() {
+            const tbody = document.getElementById('deletedStudentsTableBody');
+            if (!tbody) return;
+            tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;padding:40px;">Loading deleted students...</td></tr>';
+            try {
+                const students = await apiGet('api/registrar.php?action=deleted_students');
+                renderDeletedStudentsCashier(students);
+            } catch (err) {
+                tbody.innerHTML = `<tr><td colspan="8" style="text-align:center;color:#dc2626;padding:40px;">❌ Error: ${err.message}</td></tr>`;
+            }
+        }
+
+        function renderDeletedStudentsCashier(students) {
+            const tbody = document.getElementById('deletedStudentsTableBody');
+            if (!tbody) return;
+            if (students.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;color:var(--gray-500);padding:40px;">No deleted students.</td></tr>';
+                return;
+            }
+            tbody.innerHTML = students.map(s => `
+                <tr>
+                    <td><strong style="font-family:'Courier New',monospace;">${s.student_no}</strong></td>
+                    <td>${s.first_name} ${s.middle_name || ''} ${s.last_name}</td>
+                    <td>${s.grade_level}</td>
+                    <td>${s.parent_first_name} ${s.parent_last_name}</td>
+                    <td>${s.parent_mobile || '—'}</td>
+                    <td style="white-space:nowrap;">—</td>
+                    <td>${getStatusBadge(s.status)}</td>
+                    <td>
+                        <div class="dash-action-group">
+                            <button class="btn-view" onclick="viewPayment(${s.enrollment_id})">👁 View</button>
+                            <button class="btn-view" style="background:#dcfce7; border-color:#16a34a; color:#166534; margin-left:6px;" onclick="restoreDeletedStudentCashier(${s.student_id})">↩️ Restore</button>
+                        </div>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        function filterDeletedStudentsCashier() {
+            const input = document.getElementById('deletedSearchInput');
+            const tbody = document.getElementById('deletedStudentsTableBody');
+            const rows = tbody.querySelectorAll('tr');
+            const searchTerm = input.value.toLowerCase().trim();
+            rows.forEach(row => {
+                if (row.cells.length < 2) return;
+                const studentNo = row.cells[0].textContent.toLowerCase();
+                const studentName = row.cells[1].textContent.toLowerCase();
+                row.style.display = (studentNo.includes(searchTerm) || studentName.includes(searchTerm)) ? '' : 'none';
+            });
+        }
+
+        async function restoreDeletedStudentCashier(studentId) {
+            const confirmResult = await Swal.fire({
+                title: 'Restore Student?',
+                text: 'This student record will be moved back to the Active list.',
+                icon: 'info',
+                showCancelButton: true,
+                confirmButtonColor: '#800000',
+                cancelButtonColor: '#6e7881',
+                confirmButtonText: 'Yes, Restore'
+            });
+            if (!confirmResult.isConfirmed) return;
+            try {
+                const res = await apiPost('api/registrar.php?action=restore_student_from_deleted', { student_id: studentId, admin_id: sessionStorage.getItem('adminId') });
+                showAlert('alert', '✅ ' + res.message, 'success');
+                loadDeletedStudentsCashier();
+            } catch (err) {
+                showAlert('alert', '❌ ' + err.message);
+            }
+        }
     </script>
 </body>
 
