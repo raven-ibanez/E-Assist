@@ -65,10 +65,6 @@
                 <span class="dash-nav-icon">🗂️</span>
                 <span class="dash-nav-label">Archive</span>
             </button>
-            <button class="dash-nav-item" id="nav-deleted" onclick="switchTab('deleted')">
-                <span class="dash-nav-icon">🗑️</span>
-                <span class="dash-nav-label">Delete</span>
-            </button>
             <button class="dash-nav-item" id="nav-reports" onclick="switchTab('reports')">
                 <span class="dash-nav-icon">📊</span>
                 <span class="dash-nav-label">Reports</span>
@@ -185,6 +181,7 @@
 
             <!-- ===== TAB 1.5: ENROLLED STUDENTS ===== -->
             <div class="tab-content" id="tab-enrolled">
+                <div id="enrolledAlert" class="alert"></div>
                 <div class="dash-stats" style="margin-bottom:24px;">
                     <div class="dash-stat-card">
                         <div class="dash-stat-icon-wrap green">✅</div>
@@ -254,38 +251,6 @@
                     </div>
                 </div>
             </div>
-
-            <!-- ===== TAB 4: DELETE ===== -->
-            <div class="tab-content" id="tab-deleted">
-                <div class="dash-table-card">
-                    <div class="dash-table-header">
-                        <span class="dash-table-title">Deleted Students</span>
-                        <div class="dash-filter-row">
-                            <input type="text" id="deletedSearchInput" placeholder="Search deleted by name or ID..." onkeyup="filterDeletedStudents()">
-                        </div>
-                    </div>
-                    <div class="dash-table-scroll">
-                        <table class="dash-table">
-                            <thead>
-                                <tr>
-                                    <th>Student ID</th>
-                                    <th>Full Name</th>
-                                    <th>Grade</th>
-                                    <th>Parent</th>
-                                    <th>Contact</th>
-                                    <th>Deleted Date</th>
-                                    <th>Status</th>
-                                    <th>Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody id="deletedStudentsTableBody">
-                                <tr><td colspan="8" style="text-align:center;padding:40px;">Loading deleted students...</td></tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-
             <!-- ===== TAB 5: REPORTS ===== -->
             <div class="tab-content" id="tab-reports">
                 <div class="dash-table-card">
@@ -577,10 +542,8 @@
 
             if (tabId === 'reports') {
                 loadReportGradeLevels();
-            } else if (tabId === 'archive') {
+             } else if (tabId === 'archive') {
                 loadArchivedStudents();
-            } else if (tabId === 'deleted') {
-                loadDeletedStudents();
             }
         }
 
@@ -673,7 +636,6 @@
                                         <button class="btn-view" style="background:#fef9c3; border-color:#ca8a04; color:#854d0e;" onclick="reviewApplication(${s.enrollment_id}, 'approved_dtf')">📋 Appr. DTF</button>
                                         <button class="btn-view" style="background:#fee2e2; border-color:#dc2626; color:#991b1b;" onclick="reviewApplication(${s.enrollment_id}, 'declined')">❌ Decline</button>
                                         <button class="btn-view" style="background:#f5f3ff; border-color:#9333ea; color:#7e22ce;" onclick="archiveStudent(${s.student_id})">🗂️ Archive</button>
-                                        <button class="btn-view" style="background:#fef2f2; border-color:#dc2626; color:#b91c1c;" onclick="deleteStudent(${s.student_id})">🗑️ Delete</button>
                                     `;
                                 } else if (s.registrar_status === 'approved' && s.status !== 'Dropped') {
                                     return `
@@ -765,6 +727,7 @@
                             <button class="btn-view" onclick="viewStudent(${s.enrollment_id})">👁 View</button>
                             <button class="btn-view" style="border-color:#1e40af; color:#1e40af;" onclick="openEditModal(${s.enrollment_id})">✏️ Edit</button>
                             <button class="btn-view" style="background:#fee2e2; border-color:#dc2626; color:#991b1b;" onclick="reviewApplication(${s.enrollment_id}, 'dropped')">🚫 Drop Student</button>
+                            <button class="btn-view" style="background:#f5f3ff; border-color:#9333ea; color:#7e22ce;" onclick="archiveStudent(${s.student_id})">🗂️ Archive</button>
                         </div>
                     </td>
                 </tr>
@@ -811,6 +774,9 @@
             });
             if (!confirmResult.isConfirmed) return;
 
+            const alertId = document.getElementById('tab-enrolled').classList.contains('active') ? 'enrolledAlert' : 'alert';
+            const otherAlertId = alertId === 'enrolledAlert' ? 'alert' : 'enrolledAlert';
+
             try {
                 const result = await apiPost('api/registrar.php?action=review_application', {
                     enrollment_id: enrollmentId,
@@ -824,10 +790,12 @@
                 } else if (result.email_msg && !result.email_msg.includes('not applicable')) {
                     msg += ' | ⚠️ Email not sent: ' + result.email_msg;
                 }
-                showAlert('alert', msg, 'success');
+                showAlert(alertId, msg, 'success');
+                hideAlert(otherAlertId);
                 loadStudents();
             } catch (err) {
-                showAlert('alert', '❌ ' + err.message);
+                showAlert(alertId, '❌ ' + err.message);
+                hideAlert(otherAlertId);
             }
         }
 
@@ -1104,19 +1072,21 @@
             });
             if (!confirmResult.isConfirmed) return;
 
+            const alertId = document.getElementById('tab-enrolled').classList.contains('active') ? 'enrolledAlert' : 'alert';
+            const otherAlertId = alertId === 'enrolledAlert' ? 'alert' : 'enrolledAlert';
+
             try {
                 const res = await apiPost('api/registrar.php?action=archive_student', {
                     student_id: studentId,
                     admin_id: sessionStorage.getItem('adminId')
                 });
 
-                showAlert('alert', '✅ ' + res.message, 'success');
+                showAlert(alertId, '✅ ' + res.message, 'success');
+                hideAlert(otherAlertId);
                 loadStudents();
-                if (document.getElementById('enrolledStudentsTableBody')) {
-                    loadEnrolledStudents();
-                }
             } catch (err) {
-                showAlert('alert', '❌ ' + err.message);
+                showAlert(alertId, '❌ ' + err.message);
+                hideAlert(otherAlertId);
             }
         }
 
@@ -1141,6 +1111,7 @@
 
                 showAlert('alert', '✅ ' + res.message, 'success');
                 loadArchivedStudents();
+                loadStudents();
             } catch (err) {
                 showAlert('alert', '❌ ' + err.message);
             }
@@ -1313,128 +1284,6 @@
             URL.revokeObjectURL(url);
         }
 
-        // --- DELETE STUDENT ---
-        async function deleteStudent(studentId) {
-            const confirmResult = await Swal.fire({
-                title: 'Delete Student?',
-                text: 'This student record will be moved to the Delete Module. You can restore it later.',
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonColor: '#dc2626',
-                cancelButtonColor: '#6e7881',
-                confirmButtonText: 'Yes, Delete'
-            });
-            if (!confirmResult.isConfirmed) return;
-
-            try {
-                const res = await apiPost('api/registrar.php?action=delete_student', {
-                    student_id: studentId,
-                    admin_id: sessionStorage.getItem('adminId')
-                });
-
-                showAlert('alert', '✅ ' + res.message, 'success');
-                loadStudents();
-                if (document.getElementById('enrolledStudentsTableBody')) {
-                    loadEnrolledStudents();
-                }
-            } catch (err) {
-                showAlert('alert', '❌ ' + err.message);
-            }
-        }
-
-        // --- LOAD DELETED STUDENTS ---
-        async function loadDeletedStudents() {
-            const tbody = document.getElementById('deletedStudentsTableBody');
-            if (!tbody) return;
-            
-            tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;padding:40px;">Loading deleted students...</td></tr>';
-
-            try {
-                const students = await apiGet('api/registrar.php?action=deleted_students');
-                renderDeletedStudentsTable(students);
-            } catch (err) {
-                tbody.innerHTML = `<tr><td colspan="8" style="text-align:center;color:#dc2626;padding:40px;">❌ Error: ${err.message}</td></tr>`;
-            }
-        }
-
-        // --- RENDER DELETED STUDENTS TABLE ---
-        function renderDeletedStudentsTable(students) {
-            const tbody = document.getElementById('deletedStudentsTableBody');
-            if (!tbody) return;
-
-            if (students.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;color:var(--gray-500);padding:40px;">No deleted students.</td></tr>';
-                return;
-            }
-
-            tbody.innerHTML = students.map(s => `
-                <tr>
-                    <td><strong style="font-family:'Courier New',monospace;">${s.student_no}</strong></td>
-                    <td>${formatStudentName(s)}</td>
-                    <td>${s.grade_level}</td>
-                    <td>${formatParentName(s.parent_first_name, s.parent_last_name, s.parent_middle_name)}</td>
-                    <td>${s.parent_mobile || '—'}</td>
-                    <td style="white-space:nowrap;">—</td>
-                    <td>${getStatusBadge(s.status)}</td>
-                    <td>
-                        <div class="dash-action-group" style="flex-wrap:wrap;">
-                            <button class="btn-view" onclick="viewStudent(${s.enrollment_id})">👁 View</button>
-                            <button class="btn-view" style="background:#dcfce7; border-color:#16a34a; color:#166534;" onclick="restoreDeletedStudent(${s.student_id})">↩️ Restore</button>
-                        </div>
-                    </td>
-                </tr>
-            `).join('');
-        }
-
-        // --- RESTORE DELETED STUDENT ---
-        async function restoreDeletedStudent(studentId) {
-            const confirmResult = await Swal.fire({
-                title: 'Restore Student?',
-                text: 'This student record will be moved back to the Active list.',
-                icon: 'info',
-                showCancelButton: true,
-                confirmButtonColor: '#800000',
-                cancelButtonColor: '#6e7881',
-                confirmButtonText: 'Yes, Restore'
-            });
-            if (!confirmResult.isConfirmed) return;
-
-            try {
-                const res = await apiPost('api/registrar.php?action=restore_student', {
-                    student_id: studentId,
-                    admin_id: sessionStorage.getItem('adminId')
-                });
-
-                showAlert('alert', '✅ ' + res.message, 'success');
-                loadDeletedStudents();
-                loadStudents();
-            } catch (err) {
-                showAlert('alert', '❌ ' + err.message);
-            }
-        }
-
-        // --- FILTER DELETED STUDENTS ---
-        function filterDeletedStudents() {
-            const input = document.getElementById('deletedSearchInput');
-            const tbody = document.getElementById('deletedStudentsTableBody');
-            const rows = tbody.querySelectorAll('tr');
-            const searchTerm = input.value.toLowerCase().trim();
-
-            rows.forEach(row => {
-                if (row.cells.length < 2) return;
-                
-                const studentNo = row.cells[0].textContent.toLowerCase();
-                const studentName = row.cells[1].textContent.toLowerCase();
-                
-                if (studentNo.includes(searchTerm) || studentName.includes(searchTerm)) {
-                    row.style.display = '';
-                } else {
-                    row.style.display = 'none';
-                }
-            });
-        }
-
-        
         loadStudents();
     </script>
 </body>

@@ -2353,6 +2353,7 @@ body.login-page {
 
 .dash-table-scroll {
     overflow-x: auto;
+    padding-bottom: 85px; /* Prevent dropdowns from being clipped at the bottom */
 }
 
 /* --- Table Styling --- */

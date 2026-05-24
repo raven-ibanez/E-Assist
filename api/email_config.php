@@ -394,7 +394,7 @@ function sendStatusEmailInBackground($enrollment_id, $decision, $reason = '', $t
 
     if (stristr(PHP_OS, 'WIN')) {
         // Windows background command execution (start /B runs it asynchronously)
-        pclose(popen("start /B " . $cmd, "r"));
+        pclose(popen("start /B \"\" " . $cmd, "r"));
     } else {
         // Unix/Linux background execution
         exec($cmd . " > /dev/null 2>&1 &");

@@ -314,11 +314,15 @@
                 </button>
                 <button class="dash-nav-item" id="nav-archive-emp" onclick="switchTab('archive-emp')">
                     <span class="dash-nav-icon">🗂️</span>
-                    <span class="dash-nav-label">Archive</span>
+                    <span class="dash-nav-label">Archive (Employee)</span>
                 </button>
                 <button class="dash-nav-item" id="nav-deleted-emp" onclick="switchTab('deleted-emp')">
                     <span class="dash-nav-icon">🗑️</span>
-                    <span class="dash-nav-label">Delete</span>
+                    <span class="dash-nav-label">Delete (Employee)</span>
+                </button>
+                <button class="dash-nav-item" id="nav-archived-students" onclick="switchTab('archived-students')">
+                    <span class="dash-nav-icon">🗂️</span>
+                    <span class="dash-nav-label">Archive (Students)</span>
                 </button>
                 <button class="dash-nav-item" id="nav-deleted-students" onclick="switchTab('deleted-students')">
                     <span class="dash-nav-icon">🗑️</span>
@@ -449,6 +453,7 @@
 
                 <!-- ==================== TAB 1.5: ENROLLED STUDENTS ==================== -->
                 <div class="tab-content" id="tab-enrolled">
+                    <div id="enrolledAlert" class="alert"></div>
                     <div class="dash-stats" style="margin-bottom:24px;">
                         <div class="dash-stat-card">
                             <div class="dash-stat-icon-wrap green">✅</div>
@@ -601,10 +606,12 @@
                         </div>
                         <div class="dash-add-form" id="addEmployeeForm">
                             <h4 style="margin-bottom:12px;font-size:14px;font-weight:700;">Create New Account</h4>
-                            <div class="dash-add-form-row" style="grid-template-columns: 1fr 1fr 1fr; margin-bottom: 12px;">
+                            <div class="dash-add-form-row"
+                                style="grid-template-columns: 1fr 1fr 1fr; margin-bottom: 12px;">
                                 <div><label
-                                        style="font-size:12px;font-weight:600;display:block;margin-bottom:4px;">Employee Name</label><input
-                                        type="text" id="newEmployeeName" placeholder="Full name"></div>
+                                        style="font-size:12px;font-weight:600;display:block;margin-bottom:4px;">Employee
+                                        Name</label><input type="text" id="newEmployeeName" placeholder="Full name">
+                                </div>
                                 <div><label
                                         style="font-size:12px;font-weight:600;display:block;margin-bottom:4px;">Username</label><input
                                         type="text" id="newUsername" placeholder="e.g. registrar_jane"></div>
@@ -617,8 +624,9 @@
                                         style="font-size:12px;font-weight:600;display:block;margin-bottom:4px;">Password</label><input
                                         type="password" id="newPassword" placeholder="Strong password"></div>
                                 <div><label
-                                        style="font-size:12px;font-weight:600;display:block;margin-bottom:4px;">Confirm Password</label><input
-                                        type="password" id="newConfirmPassword" placeholder="Confirm password"></div>
+                                        style="font-size:12px;font-weight:600;display:block;margin-bottom:4px;">Confirm
+                                        Password</label><input type="password" id="newConfirmPassword"
+                                        placeholder="Confirm password"></div>
                                 <div><button class="btn-dash-primary" onclick="addEmployee()"
                                         style="width:100%;">Create</button></div>
                             </div>
@@ -662,7 +670,9 @@
                                 </select>
                                 <input type="date" id="logsStartDate" onchange="filterLogs()" title="Start Date">
                                 <input type="date" id="logsEndDate" onchange="filterLogs()" title="End Date">
-                                <button class="btn" onclick="exportLogs()" style="height:38px; background:#16a34a; color:white; border:none; border-radius:8px; padding:0 16px; font-weight:600; cursor:pointer; display:inline-flex; align-items:center; gap:8px;">📥 Export Excel</button>
+                                <button class="btn" onclick="exportLogs()"
+                                    style="height:38px; background:#16a34a; color:white; border:none; border-radius:8px; padding:0 16px; font-weight:600; cursor:pointer; display:inline-flex; align-items:center; gap:8px;">📥
+                                    Export Excel</button>
                             </div>
                         </div>
                         <div class="dash-table-scroll">
@@ -694,31 +704,38 @@
                         <!-- Category Sidebar -->
                         <div class="maint-sidebar">
                             <div class="maint-sidebar-title">Data Categories</div>
-                            <button class="maint-cat-btn active" data-table="payment_methods" onclick="selectCategory('payment_methods', this)">
+                            <button class="maint-cat-btn active" data-table="payment_methods"
+                                onclick="selectCategory('payment_methods', this)">
                                 <span class="maint-cat-icon">💳</span>
                                 <span class="maint-cat-label">Payment Methods</span>
                             </button>
-                            <button class="maint-cat-btn" data-table="payment_modes" onclick="selectCategory('payment_modes', this)">
+                            <button class="maint-cat-btn" data-table="payment_modes"
+                                onclick="selectCategory('payment_modes', this)">
                                 <span class="maint-cat-icon">📋</span>
                                 <span class="maint-cat-label">Payment Modes</span>
                             </button>
-                            <button class="maint-cat-btn" data-table="grade_levels" onclick="selectCategory('grade_levels', this)">
+                            <button class="maint-cat-btn" data-table="grade_levels"
+                                onclick="selectCategory('grade_levels', this)">
                                 <span class="maint-cat-icon">📚</span>
                                 <span class="maint-cat-label">Grade Levels</span>
                             </button>
-                            <button class="maint-cat-btn" data-table="school_years" onclick="selectCategory('school_years', this)">
+                            <button class="maint-cat-btn" data-table="school_years"
+                                onclick="selectCategory('school_years', this)">
                                 <span class="maint-cat-icon">📅</span>
                                 <span class="maint-cat-label">School Years</span>
                             </button>
-                            <button class="maint-cat-btn" data-table="sessions" onclick="selectCategory('sessions', this)">
+                            <button class="maint-cat-btn" data-table="sessions"
+                                onclick="selectCategory('sessions', this)">
                                 <span class="maint-cat-icon">🕐</span>
                                 <span class="maint-cat-label">Sessions</span>
                             </button>
-                            <button class="maint-cat-btn" data-table="relations" onclick="selectCategory('relations', this)">
+                            <button class="maint-cat-btn" data-table="relations"
+                                onclick="selectCategory('relations', this)">
                                 <span class="maint-cat-icon">👨‍👩‍👧</span>
                                 <span class="maint-cat-label">Parent Relations</span>
                             </button>
-                            <button class="maint-cat-btn" data-table="income_ranges" onclick="selectCategory('income_ranges', this)">
+                            <button class="maint-cat-btn" data-table="income_ranges"
+                                onclick="selectCategory('income_ranges', this)">
                                 <span class="maint-cat-icon">💰</span>
                                 <span class="maint-cat-label">Income Ranges</span>
                             </button>
@@ -726,7 +743,8 @@
                                 <span class="maint-cat-icon">🏷️</span>
                                 <span class="maint-cat-label">Employee Roles</span>
                             </button>
-                            <button class="maint-cat-btn" data-table="form_fields" onclick="selectCategory('form_fields', this)">
+                            <button class="maint-cat-btn" data-table="form_fields"
+                                onclick="selectCategory('form_fields', this)">
                                 <span class="maint-cat-icon">📝</span>
                                 <span class="maint-cat-label">Enrollment Form Fields</span>
                             </button>
@@ -737,9 +755,11 @@
                             <div class="maint-panel-header">
                                 <div>
                                     <h3 class="maint-panel-title" id="maintPanelTitle">Payment Methods</h3>
-                                    <p class="maint-panel-subtitle" id="maintPanelSubtitle">Manage payment method options available in the enrollment form.</p>
+                                    <p class="maint-panel-subtitle" id="maintPanelSubtitle">Manage payment method
+                                        options available in the enrollment form.</p>
                                 </div>
-                                <button class="btn-dash-primary" onclick="openMaintAddModal()" id="maintAddBtn">+ Add New</button>
+                                <button class="btn-dash-primary" onclick="openMaintAddModal()" id="maintAddBtn">+ Add
+                                    New</button>
                             </div>
                             <div class="maint-info-bar" id="maintInfoBar">
                                 <span>⚠️ Items that are currently in use by existing records cannot be deleted.</span>
@@ -747,10 +767,17 @@
                             <div class="dash-table-scroll">
                                 <table class="dash-table" id="maintTable">
                                     <thead id="maintTableHead">
-                                        <tr><th>#</th><th>Name</th><th>Actions</th></tr>
+                                        <tr>
+                                            <th>#</th>
+                                            <th>Name</th>
+                                            <th>Actions</th>
+                                        </tr>
                                     </thead>
                                     <tbody id="maintTableBody">
-                                        <tr><td colspan="3" style="text-align:center;padding:40px;">Select a category to view data.</td></tr>
+                                        <tr>
+                                            <td colspan="3" style="text-align:center;padding:40px;">Select a category to
+                                                view data.</td>
+                                        </tr>
                                     </tbody>
                                 </table>
                             </div>
@@ -787,7 +814,10 @@
                                     </tr>
                                 </thead>
                                 <tbody id="archivedEmployeesTableBody">
-                                    <tr><td colspan="5" style="text-align:center;padding:40px;">Loading archived employees...</td></tr>
+                                    <tr>
+                                        <td colspan="5" style="text-align:center;padding:40px;">Loading archived
+                                            employees...</td>
+                                    </tr>
                                 </tbody>
                             </table>
                         </div>
@@ -823,7 +853,47 @@
                                     </tr>
                                 </thead>
                                 <tbody id="deletedEmployeesTableBody">
-                                    <tr><td colspan="5" style="text-align:center;padding:40px;">Loading deleted employees...</td></tr>
+                                    <tr>
+                                        <td colspan="5" style="text-align:center;padding:40px;">Loading deleted
+                                            employees...</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ==================== TAB 5.55: ARCHIVED STUDENTS ==================== -->
+                <div class="tab-content" id="tab-archived-students">
+                    <div id="archivedStudentsAlert" class="alert"></div>
+                    <div class="dash-table-card">
+                        <div class="dash-table-header">
+                            <span class="dash-table-title">Archived Student Records</span>
+                            <div class="dash-filter-row">
+                                <input type="text" id="archivedStudentsSearchInput"
+                                    placeholder="🔍 Search archived by name or ID..."
+                                    oninput="filterArchivedStudentsAdmin()">
+                            </div>
+                        </div>
+                        <div class="dash-table-scroll">
+                            <table class="dash-table">
+                                <thead>
+                                    <tr>
+                                        <th>Student ID</th>
+                                        <th>Full Name</th>
+                                        <th>Grade</th>
+                                        <th>Parent</th>
+                                        <th>Contact</th>
+                                        <th>Date Applied</th>
+                                        <th>Status</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="archivedStudentsTableBody">
+                                    <tr>
+                                        <td colspan="8" style="text-align:center;padding:40px;">Loading archived
+                                            students...</td>
+                                    </tr>
                                 </tbody>
                             </table>
                         </div>
@@ -837,7 +907,9 @@
                         <div class="dash-table-header">
                             <span class="dash-table-title">Deleted Student Records</span>
                             <div class="dash-filter-row">
-                                <input type="text" id="deletedStudentsSearchInput" placeholder="🔍 Search deleted by name or ID..." oninput="filterDeletedStudentsAdmin()">
+                                <input type="text" id="deletedStudentsSearchInput"
+                                    placeholder="🔍 Search deleted by name or ID..."
+                                    oninput="filterDeletedStudentsAdmin()">
                             </div>
                         </div>
                         <div class="dash-table-scroll">
@@ -855,7 +927,10 @@
                                     </tr>
                                 </thead>
                                 <tbody id="deletedStudentsTableBody">
-                                    <tr><td colspan="8" style="text-align:center;padding:40px;">Loading deleted students...</td></tr>
+                                    <tr>
+                                        <td colspan="8" style="text-align:center;padding:40px;">Loading deleted
+                                            students...</td>
+                                    </tr>
                                 </tbody>
                             </table>
                         </div>
@@ -866,27 +941,42 @@
                 <div class="tab-content" id="tab-reports">
                     <div class="dash-table-card">
                         <div class="dash-table-header" style="flex-direction: column; align-items: stretch; gap: 16px;">
-                            <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+                            <div
+                                style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
                                 <span class="dash-table-title">System Report Generator</span>
-                                <div style="display: flex; background: var(--gray-100); padding: 4px; border-radius: 8px; gap: 4px;">
-                                    <button id="btn-report-type-registrar" onclick="setAdminReportType('registrar')" style="border: none; background: var(--white); color: var(--maroon-dark); padding: 6px 16px; border-radius: 6px; font-size: 13px; font-weight: 700; cursor: pointer; box-shadow: var(--shadow);">Registrar Report</button>
-                                    <button id="btn-report-type-cashier" onclick="setAdminReportType('cashier')" style="border: none; background: transparent; color: var(--gray-500); padding: 6px 16px; border-radius: 6px; font-size: 13px; font-weight: 600; cursor: pointer;">Cashier Report</button>
+                                <div
+                                    style="display: flex; background: var(--gray-100); padding: 4px; border-radius: 8px; gap: 4px;">
+                                    <button id="btn-report-type-registrar" onclick="setAdminReportType('registrar')"
+                                        style="border: none; background: var(--white); color: var(--maroon-dark); padding: 6px 16px; border-radius: 6px; font-size: 13px; font-weight: 700; cursor: pointer; box-shadow: var(--shadow);">Registrar
+                                        Report</button>
+                                    <button id="btn-report-type-cashier" onclick="setAdminReportType('cashier')"
+                                        style="border: none; background: transparent; color: var(--gray-500); padding: 6px 16px; border-radius: 6px; font-size: 13px; font-weight: 600; cursor: pointer;">Cashier
+                                        Report</button>
                                 </div>
                             </div>
-                            
+
                             <!-- Contextual Filters Row -->
-                            <div class="search-bar" style="margin-bottom: 0; display: flex; gap: 12px; flex-wrap: wrap; align-items: flex-end; width: 100%;">
+                            <div class="search-bar"
+                                style="margin-bottom: 0; display: flex; gap: 12px; flex-wrap: wrap; align-items: flex-end; width: 100%;">
                                 <!-- Registrar Filters -->
-                                <div id="adminReportRegFilters" style="display: flex; gap: 12px; flex: 1; flex-wrap: wrap;">
-                                    <div style="display: flex; flex-direction: column; gap: 4px; flex: 1; min-width: 150px;">
-                                        <label style="font-size: 11px; font-weight: 700; color: var(--gray-500); text-transform: uppercase;">Grade Level</label>
-                                        <select id="adminReportGradeLevel" style="width: 100%; height: 38px; border: 1.5px solid var(--gray-300); border-radius: 8px; background: white;">
+                                <div id="adminReportRegFilters"
+                                    style="display: flex; gap: 12px; flex: 1; flex-wrap: wrap;">
+                                    <div
+                                        style="display: flex; flex-direction: column; gap: 4px; flex: 1; min-width: 150px;">
+                                        <label
+                                            style="font-size: 11px; font-weight: 700; color: var(--gray-500); text-transform: uppercase;">Grade
+                                            Level</label>
+                                        <select id="adminReportGradeLevel"
+                                            style="width: 100%; height: 38px; border: 1.5px solid var(--gray-300); border-radius: 8px; background: white;">
                                             <option value="All">All Grades</option>
                                         </select>
                                     </div>
-                                    <div style="display: flex; flex-direction: column; gap: 4px; flex: 1; min-width: 150px;">
-                                        <label style="font-size: 11px; font-weight: 700; color: var(--gray-500); text-transform: uppercase;">Status</label>
-                                        <select id="adminReportStatus" style="width: 100%; height: 38px; border: 1.5px solid var(--gray-300); border-radius: 8px; background: white;">
+                                    <div
+                                        style="display: flex; flex-direction: column; gap: 4px; flex: 1; min-width: 150px;">
+                                        <label
+                                            style="font-size: 11px; font-weight: 700; color: var(--gray-500); text-transform: uppercase;">Status</label>
+                                        <select id="adminReportStatus"
+                                            style="width: 100%; height: 38px; border: 1.5px solid var(--gray-300); border-radius: 8px; background: white;">
                                             <option value="All">All Statuses</option>
                                             <option value="Pending">Pending</option>
                                             <option value="For Payment Review">For Payment Review</option>
@@ -900,16 +990,25 @@
                                 </div>
 
                                 <!-- Cashier Filters -->
-                                <div id="adminReportCashFilters" style="display: none; gap: 12px; flex: 1; flex-wrap: wrap;">
-                                    <div style="display: flex; flex-direction: column; gap: 4px; flex: 1; min-width: 150px;">
-                                        <label style="font-size: 11px; font-weight: 700; color: var(--gray-500); text-transform: uppercase;">Payment Method</label>
-                                        <select id="adminReportPaymentMethod" style="width: 100%; height: 38px; border: 1.5px solid var(--gray-300); border-radius: 8px; background: white;">
+                                <div id="adminReportCashFilters"
+                                    style="display: none; gap: 12px; flex: 1; flex-wrap: wrap;">
+                                    <div
+                                        style="display: flex; flex-direction: column; gap: 4px; flex: 1; min-width: 150px;">
+                                        <label
+                                            style="font-size: 11px; font-weight: 700; color: var(--gray-500); text-transform: uppercase;">Payment
+                                            Method</label>
+                                        <select id="adminReportPaymentMethod"
+                                            style="width: 100%; height: 38px; border: 1.5px solid var(--gray-300); border-radius: 8px; background: white;">
                                             <option value="All">All Methods</option>
                                         </select>
                                     </div>
-                                    <div style="display: flex; flex-direction: column; gap: 4px; flex: 1; min-width: 150px;">
-                                        <label style="font-size: 11px; font-weight: 700; color: var(--gray-500); text-transform: uppercase;">Payment Mode</label>
-                                        <select id="adminReportPaymentMode" style="width: 100%; height: 38px; border: 1.5px solid var(--gray-300); border-radius: 8px; background: white;">
+                                    <div
+                                        style="display: flex; flex-direction: column; gap: 4px; flex: 1; min-width: 150px;">
+                                        <label
+                                            style="font-size: 11px; font-weight: 700; color: var(--gray-500); text-transform: uppercase;">Payment
+                                            Mode</label>
+                                        <select id="adminReportPaymentMode"
+                                            style="width: 100%; height: 38px; border: 1.5px solid var(--gray-300); border-radius: 8px; background: white;">
                                             <option value="All">All Modes</option>
                                             <option value="Full Payment">Full Payment</option>
                                             <option value="Monthly">Monthly</option>
@@ -919,21 +1018,31 @@
 
                                 <!-- Shared Date Filters -->
                                 <div style="display: flex; flex-direction: column; gap: 4px; width: 150px;">
-                                    <label style="font-size: 11px; font-weight: 700; color: var(--gray-500); text-transform: uppercase;">Start Date</label>
-                                    <input type="date" id="adminReportStartDate" style="width: 100%; height: 38px; border: 1.5px solid var(--gray-300); border-radius: 8px; padding: 8px; background: white;">
+                                    <label
+                                        style="font-size: 11px; font-weight: 700; color: var(--gray-500); text-transform: uppercase;">Start
+                                        Date</label>
+                                    <input type="date" id="adminReportStartDate"
+                                        style="width: 100%; height: 38px; border: 1.5px solid var(--gray-300); border-radius: 8px; padding: 8px; background: white;">
                                 </div>
                                 <div style="display: flex; flex-direction: column; gap: 4px; width: 150px;">
-                                    <label style="font-size: 11px; font-weight: 700; color: var(--gray-500); text-transform: uppercase;">End Date</label>
-                                    <input type="date" id="adminReportEndDate" style="width: 100%; height: 38px; border: 1.5px solid var(--gray-300); border-radius: 8px; padding: 8px; background: white;">
+                                    <label
+                                        style="font-size: 11px; font-weight: 700; color: var(--gray-500); text-transform: uppercase;">End
+                                        Date</label>
+                                    <input type="date" id="adminReportEndDate"
+                                        style="width: 100%; height: 38px; border: 1.5px solid var(--gray-300); border-radius: 8px; padding: 8px; background: white;">
                                 </div>
-                                
+
                                 <div style="display: flex; gap: 8px; min-width: 200px; height: 38px;">
-                                    <button class="btn btn-primary" onclick="generateAdminReport()" style="padding: 0 16px; font-size: 13px; flex: 1; height: 100%;">🔍 Preview</button>
-                                    <button class="btn btn-success" onclick="exportAdminReport()" style="padding: 0 16px; font-size: 13px; flex: 1; height: 100%; background: #16a34a; color: white;">📥 Export CSV</button>
+                                    <button class="btn btn-primary" onclick="generateAdminReport()"
+                                        style="padding: 0 16px; font-size: 13px; flex: 1; height: 100%;">🔍
+                                        Preview</button>
+                                    <button class="btn btn-success" onclick="exportAdminReport()"
+                                        style="padding: 0 16px; font-size: 13px; flex: 1; height: 100%; background: #16a34a; color: white;">📥
+                                        Export CSV</button>
                                 </div>
                             </div>
                         </div>
-                        
+
                         <!-- Preview Table -->
                         <div class="dash-table-scroll" style="margin-top: 20px;">
                             <table class="dash-table" id="adminReportTable">
@@ -942,7 +1051,9 @@
                                 </thead>
                                 <tbody id="adminReportTableBody">
                                     <tr>
-                                        <td colspan="8" style="text-align: center; color: var(--gray-500); padding: 40px;">Select filters and click "Preview" to load report data.</td>
+                                        <td colspan="8"
+                                            style="text-align: center; color: var(--gray-500); padding: 40px;">Select
+                                            filters and click "Preview" to load report data.</td>
                                     </tr>
                                 </tbody>
                             </table>
@@ -1057,6 +1168,9 @@
             if (tab === 'deleted-students') {
                 loadDeletedStudentsAdmin();
             }
+            if (tab === 'archived-students') {
+                loadArchivedStudentsAdmin();
+            }
             if (tab === 'logs') loadLogs();
             if (tab === 'maintenance') loadMaintenanceData();
             if (tab === 'reports') loadAdminReportFilters();
@@ -1116,6 +1230,7 @@
                     <td>
                         <div class="dash-action-group">
                             <button class="btn-view" onclick="viewStudent(${s.enrollment_id})">👁 View</button>
+                            <button class="btn-view" style="background:#f5f3ff; border-color:#9333ea; color:#7e22ce; margin-left:6px;" onclick="archiveStudentAdmin(${s.student_id})">🗂️ Archive</button>
                             <button class="btn-view" style="background:#fef2f2; border-color:#dc2626; color:#b91c1c; margin-left:6px;" onclick="deleteStudentAdmin(${s.student_id})">🗑️ Delete</button>
                             ${s.status === 'Dropped' ? `
                             <div class="dot-menu-wrapper">
@@ -1183,7 +1298,13 @@
                     <td>${s.parent_contact || '—'}</td>
                     <td style="white-space:nowrap;">${formatDate(s.applied_at)}</td>
                     <td>${getStatusBadge(s.status)}</td>
-                    <td><button class="btn-view" onclick="viewStudent(${s.enrollment_id})">👁 View</button></td>
+                    <td>
+                        <div class="dash-action-group">
+                            <button class="btn-view" onclick="viewStudent(${s.enrollment_id})">👁 View</button>
+                            <button class="btn-view" style="background:#f5f3ff; border-color:#9333ea; color:#7e22ce; margin-left:6px;" onclick="archiveStudentAdmin(${s.student_id})">🗂️ Archive</button>
+                            <button class="btn-view" style="background:#fef2f2; border-color:#dc2626; color:#b91c1c; margin-left:6px;" onclick="deleteStudentAdmin(${s.student_id})">🗑️ Delete</button>
+                        </div>
+                    </td>
                 </tr>
             `).join('');
         }
@@ -1262,14 +1383,14 @@
                         <div class="info-item" style="${cf.field_type === 'file' || cf.field_type === 'textarea' ? 'grid-column:1/-1;' : ''}">
                             <label>${cf.field_label}</label>
                             <span>
-                                ${cf.field_type === 'file' 
-                                    ? (cf.field_value 
-                                        ? `<a href="${cf.field_value}" target="_blank" style="color:var(--blue-dark);font-weight:600;text-decoration:underline;">📄 View File</a>
-                                           ${cf.field_value.match(/\.(jpeg|jpg|gif|png)$/i) 
-                                                ? `<img src="${cf.field_value}" style="display:block;margin-top:6px;max-width:100%;max-height:180px;border-radius:6px;" onerror="this.style.display='none'">`
-                                                : ''}`
-                                        : '<span style="color:#dc2626">❌ Not uploaded</span>')
-                                    : (cf.field_value || '—')}
+                                ${cf.field_type === 'file'
+                                ? (cf.field_value
+                                    ? `<a href="${cf.field_value}" target="_blank" style="color:var(--blue-dark);font-weight:600;text-decoration:underline;">📄 View File</a>
+                                           ${cf.field_value.match(/\.(jpeg|jpg|gif|png)$/i)
+                                        ? `<img src="${cf.field_value}" style="display:block;margin-top:6px;max-width:100%;max-height:180px;border-radius:6px;" onerror="this.style.display='none'">`
+                                        : ''}`
+                                    : '<span style="color:#dc2626">❌ Not uploaded</span>')
+                                : (cf.field_value || '—')}
                             </span>
                         </div>
                     `).join('')}
@@ -1583,8 +1704,8 @@
 
             let filtered = allEmployees;
             if (search) {
-                filtered = filtered.filter(e => 
-                    e.username.toLowerCase().includes(search) || 
+                filtered = filtered.filter(e =>
+                    e.username.toLowerCase().includes(search) ||
                     (e.employee_name && e.employee_name.toLowerCase().includes(search))
                 );
             }
@@ -1600,7 +1721,7 @@
         async function loadRoles() {
             try {
                 const roles = await apiGet('api/lookups.php?action=roles');
-                
+
                 // Populate Add Employee dropdown (values are role IDs)
                 const roleSelect = document.getElementById('newRole');
                 roleSelect.innerHTML = '<option value="">Select role...</option>';
@@ -1740,6 +1861,7 @@
                     <td>
                         <div class="dash-action-group" style="flex-wrap:wrap;">
                             <button class="btn-view" style="background:#dcfce7; border-color:#16a34a; color:#166534;" onclick="restoreEmployee(${e.id}, '${e.username}')">↩️ Restore</button>
+                            <button class="btn-view" style="background:#fef2f2; border-color:#dc2626; color:#b91c1c; margin-left:6px;" onclick="permanentlyDeleteEmployee(${e.id}, '${e.username}', 'archiveEmpAlert')">🗑️ Permanent Delete</button>
                         </div>
                     </td>
                 </tr>
@@ -1755,13 +1877,13 @@
 
             rows.forEach(row => {
                 if (row.cells.length < 2) return;
-                
+
                 const username = row.cells[0].textContent.toLowerCase();
                 const employeeName = row.cells[1].textContent.toLowerCase();
                 const role = row.cells[2].textContent.toLowerCase();
 
                 let match = (username.includes(search) || employeeName.includes(search));
-                
+
                 if (roleFilter !== 'All') {
                     match = match && role.includes(roleFilter.toLowerCase());
                 }
@@ -1815,37 +1937,38 @@
 
                 showAlert('archiveEmpAlert', '✅ ' + res.message, 'success');
                 loadArchivedEmployees();
+                loadEmployees();
             } catch (err) {
                 showAlert('archiveEmpAlert', '❌ ' + err.message);
             }
         }
 
         async function deleteEmployee(id, username) {
-    const confirmResult = await Swal.fire({
-        title: 'Delete Employee?',
-        text: `This account '${username}' will be moved to the Delete Module. You can undo this later.`,
-        icon: 'warning',
-        showCancelButton: true,
-        confirmButtonColor: '#dc2626',
-        cancelButtonColor: '#6e7881',
-        confirmButtonText: 'Yes, Delete'
-    });
+            const confirmResult = await Swal.fire({
+                title: 'Delete Employee?',
+                text: `This account '${username}' will be moved to the Delete Module. You can undo this later.`,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#dc2626',
+                cancelButtonColor: '#6e7881',
+                confirmButtonText: 'Yes, Delete'
+            });
 
-    if (!confirmResult.isConfirmed) return;
+            if (!confirmResult.isConfirmed) return;
 
-    try {
-        const res = await apiPost('api/registrar.php?action=delete_employee', {
-            id: id,
-            admin_id: sessionStorage.getItem('adminId')
-        });
+            try {
+                const res = await apiPost('api/registrar.php?action=delete_employee', {
+                    id: id,
+                    admin_id: sessionStorage.getItem('adminId')
+                });
 
-        showAlert('empAlert', '✅ ' + res.message, 'success');
-        loadEmployees();
+                showAlert('empAlert', '✅ ' + res.message, 'success');
+                loadEmployees();
 
-    } catch (err) {
-        showAlert('empAlert', '❌ ' + err.message);
-    }
-}
+            } catch (err) {
+                showAlert('empAlert', '❌ ' + err.message);
+            }
+        }
 
         // =====================
         // DELETED EMPLOYEES (Load / Render / Restore)
@@ -1878,6 +2001,7 @@
                     <td>
                         <div class="dash-action-group">
                             <button class="btn-view" style="background:#dcfce7; border-color:#16a34a; color:#166534;" onclick="restoreEmployeeFromDeleted(${e.id}, '${e.username}')">↩️ Restore</button>
+                            <button class="btn-view" style="background:#fef2f2; border-color:#dc2626; color:#b91c1c; margin-left:6px;" onclick="permanentlyDeleteEmployee(${e.id}, '${e.username}', 'deletedEmpAlert')">🗑️ Permanent Delete</button>
                         </div>
                     </td>
                 </tr>
@@ -1916,8 +2040,49 @@
                 showAlert('deletedEmpAlert', '✅ ' + res.message, 'success');
                 loadDeletedEmployees();
                 loadArchivedEmployees();
+                loadEmployees();
             } catch (err) {
                 showAlert('deletedEmpAlert', '❌ ' + err.message);
+            }
+        }
+
+        async function permanentlyDeleteEmployee(id, username, sourceAlert) {
+            if (id == sessionStorage.getItem('adminId')) {
+                Swal.fire({
+                    title: 'Error',
+                    text: 'You cannot permanently delete your own account.',
+                    icon: 'error',
+                    confirmButtonColor: '#800000'
+                });
+                return;
+            }
+
+            const confirmResult = await Swal.fire({
+                title: 'Permanently Delete Employee?',
+                text: `Warning: This will permanently delete the employee account '${username}' and all their system logs. This action CANNOT be undone!`,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#dc2626',
+                cancelButtonColor: '#6e7881',
+                confirmButtonText: 'Yes, Permanently Delete'
+            });
+            if (!confirmResult.isConfirmed) return;
+
+            try {
+                const res = await apiPost('api/registrar.php?action=permanently_delete_employee', {
+                    id: id,
+                    admin_id: sessionStorage.getItem('adminId')
+                });
+
+                showAlert(sourceAlert, '✅ ' + res.message, 'success');
+                if (sourceAlert === 'archiveEmpAlert') {
+                    loadArchivedEmployees();
+                } else if (sourceAlert === 'deletedEmpAlert') {
+                    loadDeletedEmployees();
+                }
+                loadEmployees();
+            } catch (err) {
+                showAlert(sourceAlert, '❌ ' + err.message);
             }
         }
 
@@ -1935,12 +2100,18 @@
                 confirmButtonText: 'Yes, Delete'
             });
             if (!confirmResult.isConfirmed) return;
+
+            const alertId = document.getElementById('tab-enrolled').classList.contains('active') ? 'enrolledAlert' : 'enrollAlert';
+            const otherAlertId = alertId === 'enrolledAlert' ? 'enrollAlert' : 'enrolledAlert';
+
             try {
                 const res = await apiPost('api/registrar.php?action=delete_student', { student_id: studentId, admin_id: sessionStorage.getItem('adminId') });
-                showAlert('enrollAlert', '✅ ' + res.message, 'success');
+                showAlert(alertId, '✅ ' + res.message, 'success');
+                hideAlert(otherAlertId);
                 loadStudents();
             } catch (err) {
-                showAlert('enrollAlert', '❌ ' + err.message);
+                showAlert(alertId, '❌ ' + err.message);
+                hideAlert(otherAlertId);
             }
         }
 
@@ -1976,6 +2147,7 @@
                         <div class="dash-action-group">
                             <button class="btn-view" onclick="viewStudent(${s.enrollment_id})">👁 View</button>
                             <button class="btn-view" style="background:#dcfce7; border-color:#16a34a; color:#166534; margin-left:6px;" onclick="restoreDeletedStudentAdmin(${s.student_id})">↩️ Restore</button>
+                            <button class="btn-view" style="background:#fee2e2; border-color:#dc2626; color:#b91c1c; margin-left:6px;" onclick="permanentlyDeleteDeletedStudentAdmin(${s.student_id})">🗑️ Permanent Delete</button>
                         </div>
                     </td>
                 </tr>
@@ -2015,7 +2187,150 @@
             }
         }
 
-        
+        async function permanentlyDeleteDeletedStudentAdmin(studentId) {
+            const confirmResult = await Swal.fire({
+                title: 'Permanently Delete Student?',
+                text: 'WARNING: This action is permanent and cannot be undone! All associated enrollment and payment data will be permanently deleted.',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#dc2626',
+                cancelButtonColor: '#6e7881',
+                confirmButtonText: 'Yes, Permanently Delete'
+            });
+            if (!confirmResult.isConfirmed) return;
+            try {
+                const res = await apiPost('api/registrar.php?action=permanently_delete_student', { student_id: studentId, admin_id: sessionStorage.getItem('adminId') });
+                showAlert('deletedStudentsAlert', '✅ ' + res.message, 'success');
+                loadDeletedStudentsAdmin();
+                loadStudents();
+            } catch (err) {
+                showAlert('deletedStudentsAlert', '❌ ' + err.message);
+            }
+        }
+
+        // =====================
+        // STUDENT ARCHIVE MODULE (Admin)
+        // =====================
+        async function archiveStudentAdmin(studentId) {
+            const confirmResult = await Swal.fire({
+                title: 'Archive Student?',
+                text: 'This student record will be moved to the Archive. You can restore it later.',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#9333ea',
+                cancelButtonColor: '#6e7881',
+                confirmButtonText: 'Yes, Archive'
+            });
+            if (!confirmResult.isConfirmed) return;
+
+            const alertId = document.getElementById('tab-enrolled').classList.contains('active') ? 'enrolledAlert' : 'enrollAlert';
+            const otherAlertId = alertId === 'enrolledAlert' ? 'enrollAlert' : 'enrolledAlert';
+
+            try {
+                const res = await apiPost('api/registrar.php?action=archive_student', { student_id: studentId, admin_id: sessionStorage.getItem('adminId') });
+                showAlert(alertId, '✅ ' + res.message, 'success');
+                hideAlert(otherAlertId);
+                loadStudents();
+            } catch (err) {
+                showAlert(alertId, '❌ ' + err.message);
+                hideAlert(otherAlertId);
+            }
+        }
+
+        async function loadArchivedStudentsAdmin() {
+            const tbody = document.getElementById('archivedStudentsTableBody');
+            if (!tbody) return;
+            tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;padding:40px;">Loading archived students...</td></tr>';
+            try {
+                const students = await apiGet('api/registrar.php?action=archived_students');
+                renderArchivedStudentsAdmin(students);
+            } catch (err) {
+                tbody.innerHTML = `<tr><td colspan="8" style="text-align:center;color:#dc2626;padding:40px;">❌ Error: ${err.message}</td></tr>`;
+            }
+        }
+
+        function renderArchivedStudentsAdmin(students) {
+            const tbody = document.getElementById('archivedStudentsTableBody');
+            if (!tbody) return;
+            if (students.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;color:var(--gray-500);padding:40px;">No archived students.</td></tr>';
+                return;
+            }
+            tbody.innerHTML = students.map(s => `
+                <tr>
+                    <td><strong style="font-family:'Courier New',monospace;">${s.student_no}</strong></td>
+                    <td>${formatStudentName(s)}</td>
+                    <td>${s.grade_level}</td>
+                    <td>${formatParentName(s.parent_first_name, s.parent_last_name, s.parent_middle_name)}</td>
+                    <td>${s.parent_mobile || '—'}</td>
+                    <td style="white-space:nowrap;">${s.applied_at ? formatDate(s.applied_at) : '—'}</td>
+                    <td>${getStatusBadge(s.status)}</td>
+                    <td>
+                        <div class="dash-action-group">
+                            <button class="btn-view" onclick="viewStudent(${s.enrollment_id})">👁 View</button>
+                            <button class="btn-view" style="background:#dcfce7; border-color:#16a34a; color:#166534; margin-left:6px;" onclick="restoreArchivedStudentAdmin(${s.student_id})">↩️ Restore</button>
+                            <button class="btn-view" style="background:#fee2e2; border-color:#dc2626; color:#b91c1c; margin-left:6px;" onclick="permanentlyDeleteStudentAdmin(${s.student_id})">🗑️ Permanent Delete</button>
+                        </div>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        function filterArchivedStudentsAdmin() {
+            const search = document.getElementById('archivedStudentsSearchInput').value.toLowerCase();
+            const tbody = document.getElementById('archivedStudentsTableBody');
+            const rows = tbody.querySelectorAll('tr');
+            rows.forEach(row => {
+                if (row.cells.length < 2) return;
+                const studentNo = row.cells[0].textContent.toLowerCase();
+                const studentName = row.cells[1].textContent.toLowerCase();
+                row.style.display = (studentNo.includes(search) || studentName.includes(search)) ? '' : 'none';
+            });
+        }
+
+        async function restoreArchivedStudentAdmin(studentId) {
+            const confirmResult = await Swal.fire({
+                title: 'Restore Student?',
+                text: 'This student record will be moved back to the Active list.',
+                icon: 'info',
+                showCancelButton: true,
+                confirmButtonColor: '#800000',
+                cancelButtonColor: '#6e7881',
+                confirmButtonText: 'Yes, Restore'
+            });
+            if (!confirmResult.isConfirmed) return;
+            try {
+                const res = await apiPost('api/registrar.php?action=restore_student', { student_id: studentId, admin_id: sessionStorage.getItem('adminId') });
+                showAlert('archivedStudentsAlert', '✅ ' + res.message, 'success');
+                loadArchivedStudentsAdmin();
+                loadStudents();
+            } catch (err) {
+                showAlert('archivedStudentsAlert', '❌ ' + err.message);
+            }
+        }
+
+        async function permanentlyDeleteStudentAdmin(studentId) {
+            const confirmResult = await Swal.fire({
+                title: 'Permanently Delete Student?',
+                text: 'WARNING: This action is permanent and cannot be undone! All associated enrollment and payment data will be permanently deleted.',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#dc2626',
+                cancelButtonColor: '#6e7881',
+                confirmButtonText: 'Yes, Permanently Delete'
+            });
+            if (!confirmResult.isConfirmed) return;
+            try {
+                const res = await apiPost('api/registrar.php?action=permanently_delete_student', { student_id: studentId, admin_id: sessionStorage.getItem('adminId') });
+                showAlert('archivedStudentsAlert', '✅ ' + res.message, 'success');
+                loadArchivedStudentsAdmin();
+                loadStudents();
+            } catch (err) {
+                showAlert('archivedStudentsAlert', '❌ ' + err.message);
+            }
+        }
+
+
 
         // ===============================================
         // SHARED UTILITIES (used by all tabs)
@@ -2227,12 +2542,12 @@
         function renderEligibleGradesTags() {
             const container = document.getElementById('eligible_grades_tags_container');
             if (!container) return;
-            
+
             if (currentSelectedGrades.length === 0) {
                 container.innerHTML = `<span style="font-size:13px; color:var(--gray-400); padding: 4px 6px;">No grade levels selected</span>`;
                 return;
             }
-            
+
             container.innerHTML = currentSelectedGrades.map((grade, idx) => `
                 <span class="eligible-grade-badge">
                     ${escapeHtml(grade)}
@@ -2244,7 +2559,7 @@
         function populateEligibleGradesDropdown() {
             const dropdown = document.getElementById('eligible_grades_dropdown');
             if (!dropdown) return;
-            
+
             dropdown.innerHTML = '<option value="">-- Select Grade to Add --</option>';
             allGradeLevels.forEach(g => {
                 if (!currentSelectedGrades.includes(g.name)) {
@@ -2256,10 +2571,10 @@
         function addEligibleGradeTag() {
             const dropdown = document.getElementById('eligible_grades_dropdown');
             if (!dropdown) return;
-            
+
             const selectedVal = dropdown.value;
             if (!selectedVal) return;
-            
+
             if (!currentSelectedGrades.includes(selectedVal)) {
                 currentSelectedGrades.push(selectedVal);
                 updateEligibleGradesHiddenInput();
@@ -2325,7 +2640,7 @@
             }
             if (maintCurrentTable === 'payment_modes') {
                 document.getElementById('maintAddBtn').onclick = () => openMaintAddModal();
-                
+
                 // Add a grade filter dropdown to the header
                 const header = document.querySelector('.maint-panel-header');
                 const div = document.createElement('div');
@@ -2351,7 +2666,7 @@
                 maintFieldLabels = res.fieldLabels;
                 document.getElementById('maintPanelTitle').textContent = res.label;
                 renderMaintenanceTable();
-                
+
                 // If filter dropdown exists, apply it
                 if (maintCurrentTable === 'payment_modes') {
                     filterMaintTableByGrade();
@@ -2366,7 +2681,7 @@
             if (!select) return;
             const selectedVal = select.value;
             const rows = document.querySelectorAll('#maintTableBody tr');
-            
+
             rows.forEach(row => {
                 const gradeId = row.getAttribute('data-grade-id');
                 const groupGradeId = row.getAttribute('data-group-grade-id');
@@ -2431,13 +2746,13 @@
             // Step tabs
             thead.innerHTML = `<tr><td colspan="6" style="padding:0;">
                 <div style="display:flex;gap:6px;padding:12px 0 8px;">
-                    ${[1,2,3,4].map(s => `
+                    ${[1, 2, 3, 4].map(s => `
                         <button onclick="switchFormFieldStep(${s})" id="ffTab${s}"
                             style="padding:7px 16px;border-radius:6px;font-size:13px;font-weight:600;cursor:pointer;
-                                border:2px solid ${s===formFieldsCurrentStep?'var(--maroon-dark)':'var(--gray-300)'};
-                                background:${s===formFieldsCurrentStep?'var(--maroon-dark)':'#fff'};
-                                color:${s===formFieldsCurrentStep?'#fff':'var(--gray-700)'};"
-                        >${['Step 1 — Student','Step 2 — Parent','Step 3 — Docs','Step 4 — Payment'][s-1]}</button>
+                                border:2px solid ${s === formFieldsCurrentStep ? 'var(--maroon-dark)' : 'var(--gray-300)'};
+                                background:${s === formFieldsCurrentStep ? 'var(--maroon-dark)' : '#fff'};
+                                color:${s === formFieldsCurrentStep ? '#fff' : 'var(--gray-700)'};"
+                        >${['Step 1 — Student', 'Step 2 — Parent', 'Step 3 — Docs', 'Step 4 — Payment'][s - 1]}</button>
                     `).join('')}
                 </div>
             </td></tr>`;
@@ -2461,13 +2776,13 @@
                         <th style="padding:10px 12px;font-size:12px;">Actions</th>
                     </tr>
                     ${fields.map((f, i) => `
-                        <tr style="opacity:${f.is_active?1:0.55};">
-                            <td style="padding:10px 12px;font-weight:600;color:var(--gray-500);">${i+1}</td>
+                        <tr style="opacity:${f.is_active ? 1 : 0.55};">
+                            <td style="padding:10px 12px;font-weight:600;color:var(--gray-500);">${i + 1}</td>
                             <td style="padding:10px 12px;font-weight:500;">${escapeHtml(f.field_label)}<br><small style="color:var(--gray-500);font-size:11px;">${escapeHtml(f.field_name)}</small></td>
                             <td style="padding:10px 12px;"><span style="background:var(--gray-100);padding:3px 8px;border-radius:12px;font-size:12px;">${f.field_type}</span></td>
-                            <td style="padding:10px 12px;">${f.is_required?'<span style="color:#16a34a;font-weight:600;">✅ Yes</span>':'<span style="color:#6b7280;">No</span>'}</td>
+                            <td style="padding:10px 12px;">${f.is_required ? '<span style="color:#16a34a;font-weight:600;">✅ Yes</span>' : '<span style="color:#6b7280;">No</span>'}</td>
                             <td style="padding:10px 12px;">
-                                <button onclick="toggleFormFieldActive(${f.id})" style="padding:3px 10px;border-radius:12px;font-size:12px;cursor:pointer;border:1px solid ${f.is_active?'#16a34a':'#9ca3af'};background:${f.is_active?'#dcfce7':'#f3f4f6'};color:${f.is_active?'#166534':'#6b7280'};">${f.is_active?'✅ Active':'○ Inactive'}</button>
+                                <button onclick="toggleFormFieldActive(${f.id})" style="padding:3px 10px;border-radius:12px;font-size:12px;cursor:pointer;border:1px solid ${f.is_active ? '#16a34a' : '#9ca3af'};background:${f.is_active ? '#dcfce7' : '#f3f4f6'};color:${f.is_active ? '#166534' : '#6b7280'};">${f.is_active ? '✅ Active' : '○ Inactive'}</button>
                             </td>
                             <td style="padding:10px 12px;">
                                 <div class="maint-action-btns">
@@ -2478,7 +2793,7 @@
                         </tr>
                     `).join('')}
                 `;
-            } catch(err) {
+            } catch (err) {
                 panel.innerHTML = `<tr><td colspan="6" style="text-align:center;color:#dc2626;">${err.message}</td></tr>`;
             }
         }
@@ -2495,7 +2810,7 @@
                 });
                 showAlert('maintAlert', '✅ ' + res.message, 'success');
                 renderFormFieldsPanel();
-            } catch(err) { showAlert('maintAlert', '❌ ' + err.message); }
+            } catch (err) { showAlert('maintAlert', '❌ ' + err.message); }
         }
 
         async function deleteFormField(id) {
@@ -2515,7 +2830,7 @@
                 });
                 showAlert('maintAlert', '✅ ' + res.message, 'success');
                 renderFormFieldsPanel();
-            } catch(err) { showAlert('maintAlert', '❌ ' + err.message); }
+            } catch (err) { showAlert('maintAlert', '❌ ' + err.message); }
         }
 
         // ============================================================
@@ -2527,28 +2842,28 @@
 
             const record = id ? formFieldsData.find(f => f.id == id) : null;
             if (record && record.field_options) {
-                try { formFieldOptions = JSON.parse(record.field_options); } catch(e) { formFieldOptions = []; }
+                try { formFieldOptions = JSON.parse(record.field_options); } catch (e) { formFieldOptions = []; }
             }
 
             document.getElementById('maintModalTitle').textContent = id ? '✏️ Edit Custom Field' : '➕ Add Custom Field';
             document.getElementById('maintModalSaveBtn').onclick = saveFormField;
 
-            const label    = record ? record.field_label  : '';
-            const type     = record ? record.field_type   : 'text';
-            const required = record ? record.is_required  : 0;
-            const sortOrd  = record ? record.sort_order   : 0;
-            const ph       = record ? (record.placeholder||'') : '';
-            const hint     = record ? (record.hint_text||'')   : '';
-            const stepVal  = record ? record.step : formFieldsCurrentStep;
+            const label = record ? record.field_label : '';
+            const type = record ? record.field_type : 'text';
+            const required = record ? record.is_required : 0;
+            const sortOrd = record ? record.sort_order : 0;
+            const ph = record ? (record.placeholder || '') : '';
+            const hint = record ? (record.hint_text || '') : '';
+            const stepVal = record ? record.step : formFieldsCurrentStep;
 
             document.getElementById('maintModalBody').innerHTML = `
                 <div style="margin-bottom:14px;">
                     <label style="font-size:13px;font-weight:600;display:block;margin-bottom:4px;">Step</label>
-                    <select id="ff_step" style="width:100%;padding:8px;border:1px solid var(--gray-300);border-radius:6px;font-size:14px;" ${id?'disabled':''}>
-                        <option value="1" ${stepVal==1?'selected':''}>Step 1 — Student Information</option>
-                        <option value="2" ${stepVal==2?'selected':''}>Step 2 — Parent / Guardian</option>
-                        <option value="3" ${stepVal==3?'selected':''}>Step 3 — Documents</option>
-                        <option value="4" ${stepVal==4?'selected':''}>Step 4 — Payment</option>
+                    <select id="ff_step" style="width:100%;padding:8px;border:1px solid var(--gray-300);border-radius:6px;font-size:14px;" ${id ? 'disabled' : ''}>
+                        <option value="1" ${stepVal == 1 ? 'selected' : ''}>Step 1 — Student Information</option>
+                        <option value="2" ${stepVal == 2 ? 'selected' : ''}>Step 2 — Parent / Guardian</option>
+                        <option value="3" ${stepVal == 3 ? 'selected' : ''}>Step 3 — Documents</option>
+                        <option value="4" ${stepVal == 4 ? 'selected' : ''}>Step 4 — Payment</option>
                     </select>
                 </div>
                 <div style="margin-bottom:14px;">
@@ -2557,21 +2872,21 @@
                 </div>
                 <div style="margin-bottom:14px;">
                     <label style="font-size:13px;font-weight:600;display:block;margin-bottom:4px;">Field Name (auto-generated)</label>
-                    <input id="ff_name" value="${escapeHtml(record ? record.field_name : '')}" placeholder="place_of_birth" style="width:100%;background:var(--gray-50);font-family:monospace;" ${id?'readonly':''}>
+                    <input id="ff_name" value="${escapeHtml(record ? record.field_name : '')}" placeholder="place_of_birth" style="width:100%;background:var(--gray-50);font-family:monospace;" ${id ? 'readonly' : ''}>
                     <small style="color:var(--gray-500);font-size:11px;">Unique identifier (snake_case). Auto-filled from label.</small>
                 </div>
                 <div style="margin-bottom:14px;">
                     <label style="font-size:13px;font-weight:600;display:block;margin-bottom:4px;">Field Type *</label>
                     <select id="ff_type" onchange="onFieldTypeChange()" style="width:100%;padding:8px;border:1px solid var(--gray-300);border-radius:6px;font-size:14px;">
-                        <option value="text"     ${type==='text'?'selected':''}>Text</option>
-                        <option value="number"   ${type==='number'?'selected':''}>Number</option>
-                        <option value="date"     ${type==='date'?'selected':''}>Date</option>
-                        <option value="textarea" ${type==='textarea'?'selected':''}>Textarea (long text)</option>
-                        <option value="select"   ${type==='select'?'selected':''}>Dropdown (Select)</option>
-                        <option value="file"     ${type==='file'?'selected':''}>File Upload</option>
+                        <option value="text"     ${type === 'text' ? 'selected' : ''}>Text</option>
+                        <option value="number"   ${type === 'number' ? 'selected' : ''}>Number</option>
+                        <option value="date"     ${type === 'date' ? 'selected' : ''}>Date</option>
+                        <option value="textarea" ${type === 'textarea' ? 'selected' : ''}>Textarea (long text)</option>
+                        <option value="select"   ${type === 'select' ? 'selected' : ''}>Dropdown (Select)</option>
+                        <option value="file"     ${type === 'file' ? 'selected' : ''}>File Upload</option>
                     </select>
                 </div>
-                <div id="ff_options_section" style="display:${type==='select'?'block':'none'};margin-bottom:14px;">
+                <div id="ff_options_section" style="display:${type === 'select' ? 'block' : 'none'};margin-bottom:14px;">
                     <label style="font-size:13px;font-weight:600;display:block;margin-bottom:4px;">Dropdown Options *</label>
                     <div id="ff_options_tags" style="display:flex;flex-wrap:wrap;gap:6px;min-height:36px;padding:6px;border:1px dashed var(--gray-300);border-radius:6px;background:var(--gray-50);align-items:center;margin-bottom:8px;"></div>
                     <div style="display:flex;gap:8px;">
@@ -2594,7 +2909,7 @@
                     <input id="ff_hint" value="${escapeHtml(hint)}" placeholder="Optional note shown below the field" style="width:100%;">
                 </div>
                 <div style="display:flex;align-items:center;gap:10px;">
-                    <input type="checkbox" id="ff_required" ${required?'checked':''} style="width:16px;height:16px;">
+                    <input type="checkbox" id="ff_required" ${required ? 'checked' : ''} style="width:16px;height:16px;">
                     <label for="ff_required" style="font-size:13px;font-weight:600;margin:0;">Required field (student must fill this in)</label>
                 </div>
             `;
@@ -2641,12 +2956,12 @@
         async function saveFormField() {
             const label = document.getElementById('ff_label').value.trim();
             const fname = document.getElementById('ff_name').value.trim();
-            const type  = document.getElementById('ff_type').value;
-            const step  = parseInt(document.getElementById('ff_step').value);
-            const req   = document.getElementById('ff_required').checked ? 1 : 0;
-            const sort  = parseInt(document.getElementById('ff_sortorder').value) || 0;
-            const ph    = document.getElementById('ff_placeholder').value.trim();
-            const hint  = document.getElementById('ff_hint').value.trim();
+            const type = document.getElementById('ff_type').value;
+            const step = parseInt(document.getElementById('ff_step').value);
+            const req = document.getElementById('ff_required').checked ? 1 : 0;
+            const sort = parseInt(document.getElementById('ff_sortorder').value) || 0;
+            const ph = document.getElementById('ff_placeholder').value.trim();
+            const hint = document.getElementById('ff_hint').value.trim();
 
             if (!label || !fname) { showAlert('maintAlert', '❌ Field Label is required.'); return; }
             if (type === 'select' && formFieldOptions.length === 0) { showAlert('maintAlert', '❌ Dropdown fields need at least one option.'); return; }
@@ -2665,7 +2980,7 @@
                 closeMaintModal();
                 formFieldsCurrentStep = step;
                 renderFormFieldsPanel();
-            } catch(err) { showAlert('maintAlert', '❌ ' + err.message); }
+            } catch (err) { showAlert('maintAlert', '❌ ' + err.message); }
         }
 
         function renderMaintenanceTable() {
@@ -2826,7 +3141,7 @@
                 if (field === 'is_current' || field === 'is_active') return;
                 const label = maintFieldLabels[field] || field;
                 const value = record[field] !== undefined ? record[field] : '';
-                
+
                 if (maintCurrentTable === 'sessions' && field === 'eligible_grades') {
                     html += `
                         <div class="form-group" style="margin-bottom:14px;">
@@ -3108,7 +3423,7 @@
 
         async function loadAdminReportFilters() {
             renderAdminReportHeaders();
-            
+
             // Load grade levels
             if (!adminReportGradeLevelsLoaded) {
                 try {

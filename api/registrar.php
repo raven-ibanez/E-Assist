@@ -474,7 +474,7 @@ if ($action === 'review_payment') {
     $stmt->bind_param("iiss", $enrollment_id, $admin_id, $decision, $reason);
     $stmt->execute();
 
-    // Log the action
+    // Get name for logging
     $stmtName = $conn->prepare("SELECT first_name, last_name, middle_name, suffix FROM enrollments e JOIN students s ON e.student_id = s.id WHERE e.id = ?");
     $stmtName->bind_param("i", $enrollment_id);
     $stmtName->execute();
@@ -484,6 +484,46 @@ if ($action === 'review_payment') {
         $suffixStr = !empty($nameRes['suffix']) ? ' ' . $nameRes['suffix'] : '';
         $middleStr = !empty($nameRes['middle_name']) ? ' ' . $nameRes['middle_name'] : '';
         $studentName = $nameRes['last_name'] . $suffixStr . ', ' . $nameRes['first_name'] . $middleStr;
+    }
+
+    if ($decision === 'refunded') {
+        // Automatically execute refund logic
+        $stmtPay = $conn->prepare("
+            SELECT 
+                pay.id as payment_id,
+                (SELECT SUM(amount_paid) FROM payment_transactions WHERE payment_id = pay.id) as total_paid
+            FROM payments pay
+            WHERE pay.enrollment_id = ?
+        ");
+        $stmtPay->bind_param("i", $enrollment_id);
+        $stmtPay->execute();
+        $payInfo = $stmtPay->get_result()->fetch_assoc();
+
+        if ($payInfo) {
+            $total_paid = $payInfo['total_paid'] ?? 0;
+            if ($total_paid > 0) {
+                // Check if it has a refund already to prevent double refunding
+                $stmtCheckRefund = $conn->prepare("SELECT SUM(amount_paid) as refunded_amount FROM payment_transactions WHERE payment_id = ? AND amount_paid < 0");
+                $stmtCheckRefund->bind_param("i", $payInfo['payment_id']);
+                $stmtCheckRefund->execute();
+                $refCheck = $stmtCheckRefund->get_result()->fetch_assoc();
+                $refunded = abs($refCheck['refunded_amount'] ?? 0);
+                
+                $to_refund = $total_paid - $refunded;
+
+                if ($to_refund > 0) {
+                    $negExcess = -$to_refund;
+                    $notes = "Full student payment refund (Declined Enrollment)";
+                    $method_id = 2; // Default to Cash
+
+                    $stmtInsert = $conn->prepare("INSERT INTO payment_transactions (payment_id, amount_paid, payment_method_id, notes) VALUES (?, ?, ?, ?)");
+                    $stmtInsert->bind_param("idis", $payInfo['payment_id'], $negExcess, $method_id, $notes);
+                    $stmtInsert->execute();
+                    
+                    logAction($admin_id, "Student Payment Refunded", $enrollment_id, $studentName, "Refunded full payment of ₱" . number_format($to_refund, 2));
+                }
+            }
+        }
     }
 
     $logMsg = "Cashier review: " . ucfirst($decision);
@@ -889,6 +929,18 @@ if ($action === 'undo_refund') {
             $suffixStr = !empty($resName['suffix']) ? ' ' . $resName['suffix'] : '';
             $middleStr = !empty($resName['middle_name']) ? ' ' . $resName['middle_name'] : '';
             $studentName = $resName['last_name'] . $suffixStr . ', ' . $resName['first_name'] . $middleStr;
+        }
+
+        // Also delete the latest negative transaction to revert the refund transaction
+        $stmtPay = $conn->prepare("SELECT id FROM payments WHERE enrollment_id = ?");
+        $stmtPay->bind_param("i", $enrollment_id);
+        $stmtPay->execute();
+        $pay = $stmtPay->get_result()->fetch_assoc();
+        if ($pay) {
+            $payment_id = $pay['id'];
+            $stmtDelTrans = $conn->prepare("DELETE FROM payment_transactions WHERE payment_id = ? AND amount_paid < 0 ORDER BY created_at DESC LIMIT 1");
+            $stmtDelTrans->bind_param("i", $payment_id);
+            $stmtDelTrans->execute();
         }
 
         logAction($admin_id, "Undo Refund", $enrollment_id, $studentName, "Administrator reverted the 'Refunded' status.");
@@ -1484,6 +1536,77 @@ if ($action === 'restore_employee_from_deleted') {
         sendJSON(['message' => 'Employee record restored successfully.']);
     } else {
         sendJSON(['error' => 'Employee not found or not deleted.'], 404);
+    }
+}
+
+// =============================================================
+//  ACTION: PERMANENTLY DELETE STUDENT
+//  - Deletes student record and cascades to enrollments, etc.
+// =============================================================
+if ($action === 'permanently_delete_student') {
+    $student_id = $data['student_id'] ?? '';
+    $admin_id   = $data['admin_id'] ?? '';
+
+    if (!$student_id || !$admin_id) {
+        sendJSON(['error' => 'Student ID and Admin ID are required.'], 400);
+    }
+
+    // Get name for logging first
+    $stmtName = $conn->prepare("SELECT first_name, last_name, middle_name, suffix FROM students WHERE id = ?");
+    $stmtName->bind_param("i", $student_id);
+    $stmtName->execute();
+    $nameRes = $stmtName->get_result()->fetch_assoc();
+    $studentName = 'Unknown';
+    if ($nameRes) {
+        $suffixStr = !empty($nameRes['suffix']) ? ' ' . $nameRes['suffix'] : '';
+        $middleStr = !empty($nameRes['middle_name']) ? ' ' . $nameRes['middle_name'] : '';
+        $studentName = $nameRes['last_name'] . $suffixStr . ', ' . $nameRes['first_name'] . $middleStr;
+    }
+
+    $stmt = $conn->prepare("DELETE FROM students WHERE id = ?");
+    $stmt->bind_param("i", $student_id);
+    $stmt->execute();
+
+    if ($stmt->affected_rows > 0) {
+        logAction($admin_id, "Permanently Delete Student", $student_id, $studentName, "Student record permanently deleted.");
+        sendJSON(['message' => 'Student record permanently deleted.']);
+    } else {
+        sendJSON(['error' => 'Student not found.'], 404);
+    }
+}
+
+// =============================================================
+//  ACTION: PERMANENTLY DELETE EMPLOYEE
+//  - Deletes employee record from admin table.
+// =============================================================
+if ($action === 'permanently_delete_employee') {
+    $id       = $data['id'] ?? '';
+    $admin_id = $data['admin_id'] ?? '';
+
+    if (!$id || !$admin_id) {
+        sendJSON(['error' => 'Employee ID and Admin ID are required.'], 400);
+    }
+
+    if ($id == $admin_id) {
+        sendJSON(['error' => 'You cannot permanently delete your own account.'], 400);
+    }
+
+    // Get username for logging first
+    $stmtName = $conn->prepare("SELECT username FROM admin WHERE id = ?");
+    $stmtName->bind_param("i", $id);
+    $stmtName->execute();
+    $nameRes = $stmtName->get_result()->fetch_assoc();
+    $employeeName = $nameRes['username'] ?? 'Unknown';
+
+    $stmt = $conn->prepare("DELETE FROM admin WHERE id = ?");
+    $stmt->bind_param("i", $id);
+    $stmt->execute();
+
+    if ($stmt->affected_rows > 0) {
+        logAction($admin_id, "Permanently Delete Employee", $id, $employeeName, "Employee record permanently deleted.");
+        sendJSON(['message' => 'Employee record permanently deleted successfully.']);
+    } else {
+        sendJSON(['error' => 'Employee not found.'], 404);
     }
 }
 

@@ -101,10 +101,6 @@
                     <span class="dash-nav-icon">🗂️</span>
                     <span class="dash-nav-label">Archive</span>
                 </button>
-                <button class="dash-nav-item" id="nav-deleted" onclick="switchTab('deleted')">
-                    <span class="dash-nav-icon">🗑️</span>
-                    <span class="dash-nav-label">Delete</span>
-                </button>
                 <button class="dash-nav-item" id="nav-reports" onclick="switchTab('reports')">
                     <span class="dash-nav-icon">📊</span>
                     <span class="dash-nav-label">Reports</span>
@@ -232,14 +228,13 @@
                         </div>
                     </div>
                 </div>
-
-                <!-- ===== TAB 2: REPORTS ===== -->
-                <div class="tab-content" id="tab-deleted">
+                <!-- ===== TAB: ARCHIVE ===== -->
+                <div class="tab-content" id="tab-archive">
                     <div class="dash-table-card">
                         <div class="dash-table-header">
-                            <span class="dash-table-title">Deleted Students</span>
+                            <span class="dash-table-title">Archived Students</span>
                             <div class="dash-filter-row">
-                                <input type="text" id="deletedSearchInput" placeholder="Search deleted by name or ID..." oninput="filterDeletedStudentsCashier()">
+                                <input type="text" id="archiveSearchInput" placeholder="Search archived by name or ID..." oninput="filterArchivedStudentsCashier()">
                             </div>
                         </div>
                         <div class="dash-table-scroll">
@@ -251,19 +246,18 @@
                                         <th>Grade</th>
                                         <th>Parent</th>
                                         <th>Contact</th>
-                                        <th>Deleted Date</th>
+                                        <th>Date Applied</th>
                                         <th>Status</th>
                                         <th>Actions</th>
                                     </tr>
                                 </thead>
-                                <tbody id="deletedStudentsTableBody">
-                                    <tr><td colspan="8" style="text-align:center;padding:40px;">Loading deleted students...</td></tr>
+                                <tbody id="archivedStudentsTableBody">
+                                    <tr><td colspan="8" style="text-align:center;padding:40px;">Loading archived students...</td></tr>
                                 </tbody>
                             </table>
                         </div>
                     </div>
                 </div>
-
                 <div class="tab-content" id="tab-reports">
                     <div class="dash-table-card">
                         <div class="dash-table-header" style="flex-direction: column; align-items: stretch; gap: 16px;">
@@ -519,7 +513,14 @@
                             <button class="btn-view" onclick="viewPayment(${r.enrollment_id})">👁 View</button>
                             <button class="btn-view" style="border-color:#1e40af; color:#1e40af;" onclick="openUpdatePaymentModal(${r.payment_id})">💳 Update</button>
                             
-                            ${r.cashier_status === 'pending' || (r.cashier_status === 'approved' && r.status !== 'Refunded') || r.cashier_status === 'refunded' ? `
+                            ${r.status === 'Declined' && r.cashier_status !== 'refunded' && parseFloat(r.total_paid || 0) > 0 ? `
+                                <div class="dot-menu-wrapper">
+                                    <button class="btn-dots" onclick="toggleDotMenu('dm-p-${r.enrollment_id}')">⋮</button>
+                                    <div class="dot-dropdown" id="dm-p-${r.enrollment_id}">
+                                        <button class="danger" onclick="reviewPayment(${r.enrollment_id}, 'refunded')">💸 Refund</button>
+                                    </div>
+                                </div>
+                            ` : r.cashier_status === 'pending' || (r.cashier_status === 'approved' && r.status !== 'Refunded') || r.cashier_status === 'refunded' ? `
                                 <div class="dot-menu-wrapper">
                                     <button class="btn-dots" onclick="toggleDotMenu('dm-p-${r.enrollment_id}')">⋮</button>
                                     <div class="dot-dropdown" id="dm-p-${r.enrollment_id}">
@@ -652,8 +653,22 @@
         }
 
         // --- Show payment details in a popup modal ---
-        function viewPayment(id) {
-            const r = allPayments.find(p => p.enrollment_id == id);
+        async function viewPayment(id) {
+            let r = allPayments.find(p => p.enrollment_id == id);
+            if (!r) {
+                try {
+                    r = await apiGet(`api/registrar.php?action=detail&id=${id}`);
+                } catch (err) {
+                    console.error("Failed to load details for archived payment view", err);
+                    Swal.fire({
+                        title: 'Error',
+                        text: 'Failed to load archived student payment details: ' + err.message,
+                        icon: 'error',
+                        confirmButtonColor: '#800000'
+                    });
+                    return;
+                }
+            }
             if (!r) return;
 
             document.getElementById('modalContent').innerHTML = `
@@ -668,7 +683,7 @@
                 <div class="info-item"><label>Full Name</label><span>${formatStudentName(r)}</span></div>
                 <div class="info-item"><label>Grade Level</label><span>${r.grade_level}</span></div>
                 <div class="info-item"><label>Parent / Guardian</label><span>${formatParentName(r.parent_first_name, r.parent_last_name, r.parent_middle_name)}</span></div>
-                <div class="info-item"><label>Contact</label><span>${r.parent_contact || '—'}</span></div>
+                <div class="info-item"><label>Contact</label><span>${r.parent_mobile || r.parent_contact || '—'}</span></div>
                 <div class="info-item"><label>Payment Method</label><span>${r.payment_method || 'Not provided'}</span></div>
                 <div class="info-item"><label>Payment Mode</label><span>${r.payment_mode || '—'}${r.payment_mode === 'Monthly' ? ' (10 months)' : ''}</span></div>
                 <div class="info-item"><label>Reference Number</label><span class="ref-number">${r.reference_number || '—'}</span></div>
@@ -840,8 +855,8 @@
 
             if (tabId === 'reports') {
                 loadReportPaymentMethods();
-            } else if (tabId === 'deleted') {
-                loadDeletedStudentsCashier();
+            } else if (tabId === 'archive') {
+                loadArchivedStudentsCashier();
             }
         }
 
@@ -951,25 +966,23 @@
             URL.revokeObjectURL(url);
         }
 
-        // Load payment data when the page opens
-        loadPayments();
-        async function loadDeletedStudentsCashier() {
-            const tbody = document.getElementById('deletedStudentsTableBody');
+        async function loadArchivedStudentsCashier() {
+            const tbody = document.getElementById('archivedStudentsTableBody');
             if (!tbody) return;
-            tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;padding:40px;">Loading deleted students...</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;padding:40px;">Loading archived students...</td></tr>';
             try {
-                const students = await apiGet('api/registrar.php?action=deleted_students');
-                renderDeletedStudentsCashier(students);
+                const students = await apiGet('api/registrar.php?action=archived_students');
+                renderArchivedStudentsCashier(students);
             } catch (err) {
                 tbody.innerHTML = `<tr><td colspan="8" style="text-align:center;color:#dc2626;padding:40px;">❌ Error: ${err.message}</td></tr>`;
             }
         }
 
-        function renderDeletedStudentsCashier(students) {
-            const tbody = document.getElementById('deletedStudentsTableBody');
+        function renderArchivedStudentsCashier(students) {
+            const tbody = document.getElementById('archivedStudentsTableBody');
             if (!tbody) return;
             if (students.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;color:var(--gray-500);padding:40px;">No deleted students.</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;color:var(--gray-500);padding:40px;">No archived students.</td></tr>';
                 return;
             }
             tbody.innerHTML = students.map(s => `
@@ -979,21 +992,20 @@
                     <td>${s.grade_level}</td>
                     <td>${s.parent_first_name} ${s.parent_last_name}</td>
                     <td>${s.parent_mobile || '—'}</td>
-                    <td style="white-space:nowrap;">—</td>
+                    <td style="white-space:nowrap;">${s.applied_at ? formatDate(s.applied_at) : '—'}</td>
                     <td>${getStatusBadge(s.status)}</td>
                     <td>
                         <div class="dash-action-group">
                             <button class="btn-view" onclick="viewPayment(${s.enrollment_id})">👁 View</button>
-                            <button class="btn-view" style="background:#dcfce7; border-color:#16a34a; color:#166534; margin-left:6px;" onclick="restoreDeletedStudentCashier(${s.student_id})">↩️ Restore</button>
                         </div>
                     </td>
                 </tr>
             `).join('');
         }
 
-        function filterDeletedStudentsCashier() {
-            const input = document.getElementById('deletedSearchInput');
-            const tbody = document.getElementById('deletedStudentsTableBody');
+        function filterArchivedStudentsCashier() {
+            const input = document.getElementById('archiveSearchInput');
+            const tbody = document.getElementById('archivedStudentsTableBody');
             const rows = tbody.querySelectorAll('tr');
             const searchTerm = input.value.toLowerCase().trim();
             rows.forEach(row => {
@@ -1004,25 +1016,8 @@
             });
         }
 
-        async function restoreDeletedStudentCashier(studentId) {
-            const confirmResult = await Swal.fire({
-                title: 'Restore Student?',
-                text: 'This student record will be moved back to the Active list.',
-                icon: 'info',
-                showCancelButton: true,
-                confirmButtonColor: '#800000',
-                cancelButtonColor: '#6e7881',
-                confirmButtonText: 'Yes, Restore'
-            });
-            if (!confirmResult.isConfirmed) return;
-            try {
-                const res = await apiPost('api/registrar.php?action=restore_student_from_deleted', { student_id: studentId, admin_id: sessionStorage.getItem('adminId') });
-                showAlert('alert', '✅ ' + res.message, 'success');
-                loadDeletedStudentsCashier();
-            } catch (err) {
-                showAlert('alert', '❌ ' + err.message);
-            }
-        }
+        // Load payment data when the page opens
+        loadPayments();
     </script>
 </body>
 

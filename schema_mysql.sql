@@ -352,19 +352,19 @@ CREATE TABLE IF NOT EXISTS payment_modes (
 -- Kinder (id=1), Grade 1 (id=2), Grade 2 (id=3), Grade 3 (id=4), Grade 4 (id=5), Grade 5 (id=6), Grade 6 (id=7)
 INSERT IGNORE INTO payment_modes (grade_level_id, name, description, installment_count, installment_amount, tuition_fee, books_fee, is_active, sort_order) VALUES
     (1, 'Full Payment', 'Pay the entire amount at once', NULL, NULL, 21000.00, 5000.00, 1, 1),
-    (1, 'Monthly', 'Pay in 10 monthly installments', 10, 1500.00, 15000.00, 5000.00, 1, 2),
+    (1, 'Monthly', 'Pay in 10 monthly installments', 10, 2100.00, 21000.00, 5000.00, 1, 2),
     (2, 'Full Payment', 'Pay the entire amount at once', NULL, NULL, 23500.00, 6500.00, 1, 1),
-    (2, 'Monthly', 'Pay in 10 monthly installments', 10, 1700.00, 17000.00, 6500.00, 1, 2),
+    (2, 'Monthly', 'Pay in 10 monthly installments', 10, 2350.00, 23500.00, 6500.00, 1, 2),
     (3, 'Full Payment', 'Pay the entire amount at once', NULL, NULL, 23500.00, 6500.00, 1, 1),
-    (3, 'Monthly', 'Pay in 10 monthly installments', 10, 1700.00, 17000.00, 6500.00, 1, 2),
+    (3, 'Monthly', 'Pay in 10 monthly installments', 10, 2350.00, 23500.00, 6500.00, 1, 2),
     (4, 'Full Payment', 'Pay the entire amount at once', NULL, NULL, 23500.00, 6500.00, 1, 1),
-    (4, 'Monthly', 'Pay in 10 monthly installments', 10, 1700.00, 17000.00, 6500.00, 1, 2),
+    (4, 'Monthly', 'Pay in 10 monthly installments', 10, 2350.00, 23500.00, 6500.00, 1, 2),
     (5, 'Full Payment', 'Pay the entire amount at once', NULL, NULL, 23500.00, 7000.00, 1, 1),
-    (5, 'Monthly', 'Pay in 10 monthly installments', 10, 1700.00, 17000.00, 7000.00, 1, 2),
+    (5, 'Monthly', 'Pay in 10 monthly installments', 10, 2350.00, 23500.00, 7000.00, 1, 2),
     (6, 'Full Payment', 'Pay the entire amount at once', NULL, NULL, 23500.00, 7000.00, 1, 1),
-    (6, 'Monthly', 'Pay in 10 monthly installments', 10, 1700.00, 17000.00, 7000.00, 1, 2),
+    (6, 'Monthly', 'Pay in 10 monthly installments', 10, 2350.00, 23500.00, 7000.00, 1, 2),
     (7, 'Full Payment', 'Pay the entire amount at once', NULL, NULL, 23500.00, 7000.00, 1, 1),
-    (7, 'Monthly', 'Pay in 10 monthly installments', 10, 1700.00, 17000.00, 7000.00, 1, 2);
+    (7, 'Monthly', 'Pay in 10 monthly installments', 10, 2350.00, 23500.00, 7000.00, 1, 2);
 
 
 -- ============================================================
