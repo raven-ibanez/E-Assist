@@ -1,68 +1,65 @@
 # 📚 E-Assist Enrollment System — COMPLETE LEARNING GUIDE
 
 > **How to use this guide:** Read each chapter in order. Each chapter covers one file.
-> After reading the explanation, open the actual file and read along.
+> After reading the explanation, click the file link to open the actual file and read along.
 
 ---
 
 ## 🗺️ PROJECT OVERVIEW
 
 This is a **School Enrollment System** for BSSMAI (Brother Sun Sister Moon Academy Inc.).
-It lets parents enroll their children online, and employees (registrar, cashier, admin) can manage the applications.
+It lets parents enroll their children online, and employees (registrar, cashier, admin) manage applications, payments, custom form configurations, system settings, and reporting.
 
 ### How the system works (simplified):
 ```
-Parent fills out enrollment form (4 steps)
-    → Data is saved to MySQL database
-        → Registrar reviews application details
-        → Cashier views payment information
-        → Admin manages everything + employee accounts
+Parent fills out enrollment form (4 steps, including dynamic custom fields)
+    → Data is saved to MySQL database (with audit logs)
+        → Registrar reviews application details & enrolled list
+        → Cashier views payment information & records installments
+        → Admin manages system configuration, reporting, logs, and accounts
 ```
 
 ### Technology Stack:
 | Technology | What it does |
 |---|---|
-| **HTML** | The structure of each page (buttons, forms, tables) |
-| **CSS** | The styling/design (colors, fonts, spacing) |
-| **JavaScript** | The logic in the browser (form handling, API calls) |
-| **PHP** | The server-side logic (saves data, queries database) |
-| **MySQL** | The database (stores all student, parent, payment data) |
+| **HTML** | The structure of each page (buttons, forms, tables, modals) |
+| **CSS** | The styling/design (colors, fonts, layout, glassmorphism, animations) |
+| **JavaScript** | The logic in the browser (dynamic page rendering, API calls, state) |
+| **SweetAlert2** | Modern popup dialogs replacing native browser alerts & confirm boxes |
+| **PHP** | The server-side logic (saving data, routing queries, sending emails, generating reports) |
+| **MySQL** | The database (stores student, parent, payment, custom field, and log data) |
 
 ### File Map:
 ```
 E-Assist/
-├── index.html              ← Home page (entry point)
-├── style.css               ← All the styling
-├── main.js                 ← Shared JavaScript functions
-├── db.php                  ← Database connection
-├── schema_mysql.sql        ← Database structure
+├── index.html                  ← Home page (entry point)
+├── style.css                   ← All the styling & layouts
+├── main.js                     ← Shared JavaScript formatting & alert functions
+├── db.php                      ← Database connection & helper functions
+├── schema_mysql.sql            ← Database schema blueprint
+├── migrate.php                 ← Database migration & seeding script
 │
 ├── Enrollment Flow (for parents):
-│   ├── enroll-student.html ← Step 1: Student info
-│   ├── enroll-parent.html  ← Step 2: Parent info + email
-│   ├── enroll-docs.html    ← Step 3: Previous school
-│   ├── enroll-payment.html ← Step 4: Payment + submit
-│   └── success.html        ← Receipt + downloadable image
+│   ├── enroll-student.html     ← Step 1: Student info + custom student fields
+│   ├── enroll-parent.html      ← Step 2: Parent info + custom parent fields
+│   ├── enroll-docs.html        ← Step 3: Previous school + custom doc fields
+│   ├── enroll-payment.html     ← Step 4: Dynamic payment mode + submit
+│   └── success.html            ← Receipt + downloadable receipt canvas image
 │
 ├── Employee System:
-│   ├── employee-login.html      ← Login for staff
-│   ├── registrar-dashboard.html ← Registrar: view applications
-│   ├── cashier-dashboard.html   ← Cashier: view payments
-│   └── admin-dashboard.html     ← Admin: everything + accounts
+│   ├── employee-login.html          ← Login page for staff members
+│   ├── registrar-dashboard.html     ← Registrar: view applications, enrolled masterlist, archive, reports
+│   ├── cashier-dashboard.html       ← Cashier: view payments, record transactions, refunds, archive, reports
+│   └── admin-dashboard.html         ← Admin: dashboard summary, active accounts, archive/delete, logs, maintenance, reports
 │
-├── api/                    ← PHP backend files
-│   ├── register.php        ← Handles enrollment form submission
-│   ├── registrar.php       ← Handles login + all dashboard data
-│   ├── lookups.php         ← Provides dropdown data
-│   ├── email_config.php    ← PHPMailer setup & templates
-│   ├── send_email.php      ← Standalone script for sending emails
-│   └── uploads/            ← Uploaded student files (PSA, SF10, 2x2)
-│
-├── phpmailer/              ← Third-party email library
-│
-└── Images:
-    ├── logo.png
-    └── hero-image.png
+└── api/                        ← PHP backend files
+    ├── register.php            ← Handles enrollment form submission + custom fields save
+    ├── registrar.php           ← Handles employee login, dashboard queries, soft-deletes, restore
+    ├── lookups.php             ← Provides dropdown options, payment modes, and form fields
+    ├── maintenance.php         ← CRUD endpoints for Lookups, payment modes, custom fields
+    ├── reports.php             ← Registrar/Cashier report endpoints (filters & exports)
+    ├── email_config.php        ← PHPMailer templates & configuration
+    └── uploads/                ← Uploaded student files (PSA, SF10, 2x2, custom file fields)
 ```
 
 ---
@@ -71,835 +68,243 @@ E-Assist/
 
 Study the files in this exact order:
 
-| Order | File | Why Learn This First |
+| Order | File / Topic | Purpose / What You Will Learn |
 |---|---|---|
-| 1 | `schema_mysql.sql` | Understand what data we store |
-| 2 | `db.php` | How PHP connects to MySQL |
-| 3 | `main.js` | Shared functions used everywhere |
-| 4 | `index.html` | The home page structure |
-| 5 | `style.css` | How the design works |
-| 6 | `enroll-student.html` | First enrollment step |
-| 7 | `enroll-parent.html` | Second enrollment step |
-| 8 | `enroll-docs.html` | Third enrollment step |
-| 9 | `enroll-payment.html` | Final step + submission |
-| 10 | `api/lookups.php` | Simple PHP API |
-| 11 | `api/register.php` | How enrollment data is saved |
-| 12 | `success.html` | Confirmation page |
-| 13 | `api/email_config.php` | How automated emails are sent |
-| 14 | `employee-login.html` | Staff login page |
-| 15 | `api/registrar.php` | All dashboard backend logic |
-| 16 | `registrar-dashboard.html` | Registrar's view |
-| 17 | `cashier-dashboard.html` | Cashier's view |
-| 18 | `admin-dashboard.html` | Admin super-dashboard |
+| 1 | [schema_mysql.sql](file:///c:/xampp/htdocs/E-Assist/schema_mysql.sql) | Understand what data we store and how it is structured |
+| 2 | [migrate.php](file:///c:/xampp/htdocs/E-Assist/migrate.php) | Learn how schema adjustments and database seeds are run |
+| 3 | [db.php](file:///c:/xampp/htdocs/E-Assist/db.php) | How PHP connects to MySQL and returns JSON |
+| 4 | [main.js](file:///c:/xampp/htdocs/E-Assist/main.js) | Shared helper functions and SweetAlert2 integration |
+| 5 | [index.html](file:///c:/xampp/htdocs/E-Assist/index.html) | Home page entry point |
+| 6 | [style.css](file:///c:/xampp/htdocs/E-Assist/style.css) | Premium CSS design system, typography, and badges |
+| 7 | [enroll-student.html](file:///c:/xampp/htdocs/E-Assist/enroll-student.html) | Step 1: Student info and dynamic custom field rendering |
+| 8 | [enroll-parent.html](file:///c:/xampp/htdocs/E-Assist/enroll-parent.html) | Step 2: Parent info and dynamic fields |
+| 9 | [enroll-docs.html](file:///c:/xampp/htdocs/E-Assist/enroll-docs.html) | Step 3: School document uploads |
+| 10 | [enroll-payment.html](file:///c:/xampp/htdocs/E-Assist/enroll-payment.html) | Step 4: Mode selection (card UI), initial payments, submit |
+| 11 | [success.html](file:///c:/xampp/htdocs/E-Assist/success.html) | Receipt rendering with Canvas 2D API |
+| 12 | [api/lookups.php](file:///c:/xampp/htdocs/E-Assist/api/lookups.php) | Data lookups API (dropdowns, modes, custom fields) |
+| 13 | [api/register.php](file:///c:/xampp/htdocs/E-Assist/api/register.php) | Complete enrollment form submission & transaction saver |
+| 14 | [employee-login.html](file:///c:/xampp/htdocs/E-Assist/employee-login.html) | Staff authentication screen |
+| 15 | [api/registrar.php](file:///c:/xampp/htdocs/E-Assist/api/registrar.php) | Staff authentication, core dashboard operations, soft deletes |
+| 16 | [api/maintenance.php](file:///c:/xampp/htdocs/E-Assist/api/maintenance.php) | System maintenance API (CRUD lookup values, payment modes, fields) |
+| 17 | [api/reports.php](file:///c:/xampp/htdocs/E-Assist/api/reports.php) | Query generator for Registrar & Cashier reports |
+| 18 | [registrar-dashboard.html](file:///c:/xampp/htdocs/E-Assist/registrar-dashboard.html) | Registrar interface (Applications, Enrolled, Archive, Reports) |
+| 19 | [cashier-dashboard.html](file:///c:/xampp/htdocs/E-Assist/cashier-dashboard.html) | Cashier interface (Payments, Archive, Reports) |
+| 20 | [admin-dashboard.html](file:///c:/xampp/htdocs/E-Assist/admin-dashboard.html) | Admin interface (Full management, Archive/Delete tabs, Maintenance, Reports) |
 
 ---
 
-# CHAPTER 1: schema_mysql.sql
-**What is this?** The blueprint for the database. It defines what tables exist, what data they store, and how they relate to each other.
+# CHAPTER 1: schema_mysql.sql & migrate.php
+**What are these?** The database blueprint and migration script. Together, they define our relational database tables, columns, constraints, and seed data.
 
-### 🔗 Understanding Database Relationships
-In this system, we use **Relational Database Design (3rd Normal Form)**. This means we separate data into logical tables and link them together using **Foreign Keys** instead of duplicating data.
+### 🔗 Dynamic Schema Updates
+To support dynamic settings and data management without hardcoding, the database has been restructured to separate configuration settings from operational records:
 
-Here are the key relationship types you need to master:
-1. **One-to-Many (1:N):** One row in Table A can link to multiple rows in Table B. 
-   *(Example: `parents` to `students` — One parent can have multiple enrolled students, but each student only has one parent record).*
-2. **Lookup Tables:** Small tables used to store standard options instead of hardcoding them. 
-   *(Example: `grade_levels`, `relations`, `payment_methods`).*
-3. **Link/Junction Tables:** Tables that connect other tables to represent an event.
-   *(Example: `enrollments` links a `student`, a `school_year`, and a `grade_level` together).*
-
----
-
-### Core Entity Tables
-These tables hold the primary data about the people in the system.
-
-#### Table: parents
-- **Purpose:** Stores parent/guardian information.
-- **Relationships:**
-  - **One-to-Many with students:** A parent (`id`) can appear multiple times in the `students` table (`parent_id`).
-  - **Foreign Keys:** Links to `relations` (`relation_id`) and `income_ranges` (`income_range_id`).
-- **Note:** `email` is NOT unique because a single parent account can enroll multiple children.
-
-#### Table: students
-- **Purpose:** Stores the student's personal information and uploaded files.
-- **Relationships:** 
-  - **Belongs to one parent:** `parent_id` links directly to `parents.id`. `ON DELETE CASCADE` means if a parent record is deleted, all their student records are deleted too.
-  - **One-to-Many with enrollments:** A student can enroll multiple times across different school years.
+1. **One-to-Many Relationships (1:N):**
+   - Parents to Students (`parents.id` → `students.parent_id`).
+   - Grade Levels to Payment Modes (`grade_levels.id` → `payment_modes.grade_level_id`).
+2. **Lookup & Configuration Tables:**
+   - `grade_levels`, `school_years` (with an `is_current` active flag).
+   - `sessions` (with `eligible_grades` list and custom `note`).
+   - `payment_methods` (with payment instructions `details` and UI emojis `icon`).
+3. **The Configuration Engine Tables (NEW):**
+   - **`payment_modes`**: Admin-configurable payment plans per grade level. Stores fees, installments, and active status.
+   - **`form_fields`**: Admin-configurable custom fields for any step of the enrollment form. Support types like `text`, `number`, `date`, `select` (JSON option array), `textarea`, and `file`.
+   - **`enrollment_field_values`**: Holds the student-submitted data for those dynamic fields, linked by foreign keys to prevent data loss.
+4. **Soft Delete and Archiving Statuses:**
+   - The `students` and `admin` (employee) tables contain a `status` column: `ENUM('active', 'archived', 'deleted') NOT NULL DEFAULT 'active'`. This enables a secure two-stage soft deletion and archiving workflow.
 
 ---
-
-### Lookup Tables (The Options)
-Instead of storing text like "Mother" or "Kinder" repeatedly, we store them once here and reference their `id`. This makes renaming an option easy.
-- **`school_years`**: Available school years (e.g., 2025-2026). Has an `is_current` flag.
-- **`grade_levels`**: Kinder, Grade 1, etc.
-- **`relations`**: Mother, Father, Guardian, etc.
-- **`sessions`**: AM/PM session options.
-- **`income_ranges`**: Estimated monthly income choices.
-- **`payment_methods`**: GCash, Cash, Bank Transfer.
-- **`roles`**: Admin, Registrar, Cashier.
-
----
-
-### The Enrollment Engine (Link Tables)
-This is where the magic happens. These tables tie the people to the school data.
-
-#### Table: enrollments
-- **Purpose:** The core operational table. It answers: *"Who is enrolled, in what grade, for what year, and at what time?"*
-- **Relationships:** This table acts as a **hub**.
-  - `student_id` links to `students`
-  - `school_year_id` links to `school_years`
-  - `grade_level_id` links to `grade_levels`
-  - `session_id` links to `sessions`
-
-#### Table: enrollment_reviews (The "Middle Man")
-- **Purpose:** Records administrative decisions to keep student data separate from staff actions.
-- **Relationships:** 
-  - **Many-to-One with enrollments:** An enrollment can have multiple reviews over time (e.g., approved, then dropped, then undo drop).
-  - **Many-to-One with admin:** Tracks *which* employee made the decision.
-- **Why?** This provides a clean **audit trail** and calculates the real-time status dynamically.
-
----
-
-### Financial Tracking Tables
-We separate the payment plans from the actual cash transactions.
-
-#### Table: payments
-- **Purpose:** Defines the *expected* payment plan (Full vs Monthly) and total calculated fees.
-- **Relationships:** 
-  - **One-to-One with enrollments:** Every enrollment gets exactly one `payments` record.
-  - **One-to-Many with payment_transactions:** One payment plan will have many actual cash payments over time.
-
-#### Table: payment_transactions
-- **Purpose:** Records every actual payment or refund made.
-- **Relationships:** 
-  - Links to `payments` (`payment_id`).
-- **How it works:** We sum the `amount_paid` column to calculate the Total Paid. **Positive** values are payments. **Negative** values are refunds (e.g., "Refund Excess").
-
----
-
-### System Management
-#### Table: admin
-- **Purpose:** Employee login accounts.
-- **Relationships:** Links to `roles` (`role_id`) to determine dashboard access.
-
-#### Table: system_logs
-- **Purpose:** The master audit trail tracking everything employees do.
-- **Relationships:** Links to `admin` (`admin_id`) to know who did what.
 
 # CHAPTER 2: db.php
-**What is this?** Connects PHP to your MySQL database. Every PHP file includes this.
+**What is this?** Connects PHP scripts to the MySQL database. It is imported by all backend scripts.
 
-```php
-<?php
-```
-- This tag tells the server "everything after this is PHP code"
-
-```php
-ob_start();
-```
-- `ob_start()` = "Output Buffering Start"  
-- Captures any text output so it doesn't accidentally break our JSON responses
-
-```php
-error_reporting(E_ALL);
-ini_set('display_errors', 0);
-```
-- `error_reporting(E_ALL)` — track ALL errors internally
-- `ini_set('display_errors', 0)` — but don't show them on the page (for security)
-
-```php
-$host    = 'localhost';
-$db      = 'enrollment_db';
-$user    = 'root';
-$pass    = '';
-$charset = 'utf8mb4';
-```
-- These are the credentials to connect to MySQL
-- `localhost` = your own computer
-- `root` with empty password = XAMPP default
-
-```php
-$conn = new mysqli($host, $user, $pass, $db);
-```
-- `mysqli` = MySQL Improved (a tool to talk to databases)
-- `$conn` is the connection object. We use it everywhere to run queries
-
-```php
-$conn->set_charset($charset);
-```
-- This ensures the connection uses the correct character encoding (supports emojis, etc.)
-
-```php
-function sendJSON($data, $status = 200) {
-    ob_clean();
-    http_response_code($status);
-    header('Content-Type: application/json');
-    echo json_encode($data);
-    exit;
-}
-```
-- `ob_clean()` — clears any accidental output
-- `http_response_code($status)` — sets the HTTP status (200 = OK, 400 = error)
-- `header('Content-Type: application/json')` — tells the browser "this is JSON"
-- `json_encode($data)` — converts a PHP array like `['name' => 'Juan']` to `{"name":"Juan"}`
-- `exit` — stops the script immediately
+### Key Connection & JSON Utilities:
+- **Output Buffering (`ob_start()` / `ob_clean()`)**: Captures standard output so accidental spaces or PHP warnings don't mangle API responses.
+- **`sendJSON($data, $status)`**: Standardizes API JSON output, sets the HTTP header to `application/json`, output-escapes buffer contents, writes the encoded JSON string, and calls `exit` to stop execution.
 
 ---
 
 # CHAPTER 3: main.js
-**What is this?** Shared JavaScript functions used by ALL HTML pages.
+**What is this?** Shared JavaScript helpers loaded by all parent pages and dashboards.
 
-### apiPost() — Send JSON data to the server
-```javascript
-async function apiPost(url, data) {
-    const res = await fetch(url, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data)
-    });
-    const json = await res.json();
-    if (!res.ok) throw new Error(json.error || 'Something went wrong.');
-    return json;
-}
-```
-- `async` — this function uses `await` (waits for the server to respond)
-- `fetch(url, {...})` — the browser's built-in way to make HTTP requests
-- `method: 'POST'` — we're SENDING data (not just requesting)
-- `headers` — tells the server we're sending JSON
-- `JSON.stringify(data)` — converts JS object `{name: "Juan"}` to string `'{"name":"Juan"}'`
-- `await res.json()` — reads the server's response as JSON
-- `if (!res.ok)` — if the server returned an error status (400, 401, 500, etc.)
-- `throw new Error(...)` — creates an error that can be caught with `try/catch`
-
-### apiPostForm() — Send form data with files
-```javascript
-async function apiPostForm(url, formData) {
-    const res = await fetch(url, {
-        method: 'POST',
-        body: formData
-    });
-    // ...same error handling...
-}
-```
-- Used for the enrollment form because it includes **file uploads** (PSA, SF10)
-- `FormData` is a special object that can contain both text AND files
-- No `Content-Type` header needed — the browser sets it automatically for FormData
-
-### apiGet() — Get data from the server
-```javascript
-async function apiGet(url) {
-    const res = await fetch(url);
-    const json = await res.json();
-    if (!res.ok) throw new Error(json.error || 'Something went wrong.');
-    return json;
-}
-```
-- `fetch(url)` without options = GET request (just reading data)
-- Used to load student lists, grade levels, employees, etc.
-
-### showAlert() — Show a colored message box
-```javascript
-function showAlert(elementId, message, type = 'error') {
-    const el = document.getElementById(elementId);
-    el.textContent = message;
-    el.className = `alert alert-${type}`;
-    el.style.display = 'block';
-    el.scrollIntoView({ behavior: 'smooth', block: 'center' });
-}
-```
-- `document.getElementById(elementId)` — finds the HTML element with that ID
-- `el.textContent = message` — sets the text content
-- `` el.className = `alert alert-${type}` `` — sets CSS classes (`alert-error` = red, `alert-success` = green)
-- `el.scrollIntoView(...)` — smoothly scrolls the page so the user can see the message
-
-### setLoading() — Disable a button while loading
-```javascript
-function setLoading(buttonId, isLoading, originalText = 'Submit') {
-    const btn = document.getElementById(buttonId);
-    btn.disabled = isLoading;
-    btn.textContent = isLoading ? '⏳ Please wait...' : originalText;
-}
-```
-- `btn.disabled = true` — makes the button unclickable (prevents double-submit)
-- The `? :` is a ternary operator: `condition ? valueIfTrue : valueIfFalse`
+### Major Helper Functions:
+1. **`apiPost(url, data)` / `apiPostForm(url, formData)` / `apiGet(url)`**: AJAX request wrappers using the fetch API with central error interception.
+2. **`formatStudentName(s)` / `formatParentName(...)`**: Consistent naming formatters across all dashboards:
+   - Student Name format: `Last suffix, First Middle` (e.g. `Cruz Jr., Juan Miguel`)
+   - Parent Name format: `First Middle Last` (e.g. `Maria Santos Cruz`)
+3. **`formatCurrency(amount)`**: Centralized Philippine Peso format (`₱XX,XXX.XX`).
+4. **`nameMatches(student, search)`**: Smart search filter logic comparing student first, middle, last, and suffixes.
+5. **SweetAlert2 Alert Override**:
+   ```javascript
+   if (typeof Swal !== 'undefined') {
+       window.alert = function (message) {
+           Swal.fire({
+               title: 'Notice',
+               text: String(message),
+               icon: 'info',
+               confirmButtonColor: '#800000' // School Maroon color theme
+           });
+       };
+   }
+   ```
+   If the SweetAlert2 library is loaded on a page, any call to native `window.alert(...)` is intercepted and shown as a premium, branded notice.
 
 ---
 
-# CHAPTER 4: index.html
-**What is this?** The home page — the first page users see.
+# CHAPTER 4: index.html & style.css
+**What are these?** The home page layout and the global stylesheet.
 
-```html
-<!DOCTYPE html>
-```
-- Tells the browser "this is an HTML5 document"
-
-```html
-<html lang="en">
-```
-- `lang="en"` — the page language is English (helps search engines and screen readers)
-
-```html
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Enrollment System — Home</title>
-    <link rel="stylesheet" href="style.css">
-</head>
-```
-- `<head>` — contains metadata (not visible on the page)
-- `charset="UTF-8"` — supports special characters (₱, é, etc.)
-- `viewport` — makes the page responsive on mobile
-- `<title>` — the text shown in the browser tab
-- `<link rel="stylesheet">` — loads our CSS file
-
-```html
-<header class="navbar">
-    <div class="header-left">
-        <img src="logo.png" alt="BSSMAI Logo" class="logo">
-        <h1 class="school-name">BSSMAI</h1>
-    </div>
-    <div class="header-right">
-        <a href="employee-login.html" class="btn-employee">EMPLOYEE</a>
-    </div>
-</header>
-```
-- `<header>` — the top navigation bar
-- `<img src="logo.png">` — displays the school logo
-- `<a href="employee-login.html">` — a link to the employee login page
-
-```html
-### The Enrollment Trigger:
-```html
-<div class="hero-text">
-    ...
-    <div style="margin-top: 35px;">
-        <a href="enroll-student.html" class="btn-enroll">Enroll Now</a>
-    </div>
-</div>
-```
-- The previous card-based design was replaced with a minimal, premium **Enroll Now** button.
-- It is placed directly in the Hero Section for maximum visibility.
-- Clicking it takes you to `enroll-student.html` (Step 1 of enrollment).
+- **Primary Colors**: Maroon (`--maroon-dark`: `#7a1230`) and Gold (`--gold`: `#FFD700`).
+- **Glassmorphism**: Elegant transparent headers and dashboard elements using a backdrop filter blur.
+- **Soft UI Layout**: Soft shadows (`--shadow`), clean borders (`--gray-200`), and standard card borders (`--radius: 12px`).
 
 ---
 
-# CHAPTER 5: The Enrollment Flow (Steps 1-4)
+# CHAPTER 5: The Enrollment Flow (Steps 1 to 4)
+**What is this?** The multi-step enrollment form filled out by parent enrollees.
 
-## How data flows between steps:
-
+### How Data Moves Dynamically:
 ```
-Step 1 (Student) → saves to sessionStorage → Step 2 (Parent)
-Step 2 (Parent)  → saves to sessionStorage → Step 3 (Docs)
-Step 3 (Docs)    → saves to sessionStorage → Step 4 (Payment)
-Step 4 (Payment) → collects ALL data → sends to register.php → redirects to success.html
+Step 1: Student Details + Custom Fields (Step 1) → saved to sessionStorage
+Step 2: Parent Details + Custom Fields (Step 2) → saved to sessionStorage
+Step 3: School Documents + Custom Fields (Step 3) → saved to sessionStorage
+Step 4: Load Payment Modes dynamically per Grade Level + submit total package
 ```
 
-### What is sessionStorage?
+### Dynamic Custom Fields Rendering:
+On steps 1, 2, and 3, JavaScript fetches custom fields defined by the admin:
 ```javascript
-// SAVING data:
-sessionStorage.setItem('enroll_data', JSON.stringify({ first_name: 'Juan', last_name: 'Cruz' }));
-
-// LOADING data:
-const data = JSON.parse(sessionStorage.getItem('enroll_data') || '{}');
-// data = { first_name: 'Juan', last_name: 'Cruz' }
+const fields = await apiGet('api/lookups.php?action=form-fields&step=1');
+// Render text, textarea, select (JSON-decoded), or dates dynamically...
 ```
-- `sessionStorage` is like a temporary notepad in the browser
-- It keeps data while the tab is open
-- When the tab is closed, the data is automatically deleted
-- We use it to remember form data as the user moves between steps
+When the parent clicks "Next", standard values are read from the HTML elements, and custom inputs are read by matching their `[data-custom-field]` attributes and saved to the user's `sessionStorage`.
 
-### The pattern used in EVERY step:
-
+### Dynamic Payment Mode Cards (Step 4):
+Instead of hardcoding "Full Payment" and "Monthly", the enrollees see payment option cards loaded dynamically based on the grade level selected in Step 1:
 ```javascript
-// 1. Load saved data
-const savedData = JSON.parse(sessionStorage.getItem('enroll_data') || '{}');
+const modes = await apiGet(`api/lookups.php?action=payment-modes&grade_level_id=${gradeId}`);
+// Renders options showing Tuition Fees, Books Fees, downpayment, and monthly installments
+```
+Once submitted, `enroll-payment.html` appends all `sessionStorage` values, standard fields, files, and custom form values into a `FormData` object and POSTs it to `api/register.php`.
 
-// 2. Fill form fields with saved data (if user comes back)
-Object.keys(savedData).forEach(key => {
-    const input = document.getElementById(key);
-    if (input) input.value = savedData[key];
+---
+
+# CHAPTER 6: success.html & Canvas Receipt
+**What is this?** The enrollment receipt screen shown after submission.
+
+- **Dynamic Reading**: Reads Student ID, Name, Method, and Totals from the URL query string (`URLSearchParams`).
+- **Canvas drawing**: Renders a high-DPI receipt canvas (Brother Sun Sister Moon Academy banner, school seal watermark, and invoice details) client-side.
+- **Receipt Download**: Converts the canvas drawing to a high-resolution PNG file (`canvas.toDataURL('image/png')`) for parents to download as proof of enrollment.
+
+---
+
+# CHAPTER 7: api/lookups.php
+**What is this?** Simple API providing reference lists to the frontend forms.
+
+### Available lookup action routes:
+- `?action=grade-levels`: Grade categories.
+- `?action=relations`: Father, Mother, Guardian, etc.
+- `?action=income-ranges`: Parent monthly income ranges.
+- `?action=sessions`: AM/PM schedules, filtered in JS by grade level eligibility.
+- `?action=payment-methods`: Available channels (GCash, Cash, Bank) with instructions.
+- `?action=payment-modes`: Plan modes (e.g. Monthly, Full) mapped to the selected grade.
+- `?action=form-fields&step=N`: Active custom fields configured for step `N`.
+
+---
+
+# CHAPTER 8: api/register.php
+**What is this?** Receives the multi-step `FormData` and saves it to the database.
+
+### The Database Transaction Flow:
+1. **Began Transaction**: PHP initiates a MySQL transaction. If any part fails, the entire submission rolls back.
+2. **Insert Parent**: Creates the record and returns `$parentId`.
+3. **Generate Student Number**: Combines current year and total student count (e.g., `2026-00003`).
+4. **Insert Student**: Creates the student record, saves uploaded standard files (2x2 photo, PSA birth certificate, SF10 card), and links the parent.
+5. **Insert Enrollment**: Links the student, grade level, session, and school year.
+6. **Insert Payment**: Records tuition, book fees, and payment method details.
+7. **Insert Transactions**: Records initial downpayment if greater than zero.
+8. **Save Custom Fields**: Loops through any custom field keys (`custom_field_{id}`) and inserts values into `enrollment_field_values`.
+9. **Commit**: Save changes and queue status emails in the background.
+
+---
+
+# CHAPTER 9: Maintenance Module (api/maintenance.php)
+**What is this?** Backend endpoints used by the Admin Dashboard to modify lookup data and configure the enrollment form dynamically.
+
+### Key Maintenance Capabilities:
+- **Foreign Key Checks**: Before deleting a lookup option (e.g., a grade level), the API checks if any active student is using it. If so, it blocks the delete request to protect data integrity.
+- **Dynamic Fee Calculator**: Modifying a payment mode installment count and amount auto-calculates the tuition fee.
+- **Custom Field Builder**: Add, edit, or delete custom form inputs. Deletions are blocked if student submissions exist (recommends deactivating the field instead).
+- **System Audit Log**: Every change (add, update, delete, deactivate) writes an audit trail to `system_logs`.
+
+---
+
+# CHAPTER 10: Reports Module (api/reports.php)
+**What is this?** Queries student enrollment and financial status data to build reports.
+
+- **Registrar reports**: Filters by Grade Level, Status, and Date Ranges.
+- **Cashier reports**: Filters by Payment Method, Payment Mode, and Date Ranges.
+- **Excel/CSV Exporting**: Formats headers and data array rows into clean comma-separated values. Outputs using UTF-8 with a Byte Order Mark (`\uFEFF`) to prevent Excel from mangling Philippine Peso signs and special characters.
+
+---
+
+# CHAPTER 11: api/registrar.php & Dashboard Portals
+**What is this?** Authentication, actions review, and soft delete database actions for dashboards.
+
+### Registrar Dashboard:
+1. **Applications Tab**: View, edit, approve, approve with document-to-follow (DTF), decline, and drop pending applications.
+2. **Enrolled Tab**: Master list displaying active enrolled students.
+3. **Archive Tab**: View archived student records.
+4. **Reports Tab**: Preview and export registrar-specific reports.
+
+### Cashier Dashboard:
+1. **Payments Tab**: View payments, check GCash reference numbers, approve or decline transaction proofs, refund excessive payments, and record installment cash transactions.
+2. **Archive Tab**: View payment history for archived student records.
+3. **Reports Tab**: Preview and export financial payment reports.
+
+### Admin Dashboard:
+The ultimate super-user panel consisting of the following tabs:
+1. **Applications & Enrolled**: Monitor students with options to edit, archive, or delete records.
+2. **Payments**: View cashier payment status logs and refund history.
+3. **Employees**: Activate/deactivate accounts, and edit details.
+4. **Archive & Delete Sub-tabs**:
+   - **Archive (Employee)** & **Delete (Employee)**: Restore archived/deleted accounts or permanently erase them.
+   - **Archive (Students)** & **Delete (Students)**: Revert soft-deleted/archived students or permanently erase their records.
+5. **Logs**: Searchable audit log of every employee transaction. Features date range filtering and CSV export.
+6. **Maintenance**: Toggle categories to configure Grade Levels, Payment Methods, School Years, Sessions, Income Ranges, Payment Modes, and Custom Form Fields.
+7. **Reports**: Core report panel generating both Registrar and Cashier summaries.
+
+---
+
+# 💡 CORE PATTERNS SUMMARY
+
+### 1. Soft Delete vs Permanent Delete
+When a record is "deleted" or "archived" by an administrator, it is not immediately removed from the database:
+- **Soft Delete**: Sets `status = 'deleted'`. The record disappears from active tables and goes to the "Deleted" tab. It can be restored to `'active'` status or permanently removed via `DELETE FROM`.
+- **Archive**: Sets `status = 'archived'`. Moving a record to the archive clears it from the main workflow but retains it for historical data reports.
+
+### 2. SweetAlert2 Confirmation Dialog
+Critical actions require confirmation before submitting to the database. Use SweetAlert2 dialogs for user safety:
+```javascript
+const confirmResult = await Swal.fire({
+    title: 'Archive Student?',
+    text: 'This student record will be moved to the Archive.',
+    icon: 'warning',
+    showCancelButton: true,
+    confirmButtonColor: '#800000',
+    cancelButtonColor: '#6e7881',
+    confirmButtonText: 'Yes, Archive'
 });
+if (!confirmResult.isConfirmed) return; // Stop if cancelled
 
-// 3. When form is submitted, save data and go to next step
-document.getElementById('stepForm').addEventListener('submit', function(e) {
-    e.preventDefault();                 // Don't reload the page
-    const formData = new FormData(e.target);                    // Get form values
-    const data = JSON.parse(sessionStorage.getItem('enroll_data') || '{}');
-    formData.forEach((value, key) => data[key] = value);       // Merge new + old data
-    sessionStorage.setItem('enroll_data', JSON.stringify(data)); // Save
-    window.location.href = 'next-step.html';                   // Go to next page
-});
+// Execute API Post if confirmed...
 ```
 
-### Step 4 (Payment) — Final Submission:
-```javascript
-// This step is different — it SUBMITS everything
-const finalFormData = new FormData(e.target);
-
-// Hiding fields via JavaScript (Conditional UI)
-if (name === 'Cash') {
-    refGroup.style.display = 'none'; // Clear out inputs the user doesn't need
-}
-
-// Add all saved data from previous steps
-Object.keys(savedData).forEach(key => {
-    if (!finalFormData.has(key)) {
-        finalFormData.append(key, savedData[key]);
-    }
-});
-
-// Send EVERYTHING to the server
-const result = await apiPostForm('api/register.php', finalFormData);
-```
-- **Conditional Visibility**: The form dynamically hides the Reference Number if "Cash" is chosen.
-- **Bank Instructions**: Custom messages like "bank details are to be followed" appear based on selection.
-- **Card-Based Modes**: Payment modes (Full/Monthly) use interactive cards instead of plain radio buttons.
-
-## CHAPTER 5.5: success.html
-**What is this?** The "Application Receipt" page shown after a successful submission.
-
-- **Receipt UI**: Instead of a plain list, it uses a premium, high-fidelity receipt design that mimics a physical document.
-- **Dynamic Data**: It reads student name, ID, and payment details from the **URL parameters** (passed from Step 4).
-- **Downloadable Image**: Features a "Download Receipt Image" button that generates a high-resolution PNG using the browser's Canvas API.
-- **Social Media Integration**: Explicitly tells parents to follow the school's Facebook page for the latest enrollment announcements.
+### 3. Session Notes & Grade Eligibility
+In [schema_mysql.sql](file:///c:/xampp/htdocs/E-Assist/schema_mysql.sql), class sessions are dynamically filtered based on the student's grade:
+- E.g. `Morning Session` is only shown if the selected grade is `Grade 2`, `Grade 3`, or `Grade 4`.
+- Custom notes associated with the session are displayed to parent enrollees instantly during selection.
 
 ---
 
-## CHAPTER 5.7: The Application Receipt System
-**How it works:** This is one of the most advanced parts of the frontend. It allows the user to save a "proof of enrollment" without needing a server-side PDF generator.
-
-### 1. Data Passing (URL Parameters)
-When the user clicks "Submit" on Step 4 (`enroll-payment.html`), the JavaScript gathers all the final values (Total, Reference No, etc.) and attaches them to the success URL:
-```javascript
-// Example of building the URL in enroll-payment.html:
-const params = new URLSearchParams({
-    name: result.name,
-    id: result.student_no,
-    method: 'GCash',
-    total: '₱30,000'
-});
-window.location.href = `success.html?${params.toString()}`;
-```
-
-### 2. Reading Data (success.html)
-Inside `success.html`, we use `URLSearchParams` to extract those values and display them:
-```javascript
-const p = new URLSearchParams(window.location.search);
-const studentName = p.get('name'); // "Juan Cruz"
-document.getElementById('r-name').textContent = studentName;
-```
-
-### 3. The Canvas 2D API (Drawing the Image)
-To create the downloadable PNG, we don't use a screenshot tool. Instead, we **programmatically draw** the receipt onto a hidden `<canvas>` element using code.
-- **Why?** This ensures the image is crystal clear (High-DPI) and works even if the user has a slow internet connection.
-- **How it's drawn:**
-  ```javascript
-  const ctx = canvas.getContext('2d');
-  ctx.fillStyle = '#7a1e1e'; // School Maroon
-  ctx.fillRect(0, 0, 680, 130); // Draw the header background
-  ctx.font = 'bold 15px Arial';
-  ctx.fillText('Brother Sun Sister Moon Academy Inc.', 340, 80);
-  ```
-- **The Download:** Once drawing is finished, `canvas.toDataURL('image/png')` converts the drawing into a file link that the user can download.
-
----
-
-
----
-
-# CHAPTER 5.6: api/lookups.php
-**What is this?** A simple PHP API that provides dropdown data to the enrollment forms. It reads from lookup tables (like `grade_levels`, `relations`) and returns the data as JSON.
-
-### Why do we need this?
-Instead of hardcoding options like `<option>Mother</option>` directly in the HTML, we fetch them from the database. This means an admin can add a new grade level or relationship type by editing the database — no code changes needed.
-
-### How it works:
-```
-JavaScript calls:  api/lookups.php?action=grade-levels
-                       ↓
-PHP reads $action from the URL (?action=grade-levels)
-                       ↓
-PHP queries the grade_levels table
-                       ↓
-PHP returns JSON:  [{"id":1,"name":"Kinder"}, {"id":2,"name":"Grade 1"}, ...]
-                       ↓
-JavaScript fills the <select> dropdown with the options
-```
-
-### The action pattern:
-```php
-$action = $_GET['action'] ?? '';  // Read ?action=... from the URL
-
-if ($action === 'grade-levels') {
-    $result = $conn->query("SELECT id, name FROM grade_levels ORDER BY sort_order");
-    sendJSON($result->fetch_all(MYSQLI_ASSOC));
-    // sendJSON() calls exit; so the script STOPS here
-}
-
-if ($action === 'relations') {
-    $result = $conn->query("SELECT id, name FROM relations ORDER BY id");
-    sendJSON($result->fetch_all(MYSQLI_ASSOC));
-}
-// ... more actions below ...
-
-// If nothing matched, return an error:
-sendJSON(['error' => 'Invalid action'], 400);
-```
-- Each `if` block handles one specific action and then **exits**
-- `fetch_all(MYSQLI_ASSOC)` — fetches ALL rows as an associative array (like a list of `['id'=>1, 'name'=>'Kinder']`)
-
-### All available actions:
-| URL Parameter | Table Queried | Used In |
-|---|---|---|
-| `?action=grade-levels` | `grade_levels` | Step 1 (grade dropdown) |
-| `?action=sessions` | `sessions` | Step 1 (schedule dropdown) |
-| `?action=relations` | `relations` | Step 2 (relationship dropdown) |
-| `?action=income-ranges` | `income_ranges` | Step 2 (income dropdown) |
-| `?action=payment-methods` | `payment_methods` | Step 4 (payment cards) |
-| `?action=roles` | `roles` | Admin dashboard (add employee form) |
-
-### How the frontend uses it (in enroll-student.html):
-```javascript
-// Fetch grade levels AND sessions at the same time (parallel requests)
-const [grades, sessions] = await Promise.all([
-    apiGet('api/lookups.php?action=grade-levels'),
-    apiGet('api/lookups.php?action=sessions')
-]);
-
-// Build the <select> dropdown from the results
-const gradeSelect = document.getElementById('grade_level_id');
-gradeSelect.innerHTML = '<option value="">-- Select Grade Level --</option>';
-grades.forEach(g => {
-    gradeSelect.innerHTML += `<option value="${g.id}">${g.name}</option>`;
-});
-```
-- `Promise.all([...])` — runs both API calls **at the same time** instead of one after the other. Faster!
-- Template literal `` `<option value="${g.id}">${g.name}</option>` `` — builds HTML by injecting the data from the database
-
----
-
-# CHAPTER 6: api/register.php
-**What is this?** Receives the enrollment form data and saves it to the database.
-
-### The flow:
-```
-1. Receive form data ($_POST)
-2. Validate required fields
-3. Save uploaded files to api/uploads/
-4. Insert Parent record → get parent ID
-5. Generate Student Number (2026-00001)
-6. Insert Student record → get student ID
-7. Insert Enrollment record (links student + parent)
-8. Send success response
-```
-
-### Key concepts:
-
-**$_POST** — PHP automatically fills this with form data:
-```php
-$first_name = $_POST['first_name'] ?? '';
-```
-- `$_POST['first_name']` gets the value of the `first_name` field from the form
-- `?? ''` means "if it doesn't exist, use empty string instead"
-
-**$_FILES** — PHP fills this with uploaded files:
-```php
-if (isset($_FILES['psa_birth_cert']) && $_FILES['psa_birth_cert']['error'] === UPLOAD_ERR_OK) {
-    $filename = time() . '_psa_' . basename($_FILES['psa_birth_cert']['name']);
-    move_uploaded_file($_FILES['psa_birth_cert']['tmp_name'], $uploadDir . $filename);
-}
-```
-- `isset(...)` — checks if a file was uploaded
-- `UPLOAD_ERR_OK` — means the upload succeeded
-- `time()` — current timestamp (prevents filename conflicts)
-- `move_uploaded_file()` — moves the file from temp location to our uploads folder
-
-**Database Transaction:**
-```php
-$conn->begin_transaction();   // Start recording
-// ... multiple INSERT operations ...
-$conn->commit();              // Save everything at once
-// If something fails:
-$conn->rollback();            // Undo everything
-```
-- A transaction means "do ALL of these or NONE of them"
-- If inserting the student fails, the parent insert is also undone
-
-**Prepared Statements:**
-```php
-$stmt = $conn->prepare("INSERT INTO students (first_name) VALUES (?)");
-$stmt->bind_param("s", $first_name);
-$stmt->execute();
-```
-- The `?` is a placeholder — PHP fills it in safely
-- `bind_param("s", ...)` — tells PHP that the first placeholder is a **s**tring
-- This prevents SQL injection attacks (hackers can't break your query)
-- `$conn->insert_id` gets the ID of the row we just inserted
-
----
-
-# CHAPTER 7: api/registrar.php
-**What is this?** The backend for ALL employee dashboards (login, students, payments, reviews, and employee management).
-
-### How it works:
-The URL contains an `action` parameter that tells PHP what to do:
-```
-api/registrar.php?action=login              → check credentials
-api/registrar.php?action=students           → get all enrollment data
-api/registrar.php?action=detail&id=5        → get full info for one enrollment
-api/registrar.php?action=payments           → get all payment data
-api/registrar.php?action=review_application → registrar approves/declines
-api/registrar.php?action=review_payment     → cashier approves/declines
-api/registrar.php?action=employees          → get all employee accounts
-api/registrar.php?action=add_employee       → create new employee
-api/registrar.php?action=delete_employee    → delete an employee
-```
-
-### The calculateStatus() helper function:
-```php
-function calculateStatus($reg, $cash) {
-    if ($reg === 'declined' || $cash === 'declined') return 'Declined';
-    if ($reg === 'approved' && $cash === 'approved') return 'Enrolled';
-    if ($reg === 'approved') return 'For Payment Review';
-    if ($cash === 'approved') return 'For Application Review';
-    return 'Pending';
-}
-```
-- This function takes the **latest Registrar decision** and the **latest Cashier decision** and calculates the overall enrollment status.
-- It is called every time students or payments are fetched, so the status is always up-to-date.
-- **Status flow:**
-  - Both pending → `Pending`
-  - Registrar approved, Cashier pending → `For Payment Review`
-  - Both approved → `Enrolled`
-  - Either declined → `Declined`
-
-### The Review Actions (approve/decline/drop/refund):
-- **Approve**: Standard approval.
-- **Appr. DTF (Document to Follow)**: Approves the student but flags them as `documents_pending = 1` until missing files are uploaded.
-- **Drop / Undo Drop**: The Registrar can mark an enrolled student as "Dropped", and can undo this action later.
-- **Refund Excess**: The Cashier can record a negative transaction to zero out a student's refundable amount if they overpaid, keeping the student "Enrolled".
-- **Audit Logging**: Every action (approve, drop, update, upload document) calls a `logAction()` helper to insert a record into `system_logs`.
-
-```php
-// REGISTRAR reviews an application:
-if ($action === 'review_application') {
-    // Inserts a new row into enrollment_reviews with review_type='Registrar'
-    $stmt = $conn->prepare(
-        "INSERT INTO enrollment_reviews (enrollment_id, admin_id, review_type, decision)
-         VALUES (?, ?, 'Registrar', ?)"
-    );
-    // ...
-    logAction($admin_id, "Application Review", $enrollment_id, null, "Registrar decision: $decision");
-}
-```
-- Every click of an action button **adds a new row** — it does not overwrite existing history.
-- The frontend receives `new_status` and immediately updates the badge in the table without reloading the page.
-
-### Key pattern:
-```php
-$action = $_GET['action'] ?? '';
-
-if ($action === 'login') {
-    // handle login...
-    sendJSON([...]);    // This calls exit; so the script STOPS here
-}
-
-if ($action === 'students') {
-    // handle students...
-    sendJSON([...]);    // Script stops here
-}
-
-// Only reached if no action matched
-sendJSON(['error' => 'Invalid action'], 400);
-```
-- Each `if` block handles one action
-- `sendJSON()` ends the script with `exit;`, so only ONE block runs
-
-### SQL JOINs explained:
-```sql
-SELECT s.first_name, gl.name AS grade_level
-FROM enrollments e
-JOIN students s    ON e.student_id    = s.id
-JOIN grade_levels gl ON e.grade_level_id = gl.id
-JOIN parents p     ON s.parent_id     = p.id
-```
-- `JOIN` combines data from multiple tables into one result row
-- `ON e.student_id = s.id` — match each enrollment to its student record
-- `LEFT JOIN` — used for `payments` because a Cash payment might not have a reference number (NULL is allowed)
-- `AS grade_level` — rename the column in the result
-
-### Subquery for status (inside the students query):
-```sql
-COALESCE(
-    (SELECT decision FROM enrollment_reviews
-     WHERE enrollment_id = e.id AND review_type = 'Registrar'
-     ORDER BY created_at DESC LIMIT 1),
-    'pending'
-) AS registrar_status
-```
-- This is a **subquery** — a SELECT inside a SELECT
-- It finds the most recent Registrar decision for each enrollment
-- `COALESCE(..., 'pending')` — if no review exists yet, default to `'pending'`
-- The result is passed to `calculateStatus()` to compute the overall badge
-
----
-
-# CHAPTER 8: Automated Email System (api/email_config.php)
-**What is this?** This file handles sending automated email updates to parents whenever their child's enrollment status changes.
-
-### How it works:
-We use a library called **PHPMailer** because PHP's built-in `mail()` function is often blocked by spam filters. 
-1. The system connects to a real Gmail account using SMTP.
-2. When a staff member clicks "Approve" or "Decline", `registrar.php` calls the `sendStatusEmail()` function.
-3. The function checks the database to get the parent's email address and the student's name.
-4. It wraps the message in a beautiful, branded HTML template (with the school logo and maroon colors).
-
-### The Trigger Points:
-Emails are automatically sent during these events:
-- **Received:** When the parent finishes Step 4 (sent by `register.php`).
-- **Approved / Approved (DTF):** When the Registrar approves the application.
-- **Declined:** If either the Registrar or Cashier rejects the application.
-- **Payment Updated:** When the Cashier logs a new payment transaction.
-
-```php
-// Example of how it's called in registrar.php:
-$emailResult = sendStatusEmail($conn, $enrollment_id, 'approved', $reason, 'Registrar');
-```
-
----
-
-# CHAPTER 9: Employee Login Flow
-**File: employee-login.html**
-
-### The Interface Design:
-The login page uses a two-column layout wrapped in a rounded white card over a maroon background (`var(--maroon-dark)`).
-- The left column holds the `Username` field.
-- The right column holds the `Password` field and submission button.
-
-```
-User types username + password
-    → JavaScript sends to registrar.php?action=login
-        → PHP checks the database
-            → If valid: returns { role: 'admin' }
-            → If invalid: returns { error: 'Invalid credentials' }
-    → JavaScript checks the role:
-        → 'admin'     → redirect to admin-dashboard.html
-        → 'registrar' → redirect to registrar-dashboard.html
-        → 'cashier'   → redirect to cashier-dashboard.html
-```
-
-### sessionStorage for login:
-```javascript
-sessionStorage.setItem('registrarLoggedIn', 'yes');
-sessionStorage.setItem('registrarUser', username);
-sessionStorage.setItem('userRole', result.role);
-```
-- We save login info so dashboards know who's logged in
-- Every dashboard checks this at the top:
-```javascript
-if (!sessionStorage.getItem('registrarLoggedIn')) {
-    window.location.href = 'employee-login.html';  // Not logged in = go back to login
-}
-```
-
----
-
-# CHAPTER 10: Dashboard Pages
-### The Premium Design System (`.style.css`)
-The system follows a high-end educational aesthetic:
-- **Primary Color**: `var(--maroon-dark)` (#7a1230) — Used for headers, primary buttons, and critical UI elements.
-- **Accent Color**: `var(--gold)` (#FFD700) — Used for highlighting details, footer text, and active states.
-- **Glassmorphism**: Employee buttons and navigation use subtle blur effects for a modern, transparent feel.
-- **Rounded UI**: A standard 12px radius (`--radius`) is applied to all cards and inputs to create a softened, friendly look.
-
-### The Dashboard UI Pattern
-- **Flattened Actions**: Action buttons (View, Approve, Decline, Drop, Refund) are displayed directly in the table row for one-click access (no hidden menus).
-- **Modals**: Detailed views and update forms slide in smoothly over the screen without redirecting to a new page.
-
-### Registrar Dashboard (registrar-dashboard.html):
-- Shows ALL enrollment applications in a table.
-- Can click "View" to see full info in a modal popup and upload missing documents.
-- Controls actions like approving (with or without DTF), declining, dropping, and undoing drops.
-
-### Cashier Dashboard (cashier-dashboard.html):
-- Shows ALL enrollments with **payment info** (Total, Paid, Balance, Refundable).
-- Can update payment balances by recording new transactions.
-- Can "Refund Excess" if a student overpaid.
-- Can filter by payment method and status.
-
-### Admin Dashboard (admin-dashboard.html):
-- The ultimate super-user view with **5 dynamic tabs**:
-  1. **Applications** — same as Registrar, but view-only.
-  2. **Enrolled** — a dedicated Masterlist of all active students.
-  3. **Payments** — same as Cashier, but view-only, including full payment history logs.
-  4. **Employees** — can create, activate, and deactivate employee accounts.
-  5. **Logs** — a read-only audit trail showing every action taken by any employee across the system.
-
----
-
-# CHAPTER 11: Login Credentials
-
-| Role | Username | Password | Dashboard |
-|---|---|---|---|
-| Admin | `admin` | `admin123` | Full access to everything |
-| Registrar | `registrar` | `registrar123` | Enrollment management only |
-| Cashier | `cashier` | `cashier123` | Payment viewing only |
-
----
-
-# 💡 KEY CONCEPTS SUMMARY
-
-### 1. Frontend vs Backend
-- **Frontend** (HTML/CSS/JS) = what the user sees in the browser
-- **Backend** (PHP) = runs on the server, talks to the database
-- They communicate through **API calls** (fetch → PHP → JSON response)
-
-### 2. The Request-Response Cycle
-```
-Browser (JavaScript)                    Server (PHP)
-       |                                    |
-       |--- fetch('api/register.php') ----->|
-       |                                    |-- reads $_POST data
-       |                                    |-- inserts into database
-       |                                    |-- sendJSON(['success'])
-       |<---- { "message": "Success!" } ----|
-       |                                    |
-       |-- shows success message            |
-```
-
-### 3. CRUD Operations
-| Operation | SQL | PHP Example |
-|---|---|---|
-| **C**reate | `INSERT INTO` | Adding a new student |
-| **R**ead | `SELECT` | Loading student list |
-| **D**elete | `DELETE` | Removing an employee |
-
-### 4. Common JavaScript Patterns
-```javascript
-// async/await — wait for server response
-async function doSomething() {
-    const result = await apiGet('some-url');
-    console.log(result);
-}
-
-// try/catch — handle errors
-try {
-    const result = await apiPost('url', data);
-    // success!
-} catch (err) {
-    // error happened
-    showAlert('alert', err.message);
-}
-
-// template literals — build HTML with data
-const html = `<div>${student.name}</div>`;
-
-// arrow functions — shorthand for functions
-students.forEach(s => console.log(s.name));
-// same as:
-students.forEach(function(s) { console.log(s.name); });
-```
-
----
-
-**Good luck learning! 🎓 Read each chapter, then open the actual file and follow along.**
+**Good luck studying BSSMAI E-Assist! 🎓 Click each file link above, read the code implementation, and follow along.**
