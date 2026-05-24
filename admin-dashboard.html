@@ -2664,6 +2664,12 @@
                 maintCurrentData = res.records;
                 maintFieldConfig = res.fields;
                 maintFieldLabels = res.fieldLabels;
+                if (maintCurrentTable === 'payment_methods') {
+                    maintFieldLabels.icon = 'Icon';
+                }
+                if (maintCurrentTable === 'payment_modes') {
+                    maintFieldLabels.mode_name = 'Mode Name';
+                }
                 document.getElementById('maintPanelTitle').textContent = res.label;
                 renderMaintenanceTable();
 
@@ -2704,22 +2710,26 @@
             });
         }
 
+        function formatPeso(value) {
+            const amount = parseFloat(value);
+            if (isNaN(amount)) return '—';
+            return '₱' + amount.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+        }
+
+        function capitalizeRole(value) {
+            const text = String(value || '').trim();
+            if (!text) return '—';
+            return text.charAt(0).toUpperCase() + text.slice(1).toLowerCase();
+        }
+
         // ============================================================
         //  PAYMENT MODES — special toggle active button in table
         // ============================================================
         function renderMaintenanceTableExtra(row, idx) {
-            if (maintCurrentTable === 'payment_modes') {
-                return `<td>
-                    <div class="maint-action-btns">
-                        <button class="icon-btn" onclick="openMaintEditModal(${row.id})" title="Edit">✏️</button>
-                        <button class="icon-btn icon-btn-delete" onclick="deleteMaintRecord(${row.id})" title="Delete">🗑️</button>
-                    </div>
-                </td>`;
-            }
             return `<td>
                 <div class="maint-action-btns">
-                    <button class="maint-btn-edit" onclick="openMaintEditModal(${row.id})" title="Edit">✏️ Edit</button>
-                    <button class="maint-btn-delete" onclick="deleteMaintRecord(${row.id})" title="Delete">🗑️</button>
+                    <button class="icon-btn" onclick="openMaintEditModal(${row.id})" title="Edit">✏️</button>
+                    <button class="icon-btn icon-btn-delete" onclick="deleteMaintRecord(${row.id})" title="Delete">🗑️</button>
                 </div>
             </td>`;
         }
@@ -2762,7 +2772,12 @@
                 formFieldsData = fields;
 
                 if (fields.length === 0) {
-                    panel.innerHTML = `<tr><td colspan="6" style="text-align:center;color:var(--gray-500);padding:32px;">No custom fields for this step yet. Click "+ Add New" to create one.</td></tr>`;
+                    panel.innerHTML = `<tr><td colspan="6" style="text-align:center;color:var(--gray-500);padding:32px;">
+                        <div style="display:flex;flex-direction:column;align-items:center;gap:10px;">
+                            <div style="font-size:28px;color:var(--maroon-dark);">📝</div>
+                            <div style="max-width:360px;">No custom fields for this step yet. Click "+ Add New" to create one.</div>
+                        </div>
+                    </td></tr>`;
                     return;
                 }
 
@@ -2786,8 +2801,8 @@
                             </td>
                             <td style="padding:10px 12px;">
                                 <div class="maint-action-btns">
-                                    <button class="maint-btn-edit" onclick="openFormFieldModal(${f.id})">✏️ Edit</button>
-                                    <button class="maint-btn-delete" onclick="deleteFormField(${f.id})">🗑️</button>
+                                    <button type="button" class="icon-btn" onclick="openFormFieldModal(${f.id})" title="Edit">✏️</button>
+                                    <button type="button" class="icon-btn icon-btn-delete" onclick="deleteFormField(${f.id})" title="Delete">🗑️</button>
                                 </div>
                             </td>
                         </tr>
@@ -2996,7 +3011,7 @@
                 }
                 displayFields.push('mode_name');
                 maintFieldConfig.forEach(field => {
-                    if (['is_active', 'grade_level_id', 'grade_level_name', 'mode_name'].includes(field)) return;
+                    if (['is_active', 'grade_level_id', 'grade_level_name', 'name', 'description', 'sort_order'].includes(field)) return;
                     displayFields.push(field);
                 });
 
@@ -3008,6 +3023,14 @@
                         headerHtml += `<th>${maintFieldLabels[field] || 'Mode Name'}</th>`;
                     } else if (field === 'is_current') {
                         headerHtml += '<th>Status</th>';
+                    } else if (field === 'installment_count') {
+                        headerHtml += '<th>Installments</th>';
+                    } else if (field === 'installment_amount') {
+                        headerHtml += '<th>Per Installment</th>';
+                    } else if (field === 'tuition_fee') {
+                        headerHtml += '<th>Tuition</th>';
+                    } else if (field === 'books_fee') {
+                        headerHtml += '<th>Books</th>';
                     } else {
                         headerHtml += `<th>${maintFieldLabels[field] || field}</th>`;
                     }
@@ -3045,17 +3068,21 @@
                             cells += `<td class="grade-column">${escapeHtml(gradeName)}</td>`;
                         } else if (field === 'mode_name') {
                             const mode = String(row[field] || row.name || '—');
-                            const badgeType = mode.toLowerCase().includes('full') ? 'full' : mode.toLowerCase().includes('monthly') ? 'monthly' : 'default';
+                            const lowerMode = mode.toLowerCase();
+                            const badgeType = lowerMode.includes('full') ? 'full' : lowerMode.includes('monthly') ? 'monthly' : lowerMode.includes('bi') ? 'biannual' : 'default';
                             cells += `<td><span class="mode-badge ${badgeType}">${escapeHtml(mode)}</span></td>`;
                         } else if (field === 'description') {
                             cells += `<td class="muted">${escapeHtml(row[field] || '—')}</td>`;
+                        } else if (['installment_amount', 'tuition_fee', 'books_fee'].includes(field)) {
+                            const raw = row[field];
+                            cells += `<td>${raw !== null && raw !== undefined && raw !== '' ? formatPeso(raw) : '—'}</td>`;
                         } else {
                             const value = row[field] !== null && row[field] !== undefined ? row[field] : '—';
                             cells += `<td>${escapeHtml(String(value))}</td>`;
                         }
                     });
                     cells += renderMaintenanceTableExtra(row, rowIndex - 1);
-                    return `<tr data-grade-id="${row.grade_level_id || ''}">${cells}</tr>`;
+                    return `${rowHtml}<tr data-grade-id="${row.grade_level_id || ''}">${cells}</tr>`;
                 }).join('');
                 updateGradeColumnVisibility();
                 return;
@@ -3092,17 +3119,30 @@
                         </td>`;
                     } else if (field === 'is_active') {
                         // Skip — handled in actions column
+                    } else if (maintCurrentTable === 'payment_methods' && field === 'icon') {
+                        cells += `<td class="payment-method-icon-cell">${escapeHtml(row[field] || '—')}</td>`;
+                    } else if (maintCurrentTable === 'sessions' && field === 'eligible_grades') {
+                        const grades = String(row[field] || '').split(',').map(g => g.trim()).filter(Boolean);
+                        if (grades.length === 0) {
+                            cells += `<td>—</td>`;
+                        } else {
+                            cells += `<td>${grades.map(g => `<span class="eligible-grade-pill">${escapeHtml(g)}</span>`).join('')}</td>`;
+                        }
                     } else if (field === 'grade_level_id') {
                         const gradeName = row['grade_level_name'] || '—';
                         cells += `<td style="font-weight:600; color:var(--maroon-dark);">${escapeHtml(gradeName)}</td>`;
                     } else {
-                        const displayVal = row[field] !== null && row[field] !== undefined ? row[field] : '—';
+                        let displayVal = row[field] !== null && row[field] !== undefined ? row[field] : '—';
+                        if (maintCurrentTable === 'roles' && field === 'name' && displayVal !== '—') {
+                            displayVal = capitalizeRole(displayVal);
+                        }
                         cells += `<td style="font-weight:500;">${escapeHtml(String(displayVal))}</td>`;
                     }
                 });
                 cells += renderMaintenanceTableExtra(row, idx);
                 const rowAttr = maintCurrentTable === 'payment_modes' ? ` data-grade-id="${row.grade_level_id}"` : '';
-                return `<tr${rowAttr}>${cells}</tr>`;
+                const rowClass = maintCurrentTable === 'school_years' && row.is_current == 1 ? 'maint-current-row' : '';
+                return `<tr${rowAttr}${rowClass ? ' class="' + rowClass + '"' : ''}>${cells}</tr>`;
             }).join('');
         }
 
