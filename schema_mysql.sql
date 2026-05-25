@@ -188,14 +188,13 @@ CREATE TABLE IF NOT EXISTS students (
 CREATE TABLE IF NOT EXISTS payment_methods (
     id      INT AUTO_INCREMENT PRIMARY KEY,
     name    VARCHAR(50) NOT NULL UNIQUE,
-    details VARCHAR(255) DEFAULT NULL,       -- Account number or payment instructions
-    icon    VARCHAR(10) DEFAULT NULL          -- Emoji icon for display (e.g., 📱, 💵, 🏦)
+    details VARCHAR(255) DEFAULT NULL       -- Account number or payment instructions
 );
 
-INSERT IGNORE INTO payment_methods (name, details, icon) VALUES
-    ('GCash',         '09686101591', '📱'),
-    ('Cash',          'Pay at the school office', '💵'),
-    ('Bank Transfer', 'Bank details are to be followed', '🏦');
+INSERT IGNORE INTO payment_methods (name, details) VALUES
+    ('GCash',         '09686101591'),
+    ('Cash',          'Pay at the school office'),
+    ('Bank Transfer', 'Bank details are to be followed');
 
 -- ============================================================
 --  TABLE: enrollments
@@ -208,7 +207,11 @@ CREATE TABLE IF NOT EXISTS enrollments (
     school_year_id     INT NOT NULL,               -- Links to "school_years" table
     grade_level_id     INT NOT NULL,
     session_id         INT NOT NULL,               -- Links to "sessions" table
+    enrollment_type    ENUM('new', 'returning') NOT NULL DEFAULT 'new', -- new = first time; returning = existing student re-enrolling
+    report_card        VARCHAR(255) DEFAULT NULL,   -- File path: uploaded report card (returning students)
+    clearance          VARCHAR(255) DEFAULT NULL,   -- File path: uploaded accomplished clearance (returning students)
     documents_pending  TINYINT(1) NOT NULL DEFAULT 0, -- 1 = Approved but documents still needed
+    status             ENUM('active', 'archived', 'deleted') NOT NULL DEFAULT 'active',
     applied_at         TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (student_id)         REFERENCES students(id) ON DELETE CASCADE,
     FOREIGN KEY (school_year_id)     REFERENCES school_years(id),

@@ -41,9 +41,9 @@ function maintenanceLog($admin_id, $action, $target_id = null, $target_name = nu
 $tableConfig = [
     'payment_methods' => [
         'label'       => 'Payment Methods',
-        'fields'      => ['name', 'details', 'icon'],
-        'fieldLabels' => ['name' => 'Method Name', 'details' => 'Account / Details', 'icon' => 'Icon (Emoji)'],
-        'optional'    => ['details', 'icon'],
+        'fields'      => ['name', 'details'],
+        'fieldLabels' => ['name' => 'Method Name', 'details' => 'Account / Details'],
+        'optional'    => ['details'],
         'orderBy'     => 'id',
         'fkChecks'    => [
             ['table' => 'payments', 'column' => 'payment_method_id', 'label' => 'payment records'],

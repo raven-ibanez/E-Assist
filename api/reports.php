@@ -68,7 +68,7 @@ if ($action === 'registrar') {
         JOIN parents p             ON s.parent_id     = p.id
         JOIN grade_levels gl       ON e.grade_level_id = gl.id
         JOIN sessions sess         ON e.session_id     = sess.id
-        WHERE s.status = 'active'
+        WHERE e.status = 'active'
     ";
 
     $params = [];
@@ -162,7 +162,7 @@ if ($action === 'cashier') {
         JOIN school_years sy       ON e.school_year_id = sy.id
         LEFT JOIN payments pay     ON e.id             = pay.enrollment_id
         LEFT JOIN payment_methods pm ON pay.payment_method_id = pm.id
-        WHERE s.status = 'active'
+        WHERE e.status = 'active'
     ";
 
     $params = [];

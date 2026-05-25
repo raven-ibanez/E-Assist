@@ -45,7 +45,7 @@ if ($action === 'sessions') {
 
 // --- Payment Methods ---
 if ($action === 'payment-methods') {
-    $result = $conn->query("SELECT id, name, details, icon FROM payment_methods ORDER BY id");
+    $result = $conn->query("SELECT id, name, details FROM payment_methods ORDER BY id");
     sendJSON($result->fetch_all(MYSQLI_ASSOC));
 }
 
@@ -99,6 +99,40 @@ if ($action === 'form-fields') {
 if ($action === 'roles') {
     $result = $conn->query("SELECT id, name FROM roles ORDER BY id");
     sendJSON($result->fetch_all(MYSQLI_ASSOC));
+}
+
+// --- Student Lookup (for re-enrollment by student number) ---
+if ($action === 'student-lookup') {
+    $student_no = $_GET['student_no'] ?? '';
+    if (empty($student_no)) {
+        sendJSON(['error' => 'Student number is required.'], 400);
+    }
+    $stmt = $conn->prepare("
+        SELECT 
+            s.id AS student_id, s.student_no, s.first_name, s.last_name, s.middle_name, s.suffix,
+            s.birth_date, s.gender, s.religion,
+            s.house_no_street, s.barangay, s.city_municipality, s.province,
+            s.previous_school, s.picture_2x2,
+            p.id AS parent_id, p.first_name AS parent_first_name, p.last_name AS parent_last_name,
+            p.middle_name AS parent_middle_name, p.relation_id,
+            p.mobile AS parent_contact, p.telephone AS parent_telephone,
+            p.occupation, p.income_range_id, p.email,
+            r.name AS relation_name,
+            ir.range_label AS income_label
+        FROM students s
+        JOIN parents p ON s.parent_id = p.id
+        LEFT JOIN relations r ON p.relation_id = r.id
+        LEFT JOIN income_ranges ir ON p.income_range_id = ir.id
+        WHERE s.student_no = ? AND s.status = 'active'
+        LIMIT 1
+    ");
+    $stmt->bind_param("s", $student_no);
+    $stmt->execute();
+    $result = $stmt->get_result()->fetch_assoc();
+    if (!$result) {
+        sendJSON(['error' => 'Student does not exist.'], 404);
+    }
+    sendJSON($result);
 }
 
 // --- School Years ---

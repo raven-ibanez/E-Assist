@@ -1,0 +1,818 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enroll Now (Existing Student) — BSSMAI</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        /* ── Single-page multi-step layout ── */
+        .existing-steps { display: none; }
+        .existing-steps.active-step { display: block; }
+
+        /* ── Student info preview card ── */
+        .student-preview-card {
+            background: linear-gradient(135deg, #fdf2f2 0%, #fff5f5 100%);
+            border: 1.5px solid #f9a8a8;
+            border-radius: 14px;
+            padding: 24px;
+            margin: 20px 0;
+        }
+        .student-preview-card h4 {
+            font-size: 14px;
+            font-weight: 700;
+            color: var(--maroon-dark);
+            margin-bottom: 16px;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .student-preview-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px 20px;
+        }
+        .preview-field {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+        .preview-field .pf-label {
+            font-size: 10px;
+            font-weight: 700;
+            color: #9ca3af;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .preview-field .pf-value {
+            font-size: 14px;
+            font-weight: 600;
+            color: #1a1a2e;
+        }
+        .preview-field.full-width {
+            grid-column: 1 / -1;
+        }
+
+        /* ── Student lookup input group ── */
+        .lookup-input-group {
+            display: flex;
+            gap: 10px;
+            align-items: flex-end;
+        }
+        .lookup-input-group .form-group {
+            flex: 1;
+            margin-bottom: 0;
+        }
+        .btn-lookup {
+            background: var(--maroon-dark);
+            color: var(--white);
+            padding: 10px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            white-space: nowrap;
+            height: 42px;
+        }
+        .btn-lookup:hover {
+            background: #5a0d24;
+            transform: translateY(-1px);
+        }
+        .btn-lookup:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* ── Student not found message ── */
+        .lookup-error {
+            background: #fee2e2;
+            color: #991b1b;
+            padding: 12px 16px;
+            border-radius: 8px;
+            border: 1px solid #fca5a5;
+            font-size: 14px;
+            font-weight: 500;
+            margin-top: 12px;
+            display: none;
+        }
+        .lookup-success {
+            background: #d1fae5;
+            color: #065f46;
+            padding: 12px 16px;
+            border-radius: 8px;
+            border: 1px solid #6ee7b7;
+            font-size: 14px;
+            font-weight: 500;
+            margin-top: 12px;
+            display: none;
+        }
+
+        @media (max-width: 640px) {
+            .student-preview-grid {
+                grid-template-columns: 1fr;
+            }
+            .lookup-input-group {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            .btn-lookup { width: 100%; }
+        }
+    </style>
+</head>
+<body class="biodata-page">
+    <div class="page">
+        <div class="biodata-header">
+            <a href="index.html" class="biodata-back-link">
+                <svg viewBox="0 0 24 24"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg>
+                Back to Home
+            </a>
+            <div class="biodata-logo">
+                <img src="logo.png" alt="BSSMAI Logo" style="width:100%;height:100%;object-fit:contain;border-radius:50%;">
+            </div>
+            <h1>RE-ENROLLMENT FORM</h1>
+            <p>Existing Student — Returning Enrollee</p>
+        </div>
+
+        <!-- Step Tracker -->
+        <div class="step-tracker">
+            <div class="step-item active" id="tracker-1">
+                <div class="step-number">1</div>
+                <div class="step-label">Verify</div>
+            </div>
+            <div class="step-item" id="tracker-2">
+                <div class="step-number">2</div>
+                <div class="step-label">Enrollment</div>
+            </div>
+            <div class="step-item" id="tracker-3">
+                <div class="step-number">3</div>
+                <div class="step-label">Documents</div>
+            </div>
+            <div class="step-item" id="tracker-4">
+                <div class="step-number">4</div>
+                <div class="step-label">Payment</div>
+            </div>
+        </div>
+
+        <div id="alert" class="alert" style="max-width:800px;margin:0 auto 20px;"></div>
+
+        <div class="biodata-card">
+            <!-- ═══════════════════════════════════════════════════
+                 STEP 1: Student Number Lookup
+                 ═══════════════════════════════════════════════════ -->
+            <div class="existing-steps active-step" id="step-1">
+                <div class="form-section">
+                    <h3>1. Student Verification</h3>
+                    <p class="form-step-hint">Step 1 of 4: Enter your student number to verify your identity.</p>
+
+                    <div class="lookup-input-group">
+                        <div class="form-group">
+                            <label for="student_no">Student Number *</label>
+                            <input type="text" id="student_no" name="student_no" placeholder="e.g. 2026-00001" required>
+                        </div>
+                        <button type="button" class="btn-lookup" id="btnLookup" onclick="lookupStudent()">
+                            🔍 Search
+                        </button>
+                    </div>
+
+                    <div id="lookupError" class="lookup-error"></div>
+                    <div id="lookupSuccess" class="lookup-success"></div>
+
+                    <!-- Student Preview (shown after successful lookup) -->
+                    <div id="studentPreview" style="display:none;">
+                        <div class="student-preview-card">
+                            <h4>📋 Student Information</h4>
+                            <div class="student-preview-grid">
+                                <div class="preview-field">
+                                    <span class="pf-label">Student No.</span>
+                                    <span class="pf-value" id="prev-student-no">—</span>
+                                </div>
+                                <div class="preview-field">
+                                    <span class="pf-label">Full Name</span>
+                                    <span class="pf-value" id="prev-name">—</span>
+                                </div>
+                                <div class="preview-field">
+                                    <span class="pf-label">Date of Birth</span>
+                                    <span class="pf-value" id="prev-dob">—</span>
+                                </div>
+                                <div class="preview-field">
+                                    <span class="pf-label">Gender</span>
+                                    <span class="pf-value" id="prev-gender">—</span>
+                                </div>
+                                <div class="preview-field full-width">
+                                    <span class="pf-label">Address</span>
+                                    <span class="pf-value" id="prev-address">—</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="student-preview-card" style="border-color: #93c5fd; background: linear-gradient(135deg, #eff6ff 0%, #f0f9ff 100%);">
+                            <h4 style="color: #1d4ed8;">👨‍👩‍👧 Parent / Guardian Information</h4>
+                            <div class="student-preview-grid">
+                                <div class="preview-field">
+                                    <span class="pf-label">Parent/Guardian Name</span>
+                                    <span class="pf-value" id="prev-parent-name">—</span>
+                                </div>
+                                <div class="preview-field">
+                                    <span class="pf-label">Relationship</span>
+                                    <span class="pf-value" id="prev-relation">—</span>
+                                </div>
+                                <div class="preview-field">
+                                    <span class="pf-label">Contact Number</span>
+                                    <span class="pf-value" id="prev-contact">—</span>
+                                </div>
+                                <div class="preview-field">
+                                    <span class="pf-label">Email Address</span>
+                                    <span class="pf-value" id="prev-email">—</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="step-actions">
+                    <button type="button" class="btn btn-cancel" onclick="window.location.href='index.html'">Cancel</button>
+                    <button type="button" class="btn btn-next" id="btnStep1Next" disabled onclick="goToStep(2)">Next: Enrollment Details</button>
+                </div>
+            </div>
+
+            <!-- ═══════════════════════════════════════════════════
+                 STEP 2: Grade Level, Session, School Year
+                 ═══════════════════════════════════════════════════ -->
+            <div class="existing-steps" id="step-2">
+                <div class="form-section">
+                    <h3>2. Enrollment Details</h3>
+                    <p class="form-step-hint">Step 2 of 4: Select the grade level, session, and school year for this enrollment.</p>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="grade_level_id">Grade Level to Enroll *</label>
+                            <select id="grade_level_id" name="grade_level_id" required>
+                                <option value="">-- Loading... --</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="session_id">Class Schedule / Session *</label>
+                            <select id="session_id" name="session_id" required disabled>
+                                <option value="">-- Select Grade Level First --</option>
+                            </select>
+                            <small id="schedule_note" class="form-note" style="display:none;"></small>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="school_year_id">School Year *</label>
+                            <select id="school_year_id" name="school_year_id" required>
+                                <option value="">-- Loading... --</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <div class="step-actions">
+                    <button type="button" class="btn btn-prev" onclick="goToStep(1)">Back</button>
+                    <button type="button" class="btn btn-next" id="btnStep2Next" onclick="goToStep(3)">Next: Required Documents</button>
+                </div>
+            </div>
+
+            <!-- ═══════════════════════════════════════════════════
+                 STEP 3: Document Uploads
+                 ═══════════════════════════════════════════════════ -->
+            <div class="existing-steps" id="step-3">
+                <div class="form-section">
+                    <h3>3. Required Documents</h3>
+                    <p class="form-step-hint">Step 3 of 4: Upload the required documents for re-enrollment.</p>
+
+                    <div class="form-info-box">
+                        <span>📋</span>
+                        <p>As a returning student, you are required to upload your latest <strong>Report Card</strong> and <strong>Accomplished Clearance</strong>.</p>
+                    </div>
+
+                    <div class="form-row" style="margin-top: 16px;">
+                        <div class="form-group">
+                            <label for="report_card">Report Card *</label>
+                            <input type="file" id="report_card" name="report_card" accept="image/png, image/jpeg, image/webp, application/pdf" required>
+                            <small style="color: #666; font-size: 11px;">Required — Upload a scan or photo of your latest report card</small>
+                        </div>
+                        <div class="form-group">
+                            <label for="clearance">Accomplished Clearance *</label>
+                            <input type="file" id="clearance" name="clearance" accept="image/png, image/jpeg, image/webp, application/pdf" required>
+                            <small style="color: #666; font-size: 11px;">Required — Upload a scan or photo of your accomplished clearance</small>
+                        </div>
+                    </div>
+                </div>
+                <div class="step-actions">
+                    <button type="button" class="btn btn-prev" onclick="goToStep(2)">Back</button>
+                    <button type="button" class="btn btn-next" id="btnStep3Next" onclick="validateAndGoStep4()">Next: Tuition & Payment</button>
+                </div>
+            </div>
+
+            <!-- ═══════════════════════════════════════════════════
+                 STEP 4: Payment (same as new students)
+                 ═══════════════════════════════════════════════════ -->
+            <div class="existing-steps" id="step-4">
+                <form id="step4Form">
+                    <div class="form-section">
+                        <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom: 20px;">
+                            <div>
+                                <h3>4. Payment</h3>
+                                <p style="font-size: 13px; color: #666;">Step 4 of 4: Pay the tuition and complete your re-enrollment.</p>
+                            </div>
+                            <div style="background:var(--maroon-dark); color:white; padding:15px; border-radius:8px; text-align:right; min-width: 200px;">
+                                <div style="font-size:11px; opacity:0.8; text-transform:uppercase; margin-bottom: 4px;">Fees Summary</div>
+                                <div style="display: flex; justify-content: space-between; font-size: 13px; margin-bottom: 2px;">
+                                    <span>Total Tuition:</span> <span id="display-tuition">₱0</span>
+                                </div>
+                                <div style="display: flex; justify-content: space-between; font-size: 13px; margin-bottom: 2px;">
+                                    <span>Books Fee:</span> <span id="display-books">₱0</span>
+                                </div>
+                                <div style="display: flex; justify-content: space-between; font-size: 13px; margin-bottom: 6px; border-top: 1px solid rgba(255,255,255,0.1); padding-top:4px;">
+                                    <span>Full Total:</span> <span id="display-total" style="font-weight:700;">₱0</span>
+                                </div>
+                                <div style="border-top: 1px solid rgba(255,255,255,0.3); margin-top: 6px; padding-top: 6px; display: flex; justify-content: space-between; font-size: 16px; font-weight: 900; color: #fbbf24;">
+                                    <span>Pay Now:</span> <span id="display-initial">₱0</span>
+                                </div>
+                                <div id="installment-info" style="font-size:10px; opacity:0.8; margin-top: 10px; font-style: italic; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 6px; text-align: center;display:none;"></div>
+                                <div style="font-size:10px; opacity:0.8; margin-top: 4px; font-style: italic; text-align: center;">
+                                    * Tuition includes other fees but does NOT include uniforms.
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Payment Mode -->
+                        <label style="display: block; margin-bottom: 12px; font-weight: 700;">Select Payment Mode *</label>
+                        <div class="mode-options" id="payment-modes-container">
+                            <div style="color:var(--gray-500);font-size:13px;">Loading payment modes...</div>
+                        </div>
+
+                        <!-- Info box for installment plan -->
+                        <div id="mode-info-box" style="display:none; background:#fef3c7; border-left:4px solid #f59e0b; border-radius:8px; padding:12px 16px; margin-bottom: 16px;">
+                            <p id="mode-info-text" style="margin:0; font-size:13px; color:#92400e; font-weight:600;"></p>
+                        </div>
+
+                        <!-- Hidden fields -->
+                        <input type="hidden" id="hidden_tuition_fee" name="tuition_fee" value="0">
+                        <input type="hidden" id="hidden_books_fee" name="books_fee" value="0">
+                        <input type="hidden" id="hidden_initial_payment" name="initial_payment" value="0">
+                        <input type="hidden" id="hidden_months_count" name="months_count" value="">
+                        <input type="hidden" id="hidden_payment_mode_id" name="payment_mode_id" value="">
+
+                        <!-- Payment Method -->
+                        <label style="display: block; margin-bottom: 12px; font-weight: 700;">Select Payment Method *</label>
+                        <div class="payment-options" id="payment-methods-container" style="margin-bottom: 20px;"></div>
+
+                        <div id="payment-instruction" class="payment-instructions" style="display: none; border-radius: 8px;">
+                            <div id="transfer-details">
+                                <p style="margin-bottom:5px;">Please send your payment to:</p>
+                                <strong style="font-size:20px; color:var(--maroon-dark);">—</strong>
+                            </div>
+                            <p id="method-text" style="font-size: 11px; margin-top: 5px; opacity: 0.8;"></p>
+                        </div>
+
+                        <div class="form-group" id="reference-group">
+                            <label for="reference_number">Reference Number / Transaction ID</label>
+                            <input type="text" id="reference_number" name="reference_number" placeholder="Enter Reference" required>
+                        </div>
+                    </div>
+
+                    <div class="step-actions">
+                        <button type="button" class="btn btn-prev" onclick="goToStep(3)">Back</button>
+                        <button type="submit" id="submitBtn" class="btn btn-submit-maroon" style="padding: 14px 40px; border-radius: 8px;">Submit Re-Enrollment</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="main.js"></script>
+    <script>
+        // ═══════════════════════════════════════════════════════════
+        //  Global state
+        // ═══════════════════════════════════════════════════════════
+        let studentData = null;       // Loaded student info
+        let allSessions = [];
+        let paymentMethodsCache = [];
+        let paymentModesCache = [];
+        let selectedModeObj = null;
+        let currentGradeName = '';
+
+        // ═══════════════════════════════════════════════════════════
+        //  Step Navigation
+        // ═══════════════════════════════════════════════════════════
+        function goToStep(step) {
+            // Validate before proceeding
+            if (step === 3) {
+                const gl = document.getElementById('grade_level_id').value;
+                const sess = document.getElementById('session_id').value;
+                const sy = document.getElementById('school_year_id').value;
+                if (!gl || !sess || !sy) {
+                    Swal.fire({ icon: 'warning', title: 'Missing Fields', text: 'Please select Grade Level, Session, and School Year.', confirmButtonColor: '#800000' });
+                    return;
+                }
+            }
+
+            document.querySelectorAll('.existing-steps').forEach(s => s.classList.remove('active-step'));
+            document.getElementById(`step-${step}`).classList.add('active-step');
+
+            // Update tracker
+            for (let i = 1; i <= 4; i++) {
+                const tracker = document.getElementById(`tracker-${i}`);
+                tracker.classList.remove('active', 'completed');
+                if (i < step) tracker.classList.add('completed');
+                if (i === step) tracker.classList.add('active');
+            }
+
+            // Load payment data when entering step 4
+            if (step === 4) {
+                loadPaymentModes();
+                loadPaymentMethods();
+            }
+
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        // ═══════════════════════════════════════════════════════════
+        //  STEP 1: Student Lookup
+        // ═══════════════════════════════════════════════════════════
+        async function lookupStudent() {
+            const studentNo = document.getElementById('student_no').value.trim();
+            const errorDiv = document.getElementById('lookupError');
+            const successDiv = document.getElementById('lookupSuccess');
+            const previewDiv = document.getElementById('studentPreview');
+            const nextBtn = document.getElementById('btnStep1Next');
+
+            errorDiv.style.display = 'none';
+            successDiv.style.display = 'none';
+            previewDiv.style.display = 'none';
+            nextBtn.disabled = true;
+
+            if (!studentNo) {
+                Swal.fire({ icon: 'warning', title: 'Missing Input', text: 'Please enter a student number.', confirmButtonColor: '#800000' });
+                return;
+            }
+
+            const btn = document.getElementById('btnLookup');
+            btn.disabled = true;
+            btn.textContent = '⏳ Searching...';
+
+            try {
+                const data = await apiGet(`api/lookups.php?action=student-lookup&student_no=${encodeURIComponent(studentNo)}`);
+                studentData = data;
+
+                // Build name
+                const suffix = data.suffix ? ` ${data.suffix}` : '';
+                const middle = data.middle_name ? ` ${data.middle_name}` : '';
+                const fullName = `${data.last_name}${suffix}, ${data.first_name}${middle}`;
+
+                // Populate preview
+                document.getElementById('prev-student-no').textContent = data.student_no;
+                document.getElementById('prev-name').textContent = fullName;
+                document.getElementById('prev-dob').textContent = data.birth_date;
+                document.getElementById('prev-gender').textContent = data.gender;
+                document.getElementById('prev-address').textContent =
+                    `${data.house_no_street}, ${data.barangay}, ${data.city_municipality}, ${data.province}`;
+
+                // Parent info
+                const pMiddle = data.parent_middle_name ? ` ${data.parent_middle_name}` : '';
+                document.getElementById('prev-parent-name').textContent =
+                    `${data.parent_first_name}${pMiddle} ${data.parent_last_name}`;
+                document.getElementById('prev-relation').textContent = data.relation_name || '—';
+                document.getElementById('prev-contact').textContent = data.parent_contact || '—';
+                document.getElementById('prev-email').textContent = data.email || '—';
+
+                successDiv.textContent = '✅ Student found! Please review the information below and click Next.';
+                successDiv.style.display = 'block';
+                previewDiv.style.display = 'block';
+                nextBtn.disabled = false;
+            } catch (err) {
+                errorDiv.textContent = '❌ ' + (err.message || 'Student does not exist.');
+                errorDiv.style.display = 'block';
+                studentData = null;
+            } finally {
+                btn.disabled = false;
+                btn.textContent = '🔍 Search';
+            }
+        }
+
+        // Allow Enter key to trigger search
+        document.getElementById('student_no').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') { e.preventDefault(); lookupStudent(); }
+        });
+
+        // ═══════════════════════════════════════════════════════════
+        //  STEP 2: Load Dropdowns
+        // ═══════════════════════════════════════════════════════════
+        async function loadDropdowns() {
+            try {
+                const [grades, sessions, schoolYears] = await Promise.all([
+                    apiGet('api/lookups.php?action=grade-levels'),
+                    apiGet('api/lookups.php?action=sessions'),
+                    apiGet('api/lookups.php?action=school-years')
+                ]);
+                allSessions = sessions;
+
+                const gradeSelect = document.getElementById('grade_level_id');
+                gradeSelect.innerHTML = '<option value="">-- Select Grade Level --</option>';
+                grades.forEach(g => {
+                    gradeSelect.innerHTML += `<option value="${g.id}">${g.name}</option>`;
+                });
+
+                const sySelect = document.getElementById('school_year_id');
+                sySelect.innerHTML = '';
+                schoolYears.forEach(sy => {
+                    if (sy.is_current == 1) sySelect.innerHTML += `<option value="${sy.id}" selected>${sy.label}</option>`;
+                });
+            } catch (err) { console.warn('Failed to load dropdowns'); }
+        }
+        loadDropdowns();
+
+        // Grade → Session filter
+        document.getElementById('grade_level_id').addEventListener('change', function (e) {
+            const gradeId = e.target.value;
+            const gradeName = e.target.options[e.target.selectedIndex].text;
+            currentGradeName = gradeName;
+            const schedSelect = document.getElementById('session_id');
+            const note = document.getElementById('schedule_note');
+
+            schedSelect.innerHTML = '';
+            schedSelect.disabled = false;
+            note.style.display = 'none';
+
+            if (!gradeId) {
+                schedSelect.innerHTML = `<option value="">-- Select Grade Level First --</option>`;
+                schedSelect.disabled = true;
+                return;
+            }
+
+            const eligibleSessions = allSessions.filter(session => {
+                if (!session.eligible_grades) return false;
+                const gradesArray = session.eligible_grades.split(',').map(g => g.trim());
+                return gradesArray.includes(gradeName);
+            });
+
+            if (eligibleSessions.length === 0) {
+                schedSelect.innerHTML = `<option value="">-- No Sessions Available for ${gradeName} --</option>`;
+                return;
+            }
+
+            schedSelect.innerHTML = `<option value="">-- Select Session --</option>`;
+            eligibleSessions.forEach(session => {
+                schedSelect.innerHTML += `<option value="${session.id}">${session.name}</option>`;
+            });
+
+            const notes = eligibleSessions
+                .map(s => s.note)
+                .filter(noteText => noteText && noteText.trim() !== '')
+                .map(noteText => noteText.trim());
+            if (notes.length > 0) {
+                note.textContent = notes.join(' | ');
+                note.style.display = 'block';
+            }
+        });
+
+        // ═══════════════════════════════════════════════════════════
+        //  STEP 3: Validate Documents
+        // ═══════════════════════════════════════════════════════════
+        function validateAndGoStep4() {
+            const reportCard = document.getElementById('report_card');
+            const clearance = document.getElementById('clearance');
+
+            if (!reportCard.files || reportCard.files.length === 0) {
+                Swal.fire({ icon: 'warning', title: 'Missing Document', text: 'Please upload your Report Card.', confirmButtonColor: '#800000' });
+                return;
+            }
+            if (!clearance.files || clearance.files.length === 0) {
+                Swal.fire({ icon: 'warning', title: 'Missing Document', text: 'Please upload your Accomplished Clearance.', confirmButtonColor: '#800000' });
+                return;
+            }
+            goToStep(4);
+        }
+
+        // ═══════════════════════════════════════════════════════════
+        //  STEP 4: Payment Methods
+        // ═══════════════════════════════════════════════════════════
+        async function loadPaymentMethods() {
+            try {
+                const container = document.getElementById('payment-methods-container');
+                const methods = await apiGet('api/lookups.php?action=payment-methods');
+                paymentMethodsCache = methods;
+                container.innerHTML = '';
+                methods.forEach((m, index) => {
+                    const card = document.createElement('div');
+                    card.className = 'payment-card';
+                    card.onclick = function() { selectPayment(m.name, this); };
+
+                    const radio = document.createElement('input');
+                    radio.type = 'radio'; radio.name = 'payment_method_id';
+                    radio.value = m.id; radio.style.display = 'none';
+                    if (index === 0) radio.required = true;
+
+                    const iconSpan = document.createElement('span');
+                    iconSpan.className = 'payment-icon'; iconSpan.textContent = '💳';
+
+                    const nameSpan = document.createElement('span');
+                    nameSpan.className = 'payment-name'; nameSpan.textContent = m.name;
+
+                    card.appendChild(radio);
+                    card.appendChild(iconSpan);
+                    card.appendChild(nameSpan);
+                    container.appendChild(card);
+                });
+            } catch (err) { console.warn('Failed to load payment methods', err); }
+        }
+
+        async function loadPaymentModes() {
+            try {
+                const gradeId = document.getElementById('grade_level_id').value || 0;
+                const modes = await apiGet(`api/lookups.php?action=payment-modes&grade_level_id=${gradeId}`);
+                paymentModesCache = modes;
+                const container = document.getElementById('payment-modes-container');
+                container.innerHTML = '';
+
+                if (!modes || modes.length === 0) {
+                    container.innerHTML = '<p style="color:var(--gray-500);font-size:13px;">No payment modes configured.</p>';
+                    return;
+                }
+
+                modes.forEach((m, index) => {
+                    const card = document.createElement('div');
+                    card.className = 'mode-card' + (index === 0 ? ' selected' : '');
+                    card.onclick = function() { selectMode(m, this); };
+
+                    const radio = document.createElement('input');
+                    radio.type = 'radio'; radio.name = 'payment_mode';
+                    radio.value = m.name; radio.checked = index === 0;
+
+                    const nameSpan = document.createElement('span');
+                    nameSpan.className = 'mode-name'; nameSpan.textContent = m.name;
+
+                    const descSpan = document.createElement('span');
+                    descSpan.className = 'mode-desc';
+                    descSpan.textContent = m.description || (m.installment_count ? `${m.installment_count} installments` : 'Full payment');
+
+                    card.appendChild(radio); card.appendChild(nameSpan); card.appendChild(descSpan);
+                    container.appendChild(card);
+
+                    if (index === 0) {
+                        selectedModeObj = m;
+                        document.getElementById('hidden_payment_mode_id').value = m.id;
+                        document.getElementById('hidden_months_count').value = m.installment_count || '';
+                        calculateFees();
+                    }
+                });
+            } catch(err) { console.warn('Failed to load payment modes', err); }
+        }
+
+        function selectMode(modeObj, el) {
+            document.querySelectorAll('.mode-card').forEach(c => c.classList.remove('selected'));
+            el.classList.add('selected');
+            el.querySelector('input').checked = true;
+            selectedModeObj = modeObj;
+
+            document.getElementById('hidden_payment_mode_id').value = modeObj.id;
+            document.getElementById('hidden_months_count').value = modeObj.installment_count || '';
+
+            const infoBox = document.getElementById('mode-info-box');
+            const infoText = document.getElementById('mode-info-text');
+            if (modeObj.installment_count && modeObj.installment_count > 0) {
+                infoText.textContent = `📅 ${modeObj.name}: ${modeObj.installment_count} installment${modeObj.installment_count > 1 ? 's' : ''} of ₱${parseFloat(modeObj.installment_amount || 0).toLocaleString('en-PH', {minimumFractionDigits:2})} each.`;
+                infoBox.style.display = 'block';
+            } else {
+                infoBox.style.display = 'none';
+            }
+            calculateFees();
+        }
+
+        function calculateFees() {
+            if (!selectedModeObj) return;
+            const tuition = parseFloat(selectedModeObj.tuition_fee) || 0;
+            const books = parseFloat(selectedModeObj.books_fee) || 0;
+            let initialTuition = tuition;
+
+            if (selectedModeObj.installment_count && selectedModeObj.installment_count > 0) {
+                initialTuition = parseFloat(selectedModeObj.installment_amount) || 0;
+            }
+            const initialPayment = initialTuition + books;
+
+            document.getElementById('display-tuition').textContent = '₱' + tuition.toLocaleString('en-PH', {minimumFractionDigits:2});
+            document.getElementById('display-books').textContent = '₱' + books.toLocaleString('en-PH', {minimumFractionDigits:2});
+            document.getElementById('display-total').textContent = '₱' + (tuition + books).toLocaleString('en-PH', {minimumFractionDigits:2});
+            document.getElementById('display-initial').textContent = '₱' + initialPayment.toLocaleString('en-PH', {minimumFractionDigits:2});
+
+            document.getElementById('hidden_tuition_fee').value = tuition;
+            document.getElementById('hidden_books_fee').value = books;
+            document.getElementById('hidden_initial_payment').value = initialPayment;
+
+            const infoDiv = document.getElementById('installment-info');
+            if (selectedModeObj.installment_count > 0) {
+                infoDiv.textContent = `${selectedModeObj.name}: ₱${initialTuition.toLocaleString('en-PH', {minimumFractionDigits:2})} × ${selectedModeObj.installment_count} installments`;
+                infoDiv.style.display = 'block';
+            } else {
+                infoDiv.style.display = 'none';
+            }
+        }
+
+        function selectPayment(name, el) {
+            document.querySelectorAll('.payment-card').forEach(c => c.classList.remove('selected'));
+            el.classList.add('selected');
+            el.querySelector('input').checked = true;
+
+            const refInput = document.getElementById('reference_number');
+            const refGroup = document.getElementById('reference-group');
+            const instructionBox = document.getElementById('payment-instruction');
+            const transferDetails = document.getElementById('transfer-details');
+            const method = paymentMethodsCache.find(m => m.name === name);
+            instructionBox.style.display = 'block';
+
+            function esc(str) {
+                if (!str) return '';
+                return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+            }
+
+            if (name.toLowerCase() === 'cash') {
+                refGroup.style.display = 'none';
+                refInput.required = false;
+                transferDetails.style.display = 'none';
+                document.getElementById('method-text').textContent = method && method.details ? method.details : 'Please pay exactly via cash at the school office.';
+            } else {
+                refGroup.style.display = 'block';
+                refInput.required = true;
+                transferDetails.style.display = 'block';
+                const detailsText = method && method.details ? method.details : '';
+                if (/^\+?\d[\d\s-]{8,}$/.test(detailsText.trim())) {
+                    transferDetails.innerHTML = `<p style="margin-bottom:5px;">Please send your payment to:</p><strong style="font-size:20px; color:var(--maroon-dark);">${esc(detailsText)}</strong>`;
+                } else {
+                    transferDetails.innerHTML = `<p style="margin-bottom:5px; font-weight:600; color:var(--maroon-dark); font-size:15px;">${esc(detailsText)}</p>`;
+                }
+                document.getElementById('method-text').textContent = `Please ensure you are using the ${name} payment option to send the exact amount.`;
+            }
+        }
+
+        // ═══════════════════════════════════════════════════════════
+        //  FORM SUBMISSION
+        // ═══════════════════════════════════════════════════════════
+        document.getElementById('step4Form').addEventListener('submit', async function (e) {
+            e.preventDefault();
+            hideAlert('alert');
+
+            if (!studentData) {
+                Swal.fire({ icon: 'error', title: 'Error', text: 'Student data not loaded. Please go back and search again.', confirmButtonColor: '#800000' });
+                return;
+            }
+
+            const finalFormData = new FormData(e.target);
+
+            // Append student number
+            finalFormData.append('student_no', studentData.student_no);
+
+            // Append enrollment details
+            finalFormData.append('grade_level_id', document.getElementById('grade_level_id').value);
+            finalFormData.append('session_id', document.getElementById('session_id').value);
+            finalFormData.append('school_year_id', document.getElementById('school_year_id').value);
+
+            // Append document files from step 3
+            const reportCardFile = document.getElementById('report_card').files[0];
+            const clearanceFile = document.getElementById('clearance').files[0];
+            if (reportCardFile) finalFormData.append('report_card', reportCardFile);
+            if (clearanceFile) finalFormData.append('clearance', clearanceFile);
+
+            // Payment mode radio
+            const modeRadio = document.querySelector('input[name="payment_mode"]:checked');
+            if (modeRadio && !finalFormData.has('payment_mode')) {
+                finalFormData.set('payment_mode', modeRadio.value);
+            }
+
+            setLoading('submitBtn', true, 'Submitting...');
+
+            try {
+                const result = await apiPostForm('api/re-enroll.php', finalFormData);
+
+                const paymentMethodName = document.querySelector('.payment-card.selected .payment-name')?.textContent || '';
+                const paymentModeName = document.querySelector('input[name="payment_mode"]:checked')?.value || '';
+                const referenceNum = document.getElementById('reference_number')?.value || 'N/A';
+                const totalText = document.getElementById('display-total')?.textContent || '';
+                const initialText = document.getElementById('display-initial')?.textContent || '';
+                const tuitionText = document.getElementById('display-tuition')?.textContent || '';
+                const booksText = document.getElementById('display-books')?.textContent || '';
+                const gradeLevel = currentGradeName || '';
+
+                const params = new URLSearchParams({
+                    name: result.name, id: result.student_no,
+                    method: paymentMethodName, mode: paymentModeName,
+                    ref: referenceNum, total: totalText, paid: initialText,
+                    tuition: tuitionText, books: booksText, grade: gradeLevel
+                });
+                window.location.href = `success.html?${params.toString()}`;
+            } catch (err) {
+                showAlert('alert', '❌ ' + err.message);
+                setLoading('submitBtn', false, 'Submit Re-Enrollment');
+                // Scroll to top to show error
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
+        });
+    </script>
+</body>
+</html>

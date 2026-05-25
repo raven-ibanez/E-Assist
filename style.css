@@ -1800,6 +1800,35 @@ body.theme-v2 {
     transform: translateY(-1px);
 }
 
+/* --- Existing Student Enroll Button (Hero) --- */
+.btn-enroll-existing {
+    background: transparent;
+    color: var(--maroon-dark);
+    border: 2px solid var(--maroon-dark);
+}
+.btn-enroll-existing:hover {
+    background: var(--maroon-dark);
+    color: var(--white);
+    transform: translateY(-2px);
+}
+
+/* --- Enroll Banner — Dual Buttons --- */
+.enroll-banner-buttons {
+    display: flex;
+    gap: 10px;
+    flex-shrink: 0;
+    flex-wrap: wrap;
+}
+.btn-enroll-banner-alt {
+    background: transparent;
+    color: var(--white);
+    border: 2px solid var(--white);
+}
+.btn-enroll-banner-alt:hover {
+    background: rgba(255,255,255,0.15);
+    transform: translateY(-1px);
+}
+
 /* --- FOOTER IMPROVEMENTS --- */
 .footer-logo-circle {
     background: var(--white);
@@ -2007,7 +2036,6 @@ body.login-page {
     min-height: 100vh;
     background: #f4f6fa;
     width: 100%;
-    overflow-x: clip;
 }
 
 /* --- Sidebar --- */
@@ -3611,16 +3639,6 @@ textarea:focus {
     background: #fee2e2;
     border-color: #fca5a5;
     color: #b91c1c;
-}
-
-.payment-method-icon-cell {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    text-align: center;
-    font-size: 22px;
-    line-height: 1;
-    min-height: 48px;
 }
 
 .eligible-grade-pill {

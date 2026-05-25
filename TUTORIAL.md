@@ -40,10 +40,11 @@ E-Assist/
 ├── migrate.php                 ← Database migration & seeding script
 │
 ├── Enrollment Flow (for parents):
-│   ├── enroll-student.html     ← Step 1: Student info + custom student fields
-│   ├── enroll-parent.html      ← Step 2: Parent info + custom parent fields
-│   ├── enroll-docs.html        ← Step 3: Previous school + custom doc fields
-│   ├── enroll-payment.html     ← Step 4: Dynamic payment mode + submit
+│   ├── enroll-student.html     ← Step 1: Student info + custom student fields (New Students)
+│   ├── enroll-parent.html      ← Step 2: Parent info + custom parent fields (New Students)
+│   ├── enroll-docs.html        ← Step 3: Previous school + custom doc fields (New Students)
+│   ├── enroll-payment.html     ← Step 4: Dynamic payment mode + submit (New Students)
+│   ├── enroll-existing.html    ← Re-enrollment flow (Existing Students, multi-step on single page)
 │   └── success.html            ← Receipt + downloadable receipt canvas image
 │
 ├── Employee System:
@@ -53,7 +54,8 @@ E-Assist/
 │   └── admin-dashboard.html         ← Admin: dashboard summary, active accounts, archive/delete, logs, maintenance, reports
 │
 └── api/                        ← PHP backend files
-    ├── register.php            ← Handles enrollment form submission + custom fields save
+    ├── register.php            ← Handles enrollment form submission + custom fields save (New Students)
+    ├── re-enroll.php           ← Handles existing student re-enrollment (Existing Students)
     ├── registrar.php           ← Handles employee login, dashboard queries, soft-deletes, restore
     ├── lookups.php             ← Provides dropdown options, payment modes, and form fields
     ├── maintenance.php         ← CRUD endpoints for Lookups, payment modes, custom fields
@@ -80,16 +82,18 @@ Study the files in this exact order:
 | 8 | [enroll-parent.html](file:///c:/xampp/htdocs/E-Assist/enroll-parent.html) | Step 2: Parent info and dynamic fields |
 | 9 | [enroll-docs.html](file:///c:/xampp/htdocs/E-Assist/enroll-docs.html) | Step 3: School document uploads |
 | 10 | [enroll-payment.html](file:///c:/xampp/htdocs/E-Assist/enroll-payment.html) | Step 4: Mode selection (card UI), initial payments, submit |
-| 11 | [success.html](file:///c:/xampp/htdocs/E-Assist/success.html) | Receipt rendering with Canvas 2D API |
-| 12 | [api/lookups.php](file:///c:/xampp/htdocs/E-Assist/api/lookups.php) | Data lookups API (dropdowns, modes, custom fields) |
-| 13 | [api/register.php](file:///c:/xampp/htdocs/E-Assist/api/register.php) | Complete enrollment form submission & transaction saver |
-| 14 | [employee-login.html](file:///c:/xampp/htdocs/E-Assist/employee-login.html) | Staff authentication screen |
-| 15 | [api/registrar.php](file:///c:/xampp/htdocs/E-Assist/api/registrar.php) | Staff authentication, core dashboard operations, soft deletes |
-| 16 | [api/maintenance.php](file:///c:/xampp/htdocs/E-Assist/api/maintenance.php) | System maintenance API (CRUD lookup values, payment modes, fields) |
-| 17 | [api/reports.php](file:///c:/xampp/htdocs/E-Assist/api/reports.php) | Query generator for Registrar & Cashier reports |
-| 18 | [registrar-dashboard.html](file:///c:/xampp/htdocs/E-Assist/registrar-dashboard.html) | Registrar interface (Applications, Enrolled, Archive, Reports) |
-| 19 | [cashier-dashboard.html](file:///c:/xampp/htdocs/E-Assist/cashier-dashboard.html) | Cashier interface (Payments, Archive, Reports) |
-| 20 | [admin-dashboard.html](file:///c:/xampp/htdocs/E-Assist/admin-dashboard.html) | Admin interface (Full management, Archive/Delete tabs, Maintenance, Reports) |
+| 11 | [enroll-existing.html](file:///c:/xampp/htdocs/E-Assist/enroll-existing.html) | Verification, details selection, document upload, and payment (Existing Students) |
+| 12 | [success.html](file:///c:/xampp/htdocs/E-Assist/success.html) | Receipt rendering with Canvas 2D API |
+| 13 | [api/lookups.php](file:///c:/xampp/htdocs/E-Assist/api/lookups.php) | Data lookups API (dropdowns, modes, custom fields, student lookup) |
+| 14 | [api/register.php](file:///c:/xampp/htdocs/E-Assist/api/register.php) | Complete enrollment form submission & transaction saver (New Students) |
+| 15 | [api/re-enroll.php](file:///c:/xampp/htdocs/E-Assist/api/re-enroll.php) | Re-enrollment form submission & transaction saver (Existing Students) |
+| 16 | [employee-login.html](file:///c:/xampp/htdocs/E-Assist/employee-login.html) | Staff authentication screen |
+| 17 | [api/registrar.php](file:///c:/xampp/htdocs/E-Assist/api/registrar.php) | Staff authentication, core dashboard operations, soft deletes |
+| 18 | [api/maintenance.php](file:///c:/xampp/htdocs/E-Assist/api/maintenance.php) | System maintenance API (CRUD lookup values, payment modes, fields) |
+| 19 | [api/reports.php](file:///c:/xampp/htdocs/E-Assist/api/reports.php) | Query generator for Registrar & Cashier reports |
+| 20 | [registrar-dashboard.html](file:///c:/xampp/htdocs/E-Assist/registrar-dashboard.html) | Registrar interface (Applications, Enrolled, Archive, Reports) |
+| 21 | [cashier-dashboard.html](file:///c:/xampp/htdocs/E-Assist/cashier-dashboard.html) | Cashier interface (Payments, Archive, Reports) |
+| 22 | [admin-dashboard.html](file:///c:/xampp/htdocs/E-Assist/admin-dashboard.html) | Admin interface (Full management, Archive/Delete tabs, Maintenance, Reports) |
 
 ---
 
@@ -164,11 +168,21 @@ To support dynamic settings and data management without hardcoding, the database
 **What is this?** The multi-step enrollment form filled out by parent enrollees.
 
 ### How Data Moves Dynamically:
+#### New Students:
 ```
 Step 1: Student Details + Custom Fields (Step 1) → saved to sessionStorage
 Step 2: Parent Details + Custom Fields (Step 2) → saved to sessionStorage
 Step 3: School Documents + Custom Fields (Step 3) → saved to sessionStorage
 Step 4: Load Payment Modes dynamically per Grade Level + submit total package
+```
+
+#### Existing Students (Re-Enrollment):
+For returning students, re-enrollment takes place on a single-page multi-step flow ([enroll-existing.html](file:///c:/xampp/htdocs/E-Assist/enroll-existing.html)):
+```
+Step 1: Verify Student ID → Pre-fill & view read-only student/parent data
+Step 2: Selection of grade level, session, and school year
+Step 3: Upload Report Card & Accomplished Clearance documents
+Step 4: Select payment mode (dynamic) & payment method → submit re-enrollment
 ```
 
 ### Dynamic Custom Fields Rendering:
@@ -185,7 +199,7 @@ Instead of hardcoding "Full Payment" and "Monthly", the enrollees see payment op
 const modes = await apiGet(`api/lookups.php?action=payment-modes&grade_level_id=${gradeId}`);
 // Renders options showing Tuition Fees, Books Fees, downpayment, and monthly installments
 ```
-Once submitted, `enroll-payment.html` appends all `sessionStorage` values, standard fields, files, and custom form values into a `FormData` object and POSTs it to `api/register.php`.
+Once submitted, new student details are POSTed to `api/register.php`, while existing student re-enrollments are POSTed to `api/re-enroll.php`.
 
 ---
 

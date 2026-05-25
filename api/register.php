@@ -164,16 +164,18 @@ try {
     $colCheck = $conn->query("SHOW COLUMNS FROM payments LIKE 'payment_mode_id'");
     if ($colCheck && $colCheck->num_rows > 0) $hasPaymentModeId = true;
 
+    $db_payment_mode = (empty($months_count) || $months_count <= 0) ? 'Full' : 'Monthly';
+
     if ($hasPaymentModeId) {
         // Older schema with payment_mode_id column
         $stmt = $conn->prepare("INSERT INTO payments (enrollment_id, payment_method_id, payment_mode, payment_mode_id, months_count, tuition_fee, books_fee, reference_number) VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
         if ($stmt) {
-            $stmt->bind_param("iisiidds", $enrollmentId, $payment_method_id, $payment_mode, $payment_mode_id, $months_count, $tuition_fee, $books_fee, $reference_number);
+            $stmt->bind_param("iisiidds", $enrollmentId, $payment_method_id, $db_payment_mode, $payment_mode_id, $months_count, $tuition_fee, $books_fee, $reference_number);
             $stmt->execute();
             $paymentId = $conn->insert_id;
         } else {
             // Fallback INSERT with payment_mode_id
-            $pmode = $conn->real_escape_string($payment_mode);
+            $pmode = $conn->real_escape_string($db_payment_mode);
             $pref = $conn->real_escape_string($reference_number);
             $p_mode_id = is_null($payment_mode_id) ? 'NULL' : intval($payment_mode_id);
             $m_count = is_null($months_count) ? 'NULL' : intval($months_count);
@@ -189,12 +191,12 @@ try {
         // Newer schema without payment_mode_id column
         $stmt = $conn->prepare("INSERT INTO payments (enrollment_id, payment_method_id, payment_mode, months_count, tuition_fee, books_fee, reference_number) VALUES (?, ?, ?, ?, ?, ?, ?)");
         if ($stmt) {
-            $stmt->bind_param("iisidds", $enrollmentId, $payment_method_id, $payment_mode, $months_count, $tuition_fee, $books_fee, $reference_number);
+            $stmt->bind_param("iisidds", $enrollmentId, $payment_method_id, $db_payment_mode, $months_count, $tuition_fee, $books_fee, $reference_number);
             $stmt->execute();
             $paymentId = $conn->insert_id;
         } else {
             // Fallback INSERT without payment_mode_id
-            $pmode = $conn->real_escape_string($payment_mode);
+            $pmode = $conn->real_escape_string($db_payment_mode);
             $pref = $conn->real_escape_string($reference_number);
             $m_count = is_null($months_count) ? 'NULL' : intval($months_count);
             $t_fee = is_null($tuition_fee) || $tuition_fee === '' ? 'NULL' : floatval(str_replace(',', '', $tuition_fee));

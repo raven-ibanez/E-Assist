@@ -417,6 +417,9 @@
                             <div class="dash-filter-row">
                                 <input type="text" id="enrollSearchInput" placeholder="Search name..."
                                     oninput="filterStudents()">
+                                <select id="enrollFilterGradeLevel" onchange="filterStudents()">
+                                    <option value="All">All Grades</option>
+                                </select>
                                 <select id="enrollFilterStatus" onchange="filterStudents()">
                                     <option value="All">All Status</option>
                                     <option value="Pending">Pending</option>
@@ -473,6 +476,9 @@
                             <div class="dash-filter-row">
                                 <input type="text" id="enrolledSearchInput" placeholder="Search name..."
                                     oninput="filterEnrolledStudents()">
+                                <select id="enrolledFilterGradeLevel" onchange="filterEnrolledStudents()">
+                                    <option value="All">All Grades</option>
+                                </select>
                             </div>
                         </div>
                         <div class="dash-table-scroll">
@@ -514,7 +520,7 @@
                                     class="dash-stat-value" id="payEnrolledCount">0</span></div>
                         </div>
                         <div class="dash-stat-card">
-                            <div class="dash-stat-icon-wrap purple"><i data-lucide="dollar-sign"></i></div>
+                            <div class="dash-stat-icon-wrap purple"><i data-lucide="philippine-peso"></i></div>
                             <div class="dash-stat-body"><span class="dash-stat-label">Refunded</span><span
                                     class="dash-stat-value" id="payRefundedCount">0</span></div>
                         </div>
@@ -540,6 +546,9 @@
                             <div class="dash-filter-row">
                                 <input type="text" id="paySearchInput" placeholder="Search reference..."
                                     oninput="filterPayments()">
+                                <select id="payFilterGradeLevel" onchange="filterPayments()">
+                                    <option value="All">All Grades</option>
+                                </select>
                                 <select id="filterPaymentMethod" onchange="filterPayments()">
                                     <option value="All">All Methods</option>
                                     <option value="GCash">GCash</option>
@@ -737,7 +746,7 @@
                             </button>
                             <button class="maint-cat-btn" data-table="income_ranges"
                                 onclick="selectCategory('income_ranges', this)">
-                                <span class="maint-cat-icon"><i data-lucide="dollar-sign"></i></span>
+                                <span class="maint-cat-icon"><i data-lucide="philippine-peso"></i></span>
                                 <span class="maint-cat-label">Income Ranges</span>
                             </button>
                             <button class="maint-cat-btn" data-table="roles" onclick="selectCategory('roles', this)">
@@ -1227,8 +1236,8 @@
                     <td>
                         <div class="dash-action-group">
                             <button class="btn-view" onclick="viewStudent(${s.enrollment_id})">View</button>
-                            <button class="btn-view" style="background:#f5f3ff; border-color:#9333ea; color:#7e22ce; margin-left:6px;" onclick="archiveStudentAdmin(${s.student_id})">Archive</button>
-                            <button class="btn-view" style="background:#fef2f2; border-color:#dc2626; color:#b91c1c; margin-left:6px;" onclick="deleteStudentAdmin(${s.student_id})">Delete</button>
+                            <button class="btn-view" style="background:#f5f3ff; border-color:#9333ea; color:#7e22ce; margin-left:6px;" onclick="archiveStudentAdmin(${s.enrollment_id})">Archive</button>
+                            <button class="btn-view" style="background:#fef2f2; border-color:#dc2626; color:#b91c1c; margin-left:6px;" onclick="deleteStudentAdmin(${s.enrollment_id})">Delete</button>
                             ${s.status === 'Dropped' ? `
                             <div class="dot-menu-wrapper">
                                 <button class="btn-dots" onclick="toggleDotMenu('dm-s-${s.enrollment_id}')">⋮</button>
@@ -1245,6 +1254,7 @@
         function filterStudents() {
             const search = document.getElementById('enrollSearchInput').value.toLowerCase();
             const statusFilter = document.getElementById('enrollFilterStatus').value;
+            const gradeFilter = document.getElementById('enrollFilterGradeLevel') ? document.getElementById('enrollFilterGradeLevel').value : 'All';
 
             // Base list excludes enrolled
             let baseList = allStudents.filter(s => s.status !== 'Enrolled' && s.status !== 'Enrolled (Doc. Pending)');
@@ -1260,11 +1270,15 @@
             if (statusFilter !== 'All') {
                 filtered = filtered.filter(s => s.status === statusFilter);
             }
+            if (gradeFilter !== 'All') {
+                filtered = filtered.filter(s => s.grade_level === gradeFilter);
+            }
             renderStudents(filtered);
         }
 
         function filterEnrolledStudents() {
             const search = document.getElementById('enrolledSearchInput').value.toLowerCase();
+            const gradeFilter = document.getElementById('enrolledFilterGradeLevel') ? document.getElementById('enrolledFilterGradeLevel').value : 'All';
 
             // Base list only enrolled
             let baseList = allStudents.filter(s => s.status === 'Enrolled' || s.status === 'Enrolled (Doc. Pending)');
@@ -1276,6 +1290,9 @@
                     s.student_no.toLowerCase().includes(search) ||
                     (formatParentName(s.parent_first_name, s.parent_last_name, s.parent_middle_name)).toLowerCase().includes(search)
                 );
+            }
+            if (gradeFilter !== 'All') {
+                filtered = filtered.filter(s => s.grade_level === gradeFilter);
             }
             renderEnrolledStudents(filtered);
         }
@@ -1298,8 +1315,8 @@
                     <td>
                         <div class="dash-action-group">
                             <button class="btn-view" onclick="viewStudent(${s.enrollment_id})">View</button>
-                            <button class="btn-view" style="background:#f5f3ff; border-color:#9333ea; color:#7e22ce; margin-left:6px;" onclick="archiveStudentAdmin(${s.student_id})">Archive</button>
-                            <button class="btn-view" style="background:#fef2f2; border-color:#dc2626; color:#b91c1c; margin-left:6px;" onclick="deleteStudentAdmin(${s.student_id})">Delete</button>
+                            <button class="btn-view" style="background:#f5f3ff; border-color:#9333ea; color:#7e22ce; margin-left:6px;" onclick="archiveStudentAdmin(${s.enrollment_id})">Archive</button>
+                            <button class="btn-view" style="background:#fef2f2; border-color:#dc2626; color:#b91c1c; margin-left:6px;" onclick="deleteStudentAdmin(${s.enrollment_id})">Delete</button>
                         </div>
                     </td>
                 </tr>
@@ -1327,6 +1344,7 @@
                     <div style="grid-column:1/-1;font-size:13px;font-weight:700;color:var(--blue-dark);text-transform:uppercase;letter-spacing:0.5px;border-bottom:2px solid var(--blue-light);padding-bottom:6px;margin-bottom:4px;">Student Information</div>
                     <div class="info-item"><label>Student ID</label><span>${s.student_no}</span></div>
                     <div class="info-item"><label>Full Name</label><span>${formatStudentName(s)}</span></div>
+                    <div class="info-item"><label>Enrollment Type</label><span>${s.enrollment_type === 'returning' ? '<span style="background:#dbeafe;color:#1e40af;padding:3px 10px;border-radius:50px;font-size:11px;font-weight:700;">🔄 Returning Student</span>' : '<span style="background:#dcfce7;color:#166534;padding:3px 10px;border-radius:50px;font-size:11px;font-weight:700;">📝 New Student</span>'}</span></div>
                     <div class="info-item"><label>Date of Birth</label><span>${s.birth_date}</span></div>
                     <div class="info-item"><label>Gender</label><span>${s.gender}</span></div>
                     <div class="info-item"><label>Religion</label><span>${s.religion || '—'}</span></div>
@@ -1352,6 +1370,23 @@
                     <div class="info-item"><label>Books Fee</label><span>${formatCurrency(s.books_fee)}</span></div>
 
                     <div style="grid-column:1/-1;font-size:13px;font-weight:700;color:var(--blue-dark);text-transform:uppercase;letter-spacing:0.5px;border-bottom:2px solid var(--blue-light);padding-bottom:6px;margin-top:12px;margin-bottom:4px;">Documents</div>
+
+                    ${s.enrollment_type === 'returning' ? `
+                    <div class="info-item" style="grid-column:1/-1;">
+                        <label>Report Card</label>
+                        <span>${s.report_card
+                        ? `<a href="${s.report_card}" target="_blank" style="color:var(--blue-dark);font-weight:600;text-decoration:underline;">View Document</a>
+                               <div style="margin-top:8px;"><img src="${s.report_card}" style="max-width:100%;max-height:200px;border-radius:8px;border:1px solid var(--gray-300);cursor:pointer;" onclick="window.open('${s.report_card}','_blank')" onerror="this.style.display='none'"></div>`
+                        : '<span style="color:#dc2626">Not uploaded</span>'}</span>
+                    </div>
+                    <div class="info-item" style="grid-column:1/-1;">
+                        <label>Accomplished Clearance</label>
+                        <span>${s.clearance
+                        ? `<a href="${s.clearance}" target="_blank" style="color:var(--blue-dark);font-weight:600;text-decoration:underline;">View Document</a>
+                               <div style="margin-top:8px;"><img src="${s.clearance}" style="max-width:100%;max-height:200px;border-radius:8px;border:1px solid var(--gray-300);cursor:pointer;" onclick="window.open('${s.clearance}','_blank')" onerror="this.style.display='none'"></div>`
+                        : '<span style="color:#dc2626">Not uploaded</span>'}</span>
+                    </div>
+                    ` : `
                     <div class="info-item" style="grid-column:1/-1;">
                         <label>PSA Birth Certificate</label>
                         <span>${s.psa_birth_cert
@@ -1366,6 +1401,8 @@
                                <div style="margin-top:8px;"><img src="${s.sf10_document}" style="max-width:100%;max-height:200px;border-radius:8px;border:1px solid var(--gray-300);cursor:pointer;" onclick="window.open('${s.sf10_document}','_blank')" onerror="this.style.display='none'"></div>`
                         : '<span style="color:#dc2626">Not uploaded</span>'}</span>
                     </div>
+                    `}
+
                     <div class="info-item" style="grid-column:1/-1;">
                         <label>2×2 Picture</label>
                         <span>${s.picture_2x2
@@ -1615,6 +1652,7 @@
             const search = document.getElementById('paySearchInput').value.toLowerCase();
             const payFilter = document.getElementById('filterPaymentMethod').value;
             const statusFilter = document.getElementById('payFilterStatus').value;
+            const gradeFilter = document.getElementById('payFilterGradeLevel') ? document.getElementById('payFilterGradeLevel').value : 'All';
 
             let filtered = allPayments;
             if (search) {
@@ -1630,6 +1668,9 @@
             }
             if (statusFilter !== 'All') {
                 filtered = filtered.filter(r => r.status === statusFilter);
+            }
+            if (gradeFilter !== 'All') {
+                filtered = filtered.filter(r => r.grade_level === gradeFilter);
             }
             renderPayments(filtered);
         }
@@ -2092,7 +2133,7 @@
         // =====================
         // STUDENT DELETE MODULE (Admin)
         // =====================
-        async function deleteStudentAdmin(studentId) {
+        async function deleteStudentAdmin(enrollmentId) {
             const confirmResult = await Swal.fire({
                 title: 'Delete Student?',
                 text: 'This student record will be moved to the Delete Module. You can restore it later.',
@@ -2108,7 +2149,7 @@
             const otherAlertId = alertId === 'enrolledAlert' ? 'enrollAlert' : 'enrolledAlert';
 
             try {
-                const res = await apiPost('api/registrar.php?action=delete_student', { student_id: studentId, admin_id: sessionStorage.getItem('adminId') });
+                const res = await apiPost('api/registrar.php?action=delete_student', { enrollment_id: enrollmentId, admin_id: sessionStorage.getItem('adminId') });
                 showAlert(alertId, '' + res.message, 'success');
                 hideAlert(otherAlertId);
                 loadStudents();
@@ -2149,8 +2190,8 @@
                     <td>
                         <div class="dash-action-group">
                             <button class="btn-view" onclick="viewStudent(${s.enrollment_id})">View</button>
-                            <button class="btn-view" style="background:#dcfce7; border-color:#16a34a; color:#166534; margin-left:6px;" onclick="restoreDeletedStudentAdmin(${s.student_id})">↩️ Restore</button>
-                            <button class="btn-view" style="background:#fee2e2; border-color:#dc2626; color:#b91c1c; margin-left:6px;" onclick="permanentlyDeleteDeletedStudentAdmin(${s.student_id})">Permanent Delete</button>
+                            <button class="btn-view" style="background:#dcfce7; border-color:#16a34a; color:#166534; margin-left:6px;" onclick="restoreDeletedStudentAdmin(${s.enrollment_id})">↩️ Restore</button>
+                            <button class="btn-view" style="background:#fee2e2; border-color:#dc2626; color:#b91c1c; margin-left:6px;" onclick="permanentlyDeleteDeletedStudentAdmin(${s.enrollment_id})">Permanent Delete</button>
                         </div>
                     </td>
                 </tr>
@@ -2169,7 +2210,7 @@
             });
         }
 
-        async function restoreDeletedStudentAdmin(studentId) {
+        async function restoreDeletedStudentAdmin(enrollmentId) {
             const confirmResult = await Swal.fire({
                 title: 'Restore Student?',
                 text: 'This student record will be moved back to the Active list.',
@@ -2181,7 +2222,7 @@
             });
             if (!confirmResult.isConfirmed) return;
             try {
-                const res = await apiPost('api/registrar.php?action=restore_student_from_deleted', { student_id: studentId, admin_id: sessionStorage.getItem('adminId') });
+                const res = await apiPost('api/registrar.php?action=restore_student_from_deleted', { enrollment_id: enrollmentId, admin_id: sessionStorage.getItem('adminId') });
                 showAlert('deletedStudentsAlert', '' + res.message, 'success');
                 loadDeletedStudentsAdmin();
                 loadStudents();
@@ -2190,7 +2231,7 @@
             }
         }
 
-        async function permanentlyDeleteDeletedStudentAdmin(studentId) {
+        async function permanentlyDeleteDeletedStudentAdmin(enrollmentId) {
             const confirmResult = await Swal.fire({
                 title: 'Permanently Delete Student?',
                 text: 'WARNING: This action is permanent and cannot be undone! All associated enrollment and payment data will be permanently deleted.',
@@ -2202,7 +2243,7 @@
             });
             if (!confirmResult.isConfirmed) return;
             try {
-                const res = await apiPost('api/registrar.php?action=permanently_delete_student', { student_id: studentId, admin_id: sessionStorage.getItem('adminId') });
+                const res = await apiPost('api/registrar.php?action=permanently_delete_student', { enrollment_id: enrollmentId, admin_id: sessionStorage.getItem('adminId') });
                 showAlert('deletedStudentsAlert', '' + res.message, 'success');
                 loadDeletedStudentsAdmin();
                 loadStudents();
@@ -2214,7 +2255,7 @@
         // =====================
         // STUDENT ARCHIVE MODULE (Admin)
         // =====================
-        async function archiveStudentAdmin(studentId) {
+        async function archiveStudentAdmin(enrollmentId) {
             const confirmResult = await Swal.fire({
                 title: 'Archive Student?',
                 text: 'This student record will be moved to the Archive. You can restore it later.',
@@ -2230,7 +2271,7 @@
             const otherAlertId = alertId === 'enrolledAlert' ? 'enrollAlert' : 'enrolledAlert';
 
             try {
-                const res = await apiPost('api/registrar.php?action=archive_student', { student_id: studentId, admin_id: sessionStorage.getItem('adminId') });
+                const res = await apiPost('api/registrar.php?action=archive_student', { enrollment_id: enrollmentId, admin_id: sessionStorage.getItem('adminId') });
                 showAlert(alertId, '' + res.message, 'success');
                 hideAlert(otherAlertId);
                 loadStudents();
@@ -2271,8 +2312,8 @@
                     <td>
                         <div class="dash-action-group">
                             <button class="btn-view" onclick="viewStudent(${s.enrollment_id})">View</button>
-                            <button class="btn-view" style="background:#dcfce7; border-color:#16a34a; color:#166534; margin-left:6px;" onclick="restoreArchivedStudentAdmin(${s.student_id})">↩️ Restore</button>
-                            <button class="btn-view" style="background:#fee2e2; border-color:#dc2626; color:#b91c1c; margin-left:6px;" onclick="permanentlyDeleteStudentAdmin(${s.student_id})">Permanent Delete</button>
+                            <button class="btn-view" style="background:#dcfce7; border-color:#16a34a; color:#166534; margin-left:6px;" onclick="restoreArchivedStudentAdmin(${s.enrollment_id})">↩️ Restore</button>
+                            <button class="btn-view" style="background:#fee2e2; border-color:#dc2626; color:#b91c1c; margin-left:6px;" onclick="permanentlyDeleteStudentAdmin(${s.enrollment_id})">Permanent Delete</button>
                         </div>
                     </td>
                 </tr>
@@ -2291,7 +2332,7 @@
             });
         }
 
-        async function restoreArchivedStudentAdmin(studentId) {
+        async function restoreArchivedStudentAdmin(enrollmentId) {
             const confirmResult = await Swal.fire({
                 title: 'Restore Student?',
                 text: 'This student record will be moved back to the Active list.',
@@ -2303,7 +2344,7 @@
             });
             if (!confirmResult.isConfirmed) return;
             try {
-                const res = await apiPost('api/registrar.php?action=restore_student', { student_id: studentId, admin_id: sessionStorage.getItem('adminId') });
+                const res = await apiPost('api/registrar.php?action=restore_student', { enrollment_id: enrollmentId, admin_id: sessionStorage.getItem('adminId') });
                 showAlert('archivedStudentsAlert', '' + res.message, 'success');
                 loadArchivedStudentsAdmin();
                 loadStudents();
@@ -2312,7 +2353,7 @@
             }
         }
 
-        async function permanentlyDeleteStudentAdmin(studentId) {
+        async function permanentlyDeleteStudentAdmin(enrollmentId) {
             const confirmResult = await Swal.fire({
                 title: 'Permanently Delete Student?',
                 text: 'WARNING: This action is permanent and cannot be undone! All associated enrollment and payment data will be permanently deleted.',
@@ -2324,7 +2365,7 @@
             });
             if (!confirmResult.isConfirmed) return;
             try {
-                const res = await apiPost('api/registrar.php?action=permanently_delete_student', { student_id: studentId, admin_id: sessionStorage.getItem('adminId') });
+                const res = await apiPost('api/registrar.php?action=permanently_delete_student', { enrollment_id: enrollmentId, admin_id: sessionStorage.getItem('adminId') });
                 showAlert('archivedStudentsAlert', '' + res.message, 'success');
                 loadArchivedStudentsAdmin();
                 loadStudents();
@@ -2508,7 +2549,57 @@
             }
         }
 
+        let gradeLevelsLoaded = false;
+        async function loadGradeLevelFilters() {
+            if (gradeLevelsLoaded) return;
+            try {
+                const grades = await apiGet('api/lookups.php?action=grade-levels');
+                
+                // adminReportGradeLevel
+                const reportSelect = document.getElementById('adminReportGradeLevel');
+                if (reportSelect) {
+                    reportSelect.innerHTML = '<option value="All">All Grades</option>';
+                    grades.forEach(g => {
+                        reportSelect.innerHTML += `<option value="${g.id}">${g.name}</option>`;
+                    });
+                }
+
+                // enrollFilterGradeLevel
+                const enrollSelect = document.getElementById('enrollFilterGradeLevel');
+                if (enrollSelect) {
+                    enrollSelect.innerHTML = '<option value="All">All Grades</option>';
+                    grades.forEach(g => {
+                        enrollSelect.innerHTML += `<option value="${g.name}">${g.name}</option>`;
+                    });
+                }
+
+                // enrolledFilterGradeLevel
+                const enrolledSelect = document.getElementById('enrolledFilterGradeLevel');
+                if (enrolledSelect) {
+                    enrolledSelect.innerHTML = '<option value="All">All Grades</option>';
+                    grades.forEach(g => {
+                        enrolledSelect.innerHTML += `<option value="${g.name}">${g.name}</option>`;
+                    });
+                }
+
+                // payFilterGradeLevel
+                const paySelect = document.getElementById('payFilterGradeLevel');
+                if (paySelect) {
+                    paySelect.innerHTML = '<option value="All">All Grades</option>';
+                    grades.forEach(g => {
+                        paySelect.innerHTML += `<option value="${g.name}">${g.name}</option>`;
+                    });
+                }
+
+                gradeLevelsLoaded = true;
+                adminReportGradeLevelsLoaded = true; // Compatibility
+            } catch (err) {
+                console.warn('Failed to load grade levels for dropdowns:', err);
+            }
+        }
+
         // Load enrollments on page load (default tab)
+        loadGradeLevelFilters();
         loadStudents();
 
 
@@ -3129,8 +3220,7 @@
                         </td>`;
                     } else if (field === 'is_active') {
                         // Skip — handled in actions column
-                    } else if (maintCurrentTable === 'payment_methods' && field === 'icon') {
-                        cells += `<td class="payment-method-icon-cell">${escapeHtml(row[field] || '—')}</td>`;
+
                     } else if (maintCurrentTable === 'sessions' && field === 'eligible_grades') {
                         const grades = String(row[field] || '').split(',').map(g => g.trim()).filter(Boolean);
                         if (grades.length === 0) {

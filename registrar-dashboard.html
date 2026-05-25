@@ -143,6 +143,9 @@
                         <!-- Search & Filter -->
                         <div class="dash-filter-row">
                             <input type="text" id="searchInput" placeholder="Search by name or ID..." onkeyup="filterStudents()">
+                            <select id="filterGradeLevel" onchange="filterStudents()">
+                                <option value="All">All Grades</option>
+                            </select>
                             <select id="filterStatus" onchange="filterStudents()">
                                 <option value="All">All Status</option>
                                 <option value="Pending">Pending</option>
@@ -198,6 +201,9 @@
                         <span class="dash-table-title">Enrolled Masterlist</span>
                         <div class="dash-filter-row">
                             <input type="text" id="enrolledSearchInput" placeholder="Search name..." oninput="filterEnrolledStudents()">
+                            <select id="enrolledFilterGradeLevel" onchange="filterEnrolledStudents()">
+                                <option value="All">All Grades</option>
+                            </select>
                         </div>
                     </div>
                     <div class="dash-table-scroll">
@@ -513,21 +519,42 @@
             document.querySelectorAll('.dot-dropdown.open').forEach(d => { if (d.id !== id) d.classList.remove('open'); });
             menu.classList.toggle('open');
         }
-        let reportGradeLevelsLoaded = false;
-        async function loadReportGradeLevels() {
-            if (reportGradeLevelsLoaded) return;
+        let gradeLevelsLoaded = false;
+        async function loadGradeLevelFilters() {
+            if (gradeLevelsLoaded) return;
             try {
                 const grades = await apiGet('api/lookups.php?action=grade-levels');
-                const select = document.getElementById('reportGradeLevel');
-                if (select) {
-                    select.innerHTML = '<option value="All">All Grades</option>';
+                
+                // Populate reportGradeLevel (uses g.id)
+                const reportSelect = document.getElementById('reportGradeLevel');
+                if (reportSelect) {
+                    reportSelect.innerHTML = '<option value="All">All Grades</option>';
                     grades.forEach(g => {
-                        select.innerHTML += `<option value="${g.id}">${g.name}</option>`;
+                        reportSelect.innerHTML += `<option value="${g.id}">${g.name}</option>`;
                     });
-                    reportGradeLevelsLoaded = true;
                 }
+
+                // Populate filterGradeLevel (uses g.name)
+                const filterSelect = document.getElementById('filterGradeLevel');
+                if (filterSelect) {
+                    filterSelect.innerHTML = '<option value="All">All Grades</option>';
+                    grades.forEach(g => {
+                        filterSelect.innerHTML += `<option value="${g.name}">${g.name}</option>`;
+                    });
+                }
+
+                // Populate enrolledFilterGradeLevel (uses g.name)
+                const enrolledSelect = document.getElementById('enrolledFilterGradeLevel');
+                if (enrolledSelect) {
+                    enrolledSelect.innerHTML = '<option value="All">All Grades</option>';
+                    grades.forEach(g => {
+                        enrolledSelect.innerHTML += `<option value="${g.name}">${g.name}</option>`;
+                    });
+                }
+                
+                gradeLevelsLoaded = true;
             } catch (err) {
-                console.warn('Failed to load grade levels for reports dropdown:', err);
+                console.warn('Failed to load grade levels for dropdowns:', err);
             }
         }
 
@@ -542,7 +569,7 @@
             if (navEl) navEl.classList.add('active');
 
             if (tabId === 'reports') {
-                loadReportGradeLevels();
+                loadGradeLevelFilters();
              } else if (tabId === 'archive') {
                 loadArchivedStudents();
             }
@@ -636,17 +663,17 @@
                                         <button class="btn-view" style="background:#dcfce7; border-color:#16a34a; color:#166534;" onclick="reviewApplication(${s.enrollment_id}, 'approved')">Approve</button>
                                         <button class="btn-view" style="background:#fef9c3; border-color:#ca8a04; color:#854d0e;" onclick="reviewApplication(${s.enrollment_id}, 'approved_dtf')">Appr. DTF</button>
                                         <button class="btn-view" style="background:#fee2e2; border-color:#dc2626; color:#991b1b;" onclick="reviewApplication(${s.enrollment_id}, 'declined')">Decline</button>
-                                        <button class="btn-view" style="background:#f5f3ff; border-color:#9333ea; color:#7e22ce;" onclick="archiveStudent(${s.student_id})">Archive</button>
+                                        <button class="btn-view" style="background:#f5f3ff; border-color:#9333ea; color:#7e22ce;" onclick="archiveStudent(${s.enrollment_id})">Archive</button>
                                     `;
                                 } else if (s.registrar_status === 'approved' && s.status !== 'Dropped') {
                                     return `
                                         <button class="btn-view" style="background:#fee2e2; border-color:#dc2626; color:#991b1b;" onclick="reviewApplication(${s.enrollment_id}, 'dropped')">Drop Student</button>
-                                        <button class="btn-view" style="background:#f5f3ff; border-color:#9333ea; color:#7e22ce;" onclick="archiveStudent(${s.student_id})">Archive</button>
+                                        <button class="btn-view" style="background:#f5f3ff; border-color:#9333ea; color:#7e22ce;" onclick="archiveStudent(${s.enrollment_id})">Archive</button>
                                     `;
                                 } else if (s.status === 'Dropped') {
                                     return `
                                         <button class="btn-view" style="background:#dcfce7; border-color:#16a34a; color:#166534;" onclick="undoDrop(${s.enrollment_id})">↩ Undo Drop</button>
-                                        <button class="btn-view" style="background:#f5f3ff; border-color:#9333ea; color:#7e22ce;" onclick="archiveStudent(${s.student_id})">Archive</button>
+                                        <button class="btn-view" style="background:#f5f3ff; border-color:#9333ea; color:#7e22ce;" onclick="archiveStudent(${s.enrollment_id})">Archive</button>
                                     `;
                                 }
                                 return '';
@@ -661,6 +688,7 @@
         function filterStudents() {
             const search = document.getElementById('searchInput').value.toLowerCase();
             const statusFilter = document.getElementById('filterStatus').value;
+            const gradeFilter = document.getElementById('filterGradeLevel') ? document.getElementById('filterGradeLevel').value : 'All';
 
             // Base list excludes enrolled
             let baseList = allStudents.filter(s => s.status !== 'Enrolled' && s.status !== 'Enrolled (Doc. Pending)');
@@ -678,12 +706,17 @@
                 filtered = filtered.filter(s => s.status === statusFilter);
             }
 
+            if (gradeFilter !== 'All') {
+                filtered = filtered.filter(s => s.grade_level === gradeFilter);
+            }
+
             renderTable(filtered);
         }
 
         // --- Filter enrolled students by search text ---
         function filterEnrolledStudents() {
             const search = document.getElementById('enrolledSearchInput').value.toLowerCase();
+            const gradeFilter = document.getElementById('enrolledFilterGradeLevel') ? document.getElementById('enrolledFilterGradeLevel').value : 'All';
 
             // Base list includes only enrolled
             let baseList = allStudents.filter(s => s.status === 'Enrolled' || s.status === 'Enrolled (Doc. Pending)');
@@ -695,6 +728,10 @@
                     s.student_no.toLowerCase().includes(search) ||
                     (formatParentName(s.parent_first_name, s.parent_last_name, s.parent_middle_name)).toLowerCase().includes(search)
                 );
+            }
+
+            if (gradeFilter !== 'All') {
+                filtered = filtered.filter(s => s.grade_level === gradeFilter);
             }
 
             renderEnrolledStudents(filtered);
@@ -728,7 +765,7 @@
                             <button class="btn-view" onclick="viewStudent(${s.enrollment_id})">View</button>
                             <button class="btn-view" style="border-color:#1e40af; color:#1e40af;" onclick="openEditModal(${s.enrollment_id})">Edit</button>
                             <button class="btn-view" style="background:#fee2e2; border-color:#dc2626; color:#991b1b;" onclick="reviewApplication(${s.enrollment_id}, 'dropped')">Drop Student</button>
-                            <button class="btn-view" style="background:#f5f3ff; border-color:#9333ea; color:#7e22ce;" onclick="archiveStudent(${s.student_id})">Archive</button>
+                            <button class="btn-view" style="background:#f5f3ff; border-color:#9333ea; color:#7e22ce;" onclick="archiveStudent(${s.enrollment_id})">Archive</button>
                         </div>
                     </td>
                 </tr>
@@ -824,6 +861,7 @@
                     <div style="grid-column:1/-1;font-size:13px;font-weight:700;color:var(--blue-dark);text-transform:uppercase;letter-spacing:0.5px;border-bottom:2px solid var(--blue-light);padding-bottom:6px;margin-bottom:4px;">Student Information</div>
                     <div class="info-item"><label>Student ID</label><span>${s.student_no}</span></div>
                     <div class="info-item"><label>Full Name</label><span>${formatStudentName(s)}</span></div>
+                    <div class="info-item"><label>Enrollment Type</label><span>${s.enrollment_type === 'returning' ? '<span style="background:#dbeafe;color:#1e40af;padding:3px 10px;border-radius:50px;font-size:11px;font-weight:700;">🔄 Returning Student</span>' : '<span style="background:#dcfce7;color:#166534;padding:3px 10px;border-radius:50px;font-size:11px;font-weight:700;">📝 New Student</span>'}</span></div>
                     <div class="info-item"><label>Date of Birth</label><span>${s.birth_date}</span></div>
                     <div class="info-item"><label>Gender</label><span>${s.gender}</span></div>
                     <div class="info-item"><label>Religion</label><span>${s.religion || '—'}</span></div>
@@ -851,6 +889,31 @@
 
                     <div style="grid-column:1/-1;font-size:13px;font-weight:700;color:var(--blue-dark);text-transform:uppercase;letter-spacing:0.5px;border-bottom:2px solid var(--blue-light);padding-bottom:6px;margin-top:12px;margin-bottom:4px;">Documents</div>
 
+                    ${s.enrollment_type === 'returning' ? `
+                    <div class="info-item" style="grid-column:1/-1;">
+                        <label>Report Card</label>
+                        <span>${s.report_card
+                        ? `<a href="${s.report_card}" target="_blank" style="color:var(--blue-dark);font-weight:600;text-decoration:underline;">View</a>
+                               <img src="${s.report_card}" style="display:block;margin-top:6px;max-width:100%;max-height:180px;border-radius:6px;" onerror="this.style.display='none'">`
+                        : '<span style="color:#dc2626">Not uploaded</span>'}</span>
+                        <div style="margin-top:8px;">
+                            <input type="file" id="upload_report_card_${s.enrollment_id}" accept="image/*,.pdf" style="font-size:12px;">
+                            <button onclick="uploadDocument(${s.enrollment_id}, ${s.student_id}, 'report_card', 'upload_report_card_${s.enrollment_id}')" style="margin-left:8px;padding:4px 12px;font-size:12px;background:var(--maroon-dark);color:#fff;border:none;border-radius:6px;cursor:pointer;">⬆ Upload Report Card</button>
+                        </div>
+                    </div>
+
+                    <div class="info-item" style="grid-column:1/-1;">
+                        <label>Accomplished Clearance</label>
+                        <span>${s.clearance
+                        ? `<a href="${s.clearance}" target="_blank" style="color:var(--blue-dark);font-weight:600;text-decoration:underline;">View</a>
+                               <img src="${s.clearance}" style="display:block;margin-top:6px;max-width:100%;max-height:180px;border-radius:6px;" onerror="this.style.display='none'">`
+                        : '<span style="color:#dc2626">Not uploaded</span>'}</span>
+                        <div style="margin-top:8px;">
+                            <input type="file" id="upload_clearance_${s.enrollment_id}" accept="image/*,.pdf" style="font-size:12px;">
+                            <button onclick="uploadDocument(${s.enrollment_id}, ${s.student_id}, 'clearance', 'upload_clearance_${s.enrollment_id}')" style="margin-left:8px;padding:4px 12px;font-size:12px;background:var(--maroon-dark);color:#fff;border:none;border-radius:6px;cursor:pointer;">⬆ Upload Clearance</button>
+                        </div>
+                    </div>
+                    ` : `
                     <div class="info-item" style="grid-column:1/-1;">
                         <label>PSA Birth Certificate</label>
                         <span>${s.psa_birth_cert
@@ -874,6 +937,7 @@
                             <button onclick="uploadDocument(${s.enrollment_id}, ${s.student_id}, 'sf10', 'upload_sf10_${s.enrollment_id}')" style="margin-left:8px;padding:4px 12px;font-size:12px;background:var(--maroon-dark);color:#fff;border:none;border-radius:6px;cursor:pointer;">⬆ Upload SF10</button>
                         </div>
                     </div>
+                    `}
 
                     <div class="info-item" style="grid-column:1/-1;">
                         <label>2×2 Picture</label>
@@ -1061,7 +1125,7 @@
         }
 
         // --- ARCHIVE STUDENT ---
-        async function archiveStudent(studentId) {
+        async function archiveStudent(enrollmentId) {
             const confirmResult = await Swal.fire({
                 title: 'Archive Student?',
                 text: 'This student record will be moved to the Archive. You can restore it later.',
@@ -1078,7 +1142,7 @@
 
             try {
                 const res = await apiPost('api/registrar.php?action=archive_student', {
-                    student_id: studentId,
+                    enrollment_id: enrollmentId,
                     admin_id: sessionStorage.getItem('adminId')
                 });
 
@@ -1092,7 +1156,7 @@
         }
 
         // --- RESTORE STUDENT ---
-        async function restoreStudent(studentId) {
+        async function restoreStudent(enrollmentId) {
             const confirmResult = await Swal.fire({
                 title: 'Restore Student?',
                 text: 'This student record will be moved back to the Active list.',
@@ -1106,7 +1170,7 @@
 
             try {
                 const res = await apiPost('api/registrar.php?action=restore_student', {
-                    student_id: studentId,
+                    enrollment_id: enrollmentId,
                     admin_id: sessionStorage.getItem('adminId')
                 });
 
@@ -1155,7 +1219,7 @@
                     <td>
                         <div class="dash-action-group" style="flex-wrap:wrap;">
                             <button class="btn-view" onclick="viewStudent(${s.enrollment_id})">View</button>
-                            <button class="btn-view" style="background:#dcfce7; border-color:#16a34a; color:#166534;" onclick="restoreStudent(${s.student_id})">↩️ Restore</button>
+                            <button class="btn-view" style="background:#dcfce7; border-color:#16a34a; color:#166534;" onclick="restoreStudent(${s.enrollment_id})">↩️ Restore</button>
                         </div>
                     </td>
                 </tr>
@@ -1285,6 +1349,7 @@
             URL.revokeObjectURL(url);
         }
 
+        loadGradeLevelFilters();
         loadStudents();
         lucide.createIcons();
     </script>

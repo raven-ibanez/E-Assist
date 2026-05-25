@@ -115,5 +115,41 @@ if ($checkAdminStatus->num_rows === 0) {
     $steps[] = 'status column in admin: already exists';
 }
 
+// 8. Add enrollment_type column to enrollments table if it doesn't exist
+$checkEnrollType = $conn->query("SHOW COLUMNS FROM enrollments LIKE 'enrollment_type'");
+if ($checkEnrollType->num_rows === 0) {
+    $conn->query("ALTER TABLE enrollments ADD COLUMN enrollment_type ENUM('new', 'returning') NOT NULL DEFAULT 'new' AFTER session_id");
+    $steps[] = 'Added enrollment_type column to enrollments table: ' . ($conn->error ?: 'OK');
+} else {
+    $steps[] = 'enrollment_type column in enrollments: already exists';
+}
+
+// 9. Add report_card column to enrollments table if it doesn't exist
+$checkReportCard = $conn->query("SHOW COLUMNS FROM enrollments LIKE 'report_card'");
+if ($checkReportCard->num_rows === 0) {
+    $conn->query("ALTER TABLE enrollments ADD COLUMN report_card VARCHAR(255) DEFAULT NULL AFTER enrollment_type");
+    $steps[] = 'Added report_card column to enrollments table: ' . ($conn->error ?: 'OK');
+} else {
+    $steps[] = 'report_card column in enrollments: already exists';
+}
+
+// 10. Add clearance column to enrollments table if it doesn't exist
+$checkClearance = $conn->query("SHOW COLUMNS FROM enrollments LIKE 'clearance'");
+if ($checkClearance->num_rows === 0) {
+    $conn->query("ALTER TABLE enrollments ADD COLUMN clearance VARCHAR(255) DEFAULT NULL AFTER report_card");
+    $steps[] = 'Added clearance column to enrollments table: ' . ($conn->error ?: 'OK');
+} else {
+    $steps[] = 'clearance column in enrollments: already exists';
+}
+
+// 11. Add status column to enrollments table if it doesn't exist
+$checkEnrollStatus = $conn->query("SHOW COLUMNS FROM enrollments LIKE 'status'");
+if ($checkEnrollStatus->num_rows === 0) {
+    $conn->query("ALTER TABLE enrollments ADD COLUMN status ENUM('active', 'archived', 'deleted') NOT NULL DEFAULT 'active' AFTER documents_pending");
+    $steps[] = 'Added status column to enrollments table: ' . ($conn->error ?: 'OK');
+} else {
+    $steps[] = 'status column in enrollments: already exists';
+}
+
 echo implode("\n", $steps) . "\nMigration complete!\n";
 ?>

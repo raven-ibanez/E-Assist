@@ -116,6 +116,7 @@ if ($action === 'students') {
             e.id AS enrollment_id, 
             e.applied_at,
             e.documents_pending,
+            e.enrollment_type,
             s.id AS student_id,
             s.student_no, 
             s.first_name, 
@@ -136,7 +137,7 @@ if ($action === 'students') {
         JOIN students s            ON e.student_id    = s.id
         JOIN parents p             ON s.parent_id     = p.id
         JOIN grade_levels gl       ON e.grade_level_id = gl.id
-        WHERE s.status = 'active'
+        WHERE e.status = 'active'
         ORDER BY e.applied_at DESC
     ");
 
@@ -184,7 +185,7 @@ if ($action === 'archived_students') {
         JOIN students s            ON e.student_id    = s.id
         JOIN parents p             ON s.parent_id     = p.id
         JOIN grade_levels gl       ON e.grade_level_id = gl.id
-        WHERE s.status = 'archived'
+        WHERE e.status = 'archived'
         ORDER BY e.applied_at DESC
     ");
 
@@ -214,6 +215,9 @@ if ($action === 'detail') {
             e.id AS enrollment_id, 
             e.applied_at,
             e.documents_pending,
+            e.enrollment_type,
+            e.report_card,
+            e.clearance,
             sy.label AS school_year,
             sess.name AS session_preference,
             pm.name AS payment_method,
@@ -344,7 +348,7 @@ if ($action === 'payments') {
         JOIN school_years sy       ON e.school_year_id = sy.id
         LEFT JOIN payments pay     ON e.id             = pay.enrollment_id
         LEFT JOIN payment_methods pm ON pay.payment_method_id = pm.id
-        WHERE s.status = 'active'
+        WHERE e.status = 'active'
         ORDER BY e.applied_at DESC
     ");
 
@@ -632,9 +636,9 @@ if ($action === 'update_student') {
 if ($action === 'upload_document') {
     $enrollment_id = $_POST['enrollment_id'] ?? '';
     $student_id    = $_POST['student_id'] ?? '';
-    $doc_type      = $_POST['doc_type'] ?? '';  // 'psa', 'sf10', or 'picture'
+    $doc_type      = $_POST['doc_type'] ?? '';  // 'psa', 'sf10', 'picture', 'report_card', or 'clearance'
 
-    if (!$enrollment_id || !$student_id || !in_array($doc_type, ['psa', 'sf10', 'picture'])) {
+    if (!$enrollment_id || !$student_id || !in_array($doc_type, ['psa', 'sf10', 'picture', 'report_card', 'clearance'])) {
         sendJSON(['error' => 'Invalid request. Missing required fields.'], 400);
     }
 
@@ -657,13 +661,19 @@ if ($action === 'upload_document') {
 
     $webPath = 'uploads/' . $filename;
 
-    $colMap = ['psa' => 'psa_birth_cert', 'sf10' => 'sf10_document', 'picture' => 'picture_2x2'];
-    $col    = $colMap[$doc_type];
-
-    // Update the student's document path
-    $stmt = $conn->prepare("UPDATE students SET `{$col}` = ? WHERE id = ?");
-    $stmt->bind_param("si", $webPath, $student_id);
-    $stmt->execute();
+    if (in_array($doc_type, ['report_card', 'clearance'])) {
+        // Update the enrollment's document path (stored at enrollment level)
+        $stmt = $conn->prepare("UPDATE enrollments SET `{$doc_type}` = ? WHERE id = ?");
+        $stmt->bind_param("si", $webPath, $enrollment_id);
+        $stmt->execute();
+    } else {
+        $colMap = ['psa' => 'psa_birth_cert', 'sf10' => 'sf10_document', 'picture' => 'picture_2x2'];
+        $col    = $colMap[$doc_type];
+        // Update the student's document path
+        $stmt = $conn->prepare("UPDATE students SET `{$col}` = ? WHERE id = ?");
+        $stmt->bind_param("si", $webPath, $student_id);
+        $stmt->execute();
+    }
 
     // Log the action (if admin_id is provided)
     $admin_id = $_POST['admin_id'] ?? null;
@@ -682,24 +692,50 @@ if ($action === 'upload_document') {
         logAction($admin_id, "Upload Document", $student_id, $studentName, "Uploaded missing " . strtoupper($doc_type) . " document.");
     }
 
-    // Check if all three documents are now uploaded (clear flag if so)
-    $stmtCheck = $conn->prepare("SELECT psa_birth_cert, sf10_document, picture_2x2 FROM students WHERE id = ?");
-    $stmtCheck->bind_param("i", $student_id);
-    $stmtCheck->execute();
-    $docs = $stmtCheck->get_result()->fetch_assoc();
+    // Get enrollment type
+    $stmtType = $conn->prepare("SELECT enrollment_type FROM enrollments WHERE id = ?");
+    $stmtType->bind_param("i", $enrollment_id);
+    $stmtType->execute();
+    $enrollmentType = $stmtType->get_result()->fetch_assoc()['enrollment_type'] ?? 'new';
 
-    // Clear documents_pending flag only when all required documents are present
-    if ($docs['psa_birth_cert'] && $docs['sf10_document'] && $docs['picture_2x2']) {
-        $stmtFlag = $conn->prepare("UPDATE enrollments SET documents_pending = 0 WHERE id = ?");
-        $stmtFlag->bind_param("i", $enrollment_id);
-        $stmtFlag->execute();
-        
-        // --- AUTO-SEND EMAIL NOTIFICATION ---
-        sendStatusEmailInBackground($enrollment_id, 'approved', '', 'Registrar', $admin_id);
-        
-        sendJSON(['message' => 'Document uploaded. All documents complete — flag cleared!', 'path' => $webPath, 'flag_cleared' => true]);
+    if ($enrollmentType === 'returning') {
+        // For returning students, report_card and clearance are required
+        $stmtCheck = $conn->prepare("SELECT report_card, clearance FROM enrollments WHERE id = ?");
+        $stmtCheck->bind_param("i", $enrollment_id);
+        $stmtCheck->execute();
+        $docs = $stmtCheck->get_result()->fetch_assoc();
+
+        if ($docs['report_card'] && $docs['clearance']) {
+            $stmtFlag = $conn->prepare("UPDATE enrollments SET documents_pending = 0 WHERE id = ?");
+            $stmtFlag->bind_param("i", $enrollment_id);
+            $stmtFlag->execute();
+            
+            // --- AUTO-SEND EMAIL NOTIFICATION ---
+            sendStatusEmailInBackground($enrollment_id, 'approved', '', 'Registrar', $admin_id);
+            
+            sendJSON(['message' => 'Document uploaded. All documents complete — flag cleared!', 'path' => $webPath, 'flag_cleared' => true]);
+        } else {
+            sendJSON(['message' => 'Document uploaded successfully.', 'path' => $webPath, 'flag_cleared' => false]);
+        }
     } else {
-        sendJSON(['message' => 'Document uploaded successfully.', 'path' => $webPath, 'flag_cleared' => false]);
+        // For new students, PSA, SF10, and Picture are required
+        $stmtCheck = $conn->prepare("SELECT psa_birth_cert, sf10_document, picture_2x2 FROM students WHERE id = ?");
+        $stmtCheck->bind_param("i", $student_id);
+        $stmtCheck->execute();
+        $docs = $stmtCheck->get_result()->fetch_assoc();
+
+        if ($docs['psa_birth_cert'] && $docs['sf10_document'] && $docs['picture_2x2']) {
+            $stmtFlag = $conn->prepare("UPDATE enrollments SET documents_pending = 0 WHERE id = ?");
+            $stmtFlag->bind_param("i", $enrollment_id);
+            $stmtFlag->execute();
+            
+            // --- AUTO-SEND EMAIL NOTIFICATION ---
+            sendStatusEmailInBackground($enrollment_id, 'approved', '', 'Registrar', $admin_id);
+            
+            sendJSON(['message' => 'Document uploaded. All documents complete — flag cleared!', 'path' => $webPath, 'flag_cleared' => true]);
+        } else {
+            sendJSON(['message' => 'Document uploaded successfully.', 'path' => $webPath, 'flag_cleared' => false]);
+        }
     }
 }
 
@@ -1211,32 +1247,39 @@ if ($action === 'payment_history') {
 //  - Marks a student record as archived (soft delete).
 // =============================================================
 if ($action === 'archive_student') {
-    $student_id = $data['student_id'] ?? '';
-    $admin_id   = $data['admin_id'] ?? '';
+    $enrollment_id = $data['enrollment_id'] ?? '';
+    $admin_id      = $data['admin_id'] ?? '';
 
-    if (!$student_id || !$admin_id) {
-        sendJSON(['error' => 'Student ID and Admin ID are required.'], 400);
+    if (!$enrollment_id || !$admin_id) {
+        sendJSON(['error' => 'Enrollment ID and Admin ID are required.'], 400);
     }
 
-    $stmt = $conn->prepare("UPDATE students SET status = 'archived' WHERE id = ?");
-    $stmt->bind_param("i", $student_id);
+    $stmt = $conn->prepare("UPDATE enrollments SET status = 'archived' WHERE id = ?");
+    $stmt->bind_param("i", $enrollment_id);
     $stmt->execute();
 
     if ($stmt->affected_rows > 0) {
-        $stmtName = $conn->prepare("SELECT first_name, last_name, middle_name, suffix FROM students WHERE id = ?");
-        $stmtName->bind_param("i", $student_id);
+        $stmtName = $conn->prepare("
+            SELECT s.id AS student_id, s.first_name, s.last_name, s.middle_name, s.suffix 
+            FROM enrollments e 
+            JOIN students s ON e.student_id = s.id 
+            WHERE e.id = ?
+        ");
+        $stmtName->bind_param("i", $enrollment_id);
         $stmtName->execute();
         $nameRes = $stmtName->get_result()->fetch_assoc();
         $studentName = 'Unknown';
+        $student_id = null;
         if ($nameRes) {
+            $student_id = $nameRes['student_id'];
             $suffixStr = !empty($nameRes['suffix']) ? ' ' . $nameRes['suffix'] : '';
             $middleStr = !empty($nameRes['middle_name']) ? ' ' . $nameRes['middle_name'] : '';
             $studentName = $nameRes['last_name'] . $suffixStr . ', ' . $nameRes['first_name'] . $middleStr;
         }
-        logAction($admin_id, "Archive Student", $student_id, $studentName, "Student record archived.");
-        sendJSON(['message' => 'Student record archived successfully.']);
+        logAction($admin_id, "Archive Enrollment", $student_id, $studentName, "Enrollment application archived.");
+        sendJSON(['message' => 'Enrollment application archived successfully.']);
     } else {
-        sendJSON(['error' => 'Student not found or already archived.'], 404);
+        sendJSON(['error' => 'Enrollment not found or already archived.'], 404);
     }
 }
 
@@ -1247,32 +1290,39 @@ if ($action === 'archive_student') {
 //  - Marks a student record as deleted (soft delete).
 // =============================================================
 if ($action === 'delete_student') {
-    $student_id = $data['student_id'] ?? '';
-    $admin_id   = $data['admin_id'] ?? '';
+    $enrollment_id = $data['enrollment_id'] ?? '';
+    $admin_id      = $data['admin_id'] ?? '';
 
-    if (!$student_id || !$admin_id) {
-        sendJSON(['error' => 'Student ID and Admin ID are required.'], 400);
+    if (!$enrollment_id || !$admin_id) {
+        sendJSON(['error' => 'Enrollment ID and Admin ID are required.'], 400);
     }
 
-    $stmt = $conn->prepare("UPDATE students SET status = 'deleted' WHERE id = ?");
-    $stmt->bind_param("i", $student_id);
+    $stmt = $conn->prepare("UPDATE enrollments SET status = 'deleted' WHERE id = ?");
+    $stmt->bind_param("i", $enrollment_id);
     $stmt->execute();
 
     if ($stmt->affected_rows > 0) {
-        $stmtName = $conn->prepare("SELECT first_name, last_name, middle_name, suffix FROM students WHERE id = ?");
-        $stmtName->bind_param("i", $student_id);
+        $stmtName = $conn->prepare("
+            SELECT s.id AS student_id, s.first_name, s.last_name, s.middle_name, s.suffix 
+            FROM enrollments e 
+            JOIN students s ON e.student_id = s.id 
+            WHERE e.id = ?
+        ");
+        $stmtName->bind_param("i", $enrollment_id);
         $stmtName->execute();
         $nameRes = $stmtName->get_result()->fetch_assoc();
         $studentName = 'Unknown';
+        $student_id = null;
         if ($nameRes) {
+            $student_id = $nameRes['student_id'];
             $suffixStr = !empty($nameRes['suffix']) ? ' ' . $nameRes['suffix'] : '';
             $middleStr = !empty($nameRes['middle_name']) ? ' ' . $nameRes['middle_name'] : '';
             $studentName = $nameRes['last_name'] . $suffixStr . ', ' . $nameRes['first_name'] . $middleStr;
         }
-        logAction($admin_id, "Delete Student", $student_id, $studentName, "Student record marked as deleted.");
-        sendJSON(['message' => 'Student record deleted successfully.']);
+        logAction($admin_id, "Delete Enrollment", $student_id, $studentName, "Enrollment application marked as deleted.");
+        sendJSON(['message' => 'Enrollment application deleted successfully.']);
     } else {
-        sendJSON(['error' => 'Student not found.'], 404);
+        sendJSON(['error' => 'Enrollment not found.']);
     }
 }
 
@@ -1283,32 +1333,39 @@ if ($action === 'delete_student') {
 //  - Restores a student record from archived or deleted status back to active.
 // =============================================================
 if ($action === 'restore_student') {
-    $student_id = $data['student_id'] ?? '';
-    $admin_id   = $data['admin_id'] ?? '';
+    $enrollment_id = $data['enrollment_id'] ?? '';
+    $admin_id      = $data['admin_id'] ?? '';
 
-    if (!$student_id || !$admin_id) {
-        sendJSON(['error' => 'Student ID and Admin ID are required.'], 400);
+    if (!$enrollment_id || !$admin_id) {
+        sendJSON(['error' => 'Enrollment ID and Admin ID are required.'], 400);
     }
 
-    $stmt = $conn->prepare("UPDATE students SET status = 'active' WHERE id = ?");
-    $stmt->bind_param("i", $student_id);
+    $stmt = $conn->prepare("UPDATE enrollments SET status = 'active' WHERE id = ?");
+    $stmt->bind_param("i", $enrollment_id);
     $stmt->execute();
 
     if ($stmt->affected_rows > 0) {
-        $stmtName = $conn->prepare("SELECT first_name, last_name, middle_name, suffix FROM students WHERE id = ?");
-        $stmtName->bind_param("i", $student_id);
+        $stmtName = $conn->prepare("
+            SELECT s.id AS student_id, s.first_name, s.last_name, s.middle_name, s.suffix 
+            FROM enrollments e 
+            JOIN students s ON e.student_id = s.id 
+            WHERE e.id = ?
+        ");
+        $stmtName->bind_param("i", $enrollment_id);
         $stmtName->execute();
         $nameRes = $stmtName->get_result()->fetch_assoc();
         $studentName = 'Unknown';
+        $student_id = null;
         if ($nameRes) {
+            $student_id = $nameRes['student_id'];
             $suffixStr = !empty($nameRes['suffix']) ? ' ' . $nameRes['suffix'] : '';
             $middleStr = !empty($nameRes['middle_name']) ? ' ' . $nameRes['middle_name'] : '';
             $studentName = $nameRes['last_name'] . $suffixStr . ', ' . $nameRes['first_name'] . $middleStr;
         }
-        logAction($admin_id, "Restore Student", $student_id, $studentName, "Student record restored to active status.");
-        sendJSON(['message' => 'Student record restored successfully.']);
+        logAction($admin_id, "Restore Enrollment", $student_id, $studentName, "Enrollment record restored to active status.");
+        sendJSON(['message' => 'Enrollment record restored successfully.']);
     } else {
-        sendJSON(['error' => 'Student not found.'], 404);
+        sendJSON(['error' => 'Enrollment not found.'], 404);
     }
 }
 
@@ -1438,7 +1495,7 @@ if ($action === 'deleted_students') {
         JOIN students s            ON e.student_id    = s.id
         JOIN parents p             ON s.parent_id     = p.id
         JOIN grade_levels gl       ON e.grade_level_id = gl.id
-        WHERE s.status = 'deleted'
+        WHERE e.status = 'deleted'
         ORDER BY e.applied_at DESC
     ");
 
@@ -1479,33 +1536,40 @@ if ($action === 'deleted_employees') {
 //  - Restores a deleted student record back to active status.
 // =============================================================
 if ($action === 'restore_student_from_deleted') {
-    $student_id = $data['student_id'] ?? '';
-    $admin_id   = $data['admin_id'] ?? '';
+    $enrollment_id = $data['enrollment_id'] ?? '';
+    $admin_id      = $data['admin_id'] ?? '';
 
-    if (!$student_id || !$admin_id) {
-        sendJSON(['error' => 'Student ID and Admin ID are required.'], 400);
+    if (!$enrollment_id || !$admin_id) {
+        sendJSON(['error' => 'Enrollment ID and Admin ID are required.'], 400);
     }
 
-    $stmt = $conn->prepare("UPDATE students SET status = 'active' WHERE id = ? AND status = 'deleted'");
-    $stmt->bind_param("i", $student_id);
+    $stmt = $conn->prepare("UPDATE enrollments SET status = 'active' WHERE id = ? AND status = 'deleted'");
+    $stmt->bind_param("i", $enrollment_id);
     $stmt->execute();
 
     if ($stmt->affected_rows > 0) {
-        $stmtName = $conn->prepare("SELECT first_name, last_name, middle_name, suffix FROM students WHERE id = ?");
-        $stmtName->bind_param("i", $student_id);
+        $stmtName = $conn->prepare("
+            SELECT s.id AS student_id, s.first_name, s.last_name, s.middle_name, s.suffix 
+            FROM enrollments e 
+            JOIN students s ON e.student_id = s.id 
+            WHERE e.id = ?
+        ");
+        $stmtName->bind_param("i", $enrollment_id);
         $stmtName->execute();
         $nameRes = $stmtName->get_result()->fetch_assoc();
         $studentName = 'Unknown';
+        $student_id = null;
         if ($nameRes) {
+            $student_id = $nameRes['student_id'];
             $suffixStr = !empty($nameRes['suffix']) ? ' ' . $nameRes['suffix'] : '';
             $middleStr = !empty($nameRes['middle_name']) ? ' ' . $nameRes['middle_name'] : '';
             $studentName = $nameRes['last_name'] . $suffixStr . ', ' . $nameRes['first_name'] . $middleStr;
         }
 
-        logAction($admin_id, "Restore Student From Delete", $student_id, $studentName, "Student record restored from deleted status to active.");
-        sendJSON(['message' => 'Student record restored successfully.']);
+        logAction($admin_id, "Restore Enrollment From Delete", $student_id, $studentName, "Enrollment record restored from deleted status to active.");
+        sendJSON(['message' => 'Enrollment record restored successfully.']);
     } else {
-        sendJSON(['error' => 'Student not found or not deleted.'], 404);
+        sendJSON(['error' => 'Enrollment not found or not deleted.'], 404);
     }
 }
 
@@ -1544,34 +1608,41 @@ if ($action === 'restore_employee_from_deleted') {
 //  - Deletes student record and cascades to enrollments, etc.
 // =============================================================
 if ($action === 'permanently_delete_student') {
-    $student_id = $data['student_id'] ?? '';
-    $admin_id   = $data['admin_id'] ?? '';
+    $enrollment_id = $data['enrollment_id'] ?? '';
+    $admin_id      = $data['admin_id'] ?? '';
 
-    if (!$student_id || !$admin_id) {
-        sendJSON(['error' => 'Student ID and Admin ID are required.'], 400);
+    if (!$enrollment_id || !$admin_id) {
+        sendJSON(['error' => 'Enrollment ID and Admin ID are required.'], 400);
     }
 
-    // Get name for logging first
-    $stmtName = $conn->prepare("SELECT first_name, last_name, middle_name, suffix FROM students WHERE id = ?");
-    $stmtName->bind_param("i", $student_id);
+    // Get details for logging first
+    $stmtName = $conn->prepare("
+        SELECT s.id AS student_id, s.first_name, s.last_name, s.middle_name, s.suffix 
+        FROM enrollments e 
+        JOIN students s ON e.student_id = s.id 
+        WHERE e.id = ?
+    ");
+    $stmtName->bind_param("i", $enrollment_id);
     $stmtName->execute();
     $nameRes = $stmtName->get_result()->fetch_assoc();
     $studentName = 'Unknown';
+    $student_id = null;
     if ($nameRes) {
+        $student_id = $nameRes['student_id'];
         $suffixStr = !empty($nameRes['suffix']) ? ' ' . $nameRes['suffix'] : '';
         $middleStr = !empty($nameRes['middle_name']) ? ' ' . $nameRes['middle_name'] : '';
         $studentName = $nameRes['last_name'] . $suffixStr . ', ' . $nameRes['first_name'] . $middleStr;
     }
 
-    $stmt = $conn->prepare("DELETE FROM students WHERE id = ?");
-    $stmt->bind_param("i", $student_id);
+    $stmt = $conn->prepare("DELETE FROM enrollments WHERE id = ?");
+    $stmt->bind_param("i", $enrollment_id);
     $stmt->execute();
 
     if ($stmt->affected_rows > 0) {
-        logAction($admin_id, "Permanently Delete Student", $student_id, $studentName, "Student record permanently deleted.");
-        sendJSON(['message' => 'Student record permanently deleted.']);
+        logAction($admin_id, "Permanently Delete Enrollment", $student_id, $studentName, "Enrollment record permanently deleted.");
+        sendJSON(['message' => 'Enrollment record permanently deleted.']);
     } else {
-        sendJSON(['error' => 'Student not found.'], 404);
+        sendJSON(['error' => 'Enrollment not found.'], 404);
     }
 }
 

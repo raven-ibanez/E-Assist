@@ -156,7 +156,7 @@
                                     class="dash-stat-value" id="enrolledCount">0</span></div>
                         </div>
                         <div class="dash-stat-card">
-                            <div class="dash-stat-icon-wrap purple"><i data-lucide="dollar-sign"></i></div>
+                            <div class="dash-stat-icon-wrap purple"><i data-lucide="philippine-peso"></i></div>
                             <div class="dash-stat-body"><span class="dash-stat-label">Refunded</span><span
                                     class="dash-stat-value" id="refundedCount">0</span></div>
                         </div>
@@ -184,6 +184,9 @@
                             <div class="dash-filter-row">
                                 <input type="text" id="searchInput" placeholder="Search by name or ID..."
                                     onkeyup="filterPayments()">
+                                <select id="filterGradeLevel" onchange="filterPayments()">
+                                    <option value="All">All Grades</option>
+                                </select>
                                 <select id="filterPayment" onchange="filterPayments()">
                                     <option value="All">All Payment Methods</option>
                                     <option value="GCash">GCash</option>
@@ -548,6 +551,7 @@
             const search = document.getElementById('searchInput').value.toLowerCase();
             const payFilter = document.getElementById('filterPayment').value;
             const statusFilter = document.getElementById('filterStatus').value;
+            const gradeFilter = document.getElementById('filterGradeLevel') ? document.getElementById('filterGradeLevel').value : 'All';
 
             let filtered = allPayments;
 
@@ -573,6 +577,11 @@
             // Status filter
             if (statusFilter !== 'All') {
                 filtered = filtered.filter(r => r.status === statusFilter);
+            }
+
+            // Grade level filter
+            if (gradeFilter !== 'All') {
+                filtered = filtered.filter(r => r.grade_level === gradeFilter);
             }
 
             renderTable(filtered);
@@ -1017,7 +1026,26 @@
             });
         }
 
+        let gradeLevelsLoaded = false;
+        async function loadGradeLevelFilters() {
+            if (gradeLevelsLoaded) return;
+            try {
+                const grades = await apiGet('api/lookups.php?action=grade-levels');
+                const filterSelect = document.getElementById('filterGradeLevel');
+                if (filterSelect) {
+                    filterSelect.innerHTML = '<option value="All">All Grades</option>';
+                    grades.forEach(g => {
+                        filterSelect.innerHTML += `<option value="${g.name}">${g.name}</option>`;
+                    });
+                    gradeLevelsLoaded = true;
+                }
+            } catch (err) {
+                console.warn('Failed to load grade levels for filter dropdown:', err);
+            }
+        }
+
         // Load payment data when the page opens
+        loadGradeLevelFilters();
         loadPayments();
         lucide.createIcons();
     </script>
