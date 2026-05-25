@@ -2754,16 +2754,24 @@
             const thead = document.getElementById('maintTableHead');
 
             // Step tabs
-            thead.innerHTML = `<tr><td colspan="6" style="padding:0;">
-                <div style="display:flex;gap:6px;padding:12px 0 8px;">
-                    ${[1, 2, 3, 4].map(s => `
-                        <button onclick="switchFormFieldStep(${s})" id="ffTab${s}"
-                            style="padding:7px 16px;border-radius:6px;font-size:13px;font-weight:600;cursor:pointer;
-                                border:2px solid ${s === formFieldsCurrentStep ? 'var(--maroon-dark)' : 'var(--gray-300)'};
-                                background:${s === formFieldsCurrentStep ? 'var(--maroon-dark)' : '#fff'};
-                                color:${s === formFieldsCurrentStep ? '#fff' : 'var(--gray-700)'};"
-                        >${['Step 1 — Student', 'Step 2 — Parent', 'Step 3 — Docs', 'Step 4 — Payment'][s - 1]}</button>
-                    `).join('')}
+            thead.innerHTML = `<tr style="background: transparent;"><td colspan="6" style="padding:0; border: none;">
+                <div style="display:flex;gap:8px;padding:12px 0 16px;">
+                    ${[1, 2, 3, 4].map(s => {
+                        const isActive = s === formFieldsCurrentStep;
+                        return `
+                            <button onclick="switchFormFieldStep(${s})" id="ffTab${s}"
+                                style="padding:8px 18px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;
+                                    transition: all 0.2s ease;
+                                    border: 1.5px solid ${isActive ? 'var(--maroon-dark)' : 'var(--gray-300)'};
+                                    background: ${isActive ? 'var(--maroon-dark)' : '#fff'};
+                                    color: ${isActive ? '#fff' : 'var(--gray-700)'};"
+                                ${!isActive ? `
+                                onmouseover="this.style.background='#f3f4f6'; this.style.borderColor='var(--gray-400)';"
+                                onmouseout="this.style.background='#fff'; this.style.borderColor='var(--gray-300)';"
+                                ` : ''}
+                            >${['Step 1 — Student', 'Step 2 — Parent', 'Step 3 — Docs', 'Step 4 — Payment'][s - 1]}</button>
+                        `;
+                    }).join('')}
                 </div>
             </td></tr>`;
 
@@ -3045,11 +3053,8 @@
                     return;
                 }
 
-                const rows = [...maintCurrentData].sort((a, b) => {
-                    const ga = String(a.grade_level_name || a.grade_level || '').localeCompare(String(b.grade_level_name || b.grade_level || ''));
-                    if (ga !== 0) return ga;
-                    return String(a.mode_name || a.name || '').localeCompare(String(b.mode_name || b.name || ''));
-                });
+                // Use the database-sorted list directly to preserve the configured sort_order values of grade levels and payment modes
+                const rows = [...maintCurrentData];
 
                 let currentGrade = null;
                 let rowIndex = 0;

@@ -2007,7 +2007,7 @@ body.login-page {
     min-height: 100vh;
     background: #f4f6fa;
     width: 100%;
-    overflow-x: hidden;
+    overflow-x: clip;
 }
 
 /* --- Sidebar --- */
@@ -3419,6 +3419,8 @@ textarea:focus {
     flex-direction: column;
     gap: 6px;
     min-width: 180px;
+    position: sticky;
+    top: 92px; /* 64px topbar + 28px top padding of dash-content */
 }
 
 .maint-sidebar-title {
@@ -3522,6 +3524,10 @@ textarea:focus {
     border-collapse: collapse;
     font-size: 13.5px;
     margin-bottom: 0;
+}
+
+.maint-panel .dash-table thead {
+    background: transparent;
 }
 
 .maint-panel .dash-table thead th {
@@ -3765,6 +3771,7 @@ textarea:focus {
         flex-wrap: wrap;
         gap: 6px;
         padding: 12px;
+        position: static;
     }
 
     .maint-sidebar-title {
