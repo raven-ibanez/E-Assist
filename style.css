@@ -2353,7 +2353,8 @@ body.login-page {
 
 .dash-table-scroll {
     overflow-x: auto;
-    padding-bottom: 85px; /* Prevent dropdowns from being clipped at the bottom */
+    padding-bottom: 85px;
+    /* Prevent dropdowns from being clipped at the bottom */
 }
 
 /* --- Table Styling --- */
@@ -3403,7 +3404,7 @@ textarea:focus {
 /* --- Layout: Sidebar + Data Panel --- */
 .maint-layout {
     display: grid;
-    grid-template-columns: minmax(180px, 180px) 1fr;
+    grid-template-columns: 240px 1fr;
     gap: 20px;
     min-height: auto;
     align-items: start;
@@ -3418,9 +3419,10 @@ textarea:focus {
     display: flex;
     flex-direction: column;
     gap: 6px;
-    min-width: 180px;
+    min-width: 240px;
     position: sticky;
-    top: 92px; /* 64px topbar + 28px top padding of dash-content */
+    top: 92px;
+    /* 64px topbar + 28px top padding of dash-content */
 }
 
 .maint-sidebar-title {
@@ -3476,14 +3478,15 @@ textarea:focus {
     font-size: 16px;
     flex-shrink: 0;
     width: 24px;
-    text-align: center;
+    height: 24px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .maint-cat-label {
     flex: 1;
     white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
 }
 
 /* --- Data Panel --- */
