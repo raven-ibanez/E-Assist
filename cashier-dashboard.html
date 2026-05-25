@@ -6,6 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Cashier Dashboard — Enrollment System</title>
     <link rel="stylesheet" href="style.css">
+    <script src="https://unpkg.com/lucide@latest"></script>
     <style>
         /* Cashier-specific styles */
         .payment-badge {
@@ -90,30 +91,30 @@
         <aside class="dash-sidebar" id="dashSidebar">
             <img src="logo.png" alt="Logo" class="dash-sidebar-logo"
                 onerror="this.style.display='none';document.getElementById('sidebarLogoFallback').style.display='block';">
-            <span id="sidebarLogoFallback" style="display:none;font-size:24px;margin-bottom:28px;">💰</span>
+            <span id="sidebarLogoFallback" style="display:none;font-size:16px;font-weight:bold;margin-bottom:28px;color:var(--white);">BSSMAI</span>
 
             <div class="dash-nav-items">
                 <button class="dash-nav-item active" id="nav-payments" onclick="switchTab('payments')">
-                    <span class="dash-nav-icon">💳</span>
+                    <span class="dash-nav-icon"><i data-lucide="credit-card"></i></span>
                     <span class="dash-nav-label">Payments</span>
                 </button>
                 <button class="dash-nav-item" id="nav-archive" onclick="switchTab('archive')">
-                    <span class="dash-nav-icon">🗂️</span>
+                    <span class="dash-nav-icon"><i data-lucide="archive"></i></span>
                     <span class="dash-nav-label">Archive</span>
                 </button>
                 <button class="dash-nav-item" id="nav-reports" onclick="switchTab('reports')">
-                    <span class="dash-nav-icon">📊</span>
+                    <span class="dash-nav-icon"><i data-lucide="bar-chart-3"></i></span>
                     <span class="dash-nav-label">Reports</span>
                 </button>
             </div>
 
             <div class="dash-sidebar-bottom">
                 <a href="index.html" class="dash-nav-item">
-                    <span class="dash-nav-icon">🏠</span>
+                    <span class="dash-nav-icon"><i data-lucide="home"></i></span>
                     <span class="dash-nav-label">Home</span>
                 </a>
                 <button class="dash-nav-item" onclick="logout()" style="color:#f87171;">
-                    <span class="dash-nav-icon">🚪</span>
+                    <span class="dash-nav-icon"><i data-lucide="log-out"></i></span>
                     <span class="dash-nav-label">Logout</span>
                 </button>
             </div>
@@ -145,32 +146,32 @@
                     <!-- Stats Summary -->
                     <div class="dash-stats">
                         <div class="dash-stat-card">
-                            <div class="dash-stat-icon-wrap blue">💳</div>
+                            <div class="dash-stat-icon-wrap blue"><i data-lucide="database"></i></div>
                             <div class="dash-stat-body"><span class="dash-stat-label">Total Records</span><span
                                     class="dash-stat-value" id="totalCount">0</span></div>
                         </div>
                         <div class="dash-stat-card">
-                            <div class="dash-stat-icon-wrap green">✅</div>
+                            <div class="dash-stat-icon-wrap green"><i data-lucide="user-check"></i></div>
                             <div class="dash-stat-body"><span class="dash-stat-label">Enrolled</span><span
                                     class="dash-stat-value" id="enrolledCount">0</span></div>
                         </div>
                         <div class="dash-stat-card">
-                            <div class="dash-stat-icon-wrap purple">💸</div>
+                            <div class="dash-stat-icon-wrap purple"><i data-lucide="dollar-sign"></i></div>
                             <div class="dash-stat-body"><span class="dash-stat-label">Refunded</span><span
                                     class="dash-stat-value" id="refundedCount">0</span></div>
                         </div>
                         <div class="dash-stat-card">
-                            <div class="dash-stat-icon-wrap blue">📱</div>
+                            <div class="dash-stat-icon-wrap blue"><i data-lucide="smartphone"></i></div>
                             <div class="dash-stat-body"><span class="dash-stat-label">GCash</span><span
                                     class="dash-stat-value" id="gcashCount">0</span></div>
                         </div>
                         <div class="dash-stat-card">
-                            <div class="dash-stat-icon-wrap green">💵</div>
+                            <div class="dash-stat-icon-wrap green"><i data-lucide="banknote"></i></div>
                             <div class="dash-stat-body"><span class="dash-stat-label">Cash</span><span
                                     class="dash-stat-value" id="cashCount">0</span></div>
                         </div>
                         <div class="dash-stat-card">
-                            <div class="dash-stat-icon-wrap yellow">🏦</div>
+                            <div class="dash-stat-icon-wrap yellow"><i data-lucide="landmark"></i></div>
                             <div class="dash-stat-body"><span class="dash-stat-label">Bank Transfer</span><span
                                     class="dash-stat-value" id="bankCount">0</span></div>
                         </div>
@@ -281,17 +282,17 @@
                                         <option value="Monthly">Monthly</option>
                                     </select>
                                 </div>
-                                <div style="display: flex; flex-direction: column; gap: 4px; flex: 1; min-width: 150px;">
+                                <div style="display: flex; flex-direction: column; gap: 4px; min-width: 160px; flex: 0 0 auto;">
                                     <label style="font-size: 11px; font-weight: 700; color: var(--gray-500); text-transform: uppercase;">Start Date</label>
-                                    <input type="date" id="reportStartDate" style="width: 100%; height: 38px; border: 1.5px solid var(--gray-300); border-radius: 8px; padding: 8px;">
+                                    <input type="date" id="reportStartDate" style="width: 100%; height: 38px; border: 1.5px solid var(--gray-300); border-radius: 8px; padding: 8px; box-sizing: border-box;">
                                 </div>
-                                <div style="display: flex; flex-direction: column; gap: 4px; flex: 1; min-width: 150px;">
+                                <div style="display: flex; flex-direction: column; gap: 4px; min-width: 160px; flex: 0 0 auto;">
                                     <label style="font-size: 11px; font-weight: 700; color: var(--gray-500); text-transform: uppercase;">End Date</label>
-                                    <input type="date" id="reportEndDate" style="width: 100%; height: 38px; border: 1.5px solid var(--gray-300); border-radius: 8px; padding: 8px;">
+                                    <input type="date" id="reportEndDate" style="width: 100%; height: 38px; border: 1.5px solid var(--gray-300); border-radius: 8px; padding: 8px; box-sizing: border-box;">
                                 </div>
-                                <div style="display: flex; gap: 8px; min-width: 200px; height: 38px;">
-                                    <button class="btn btn-primary" onclick="generateCashierReport()" style="padding: 0 16px; font-size: 13px; flex: 1; height: 100%;">🔍 Preview</button>
-                                    <button class="btn btn-success" onclick="exportCashierReport()" style="padding: 0 16px; font-size: 13px; flex: 1; height: 100%; background: #16a34a; color: white;">📥 Export CSV</button>
+                                <div style="display: flex; gap: 8px; min-width: 200px; align-items: flex-end;">
+                                    <button class="btn btn-primary" onclick="generateCashierReport()" style="padding: 0 16px; font-size: 13px; flex: 1; height: 38px;">Preview</button>
+                                    <button class="btn btn-success" onclick="exportCashierReport()" style="padding: 0 16px; font-size: 13px; flex: 1; height: 38px; background: #16a34a; color: white;">Export CSV</button>
                                 </div>
                             </div>
                         </div>
@@ -329,7 +330,7 @@
     <div class="modal-overlay" id="modalOverlay" onclick="closeModal()">
         <div class="modal" onclick="event.stopPropagation()">
             <button class="modal-close" onclick="closeModal()">✕</button>
-            <h3 id="modalTitle">💳 Payment Details</h3>
+            <h3 id="modalTitle">Payment Details</h3>
             <div id="modalContent" class="info-grid"></div>
             <div style="margin-top:24px; text-align:right;">
                 <button class="btn btn-outline" onclick="closeModal()">Close</button>
@@ -341,7 +342,7 @@
     <div class="modal-overlay" id="updatePaymentModal" onclick="closeUpdateModal()">
         <div class="modal" onclick="event.stopPropagation()" style="max-width: 450px;">
             <button class="modal-close" onclick="closeUpdateModal()">✕</button>
-            <h3>💳 Update Student Payment</h3>
+            <h3>Update Student Payment</h3>
             <p style="font-size:13px; color:#666; margin-bottom:20px;">Record a new installment or balance payment.</p>
 
             <form id="addPaymentForm">
@@ -459,7 +460,7 @@
                 updateStats(allPayments);
                 renderTable(allPayments);
             } catch (err) {
-                showAlert('alert', '❌ Failed to load payments: ' + err.message);
+                showAlert('alert', 'Failed to load payments: ' + err.message);
             }
         }
 
@@ -505,19 +506,19 @@
                     <td style="font-weight:600;">${formatCurrency(r.total_amount || 0)}</td>
                     <td style="color:#16a34a; font-weight:600;">${formatCurrency(r.total_paid || 0)}</td>
                     <td style="color:${isPaid ? '#16a34a' : '#dc2626'}; font-weight:700;">
-                        ${isPaid ? '✅ Paid' : formatCurrency(balance)}
+                        ${isPaid ? 'Paid' : formatCurrency(balance)}
                     </td>
                     <td>${getStatusBadge(r.status)}</td>
                     <td>
                         <div class="dash-action-group">
-                            <button class="btn-view" onclick="viewPayment(${r.enrollment_id})">👁 View</button>
-                            <button class="btn-view" style="border-color:#1e40af; color:#1e40af;" onclick="openUpdatePaymentModal(${r.payment_id})">💳 Update</button>
+                            <button class="btn-view" onclick="viewPayment(${r.enrollment_id})">View</button>
+                            <button class="btn-view" style="border-color:#1e40af; color:#1e40af;" onclick="openUpdatePaymentModal(${r.payment_id})">Update</button>
                             
                             ${r.status === 'Declined' && r.cashier_status !== 'refunded' && parseFloat(r.total_paid || 0) > 0 ? `
                                 <div class="dot-menu-wrapper">
                                     <button class="btn-dots" onclick="toggleDotMenu('dm-p-${r.enrollment_id}')">⋮</button>
                                     <div class="dot-dropdown" id="dm-p-${r.enrollment_id}">
-                                        <button class="danger" onclick="reviewPayment(${r.enrollment_id}, 'refunded')">💸 Refund</button>
+                                        <button class="danger" onclick="reviewPayment(${r.enrollment_id}, 'refunded')">Refund</button>
                                     </div>
                                 </div>
                             ` : r.cashier_status === 'pending' || (r.cashier_status === 'approved' && r.status !== 'Refunded') || r.cashier_status === 'refunded' ? `
@@ -525,10 +526,10 @@
                                     <button class="btn-dots" onclick="toggleDotMenu('dm-p-${r.enrollment_id}')">⋮</button>
                                     <div class="dot-dropdown" id="dm-p-${r.enrollment_id}">
                                         ${r.cashier_status === 'pending' ? `
-                                            <button class="success" onclick="reviewPayment(${r.enrollment_id}, 'approved')">✅ Approve</button>
-                                            <button class="danger" onclick="reviewPayment(${r.enrollment_id}, 'declined')">❌ Decline</button>
+                                            <button class="success" onclick="reviewPayment(${r.enrollment_id}, 'approved')">Approve</button>
+                                            <button class="danger" onclick="reviewPayment(${r.enrollment_id}, 'declined')">Decline</button>
                                         ` : r.cashier_status === 'approved' && r.status !== 'Refunded' ? `
-                                            <button class="danger" onclick="reviewPayment(${r.enrollment_id}, 'refunded')">💸 Refund</button>
+                                            <button class="danger" onclick="reviewPayment(${r.enrollment_id}, 'refunded')">Refund</button>
                                         ` : r.cashier_status === 'refunded' ? `
                                             <button class="success" onclick="undoRefund(${r.enrollment_id})">↩ Undo Refund</button>
                                         ` : ''}
@@ -620,10 +621,10 @@
                     admin_id: sessionStorage.getItem('adminId'),
                     reason: reason
                 });
-                showAlert('alert', '✅ ' + result.message + ` New status: ${result.new_status}`, 'success');
+                showAlert('alert', '' + result.message + ` New status: ${result.new_status}`, 'success');
                 loadPayments(); // Refresh the table
             } catch (err) {
-                showAlert('alert', '❌ ' + err.message);
+                showAlert('alert', '' + err.message);
             }
         }
 
@@ -645,10 +646,10 @@
                     admin_id: sessionStorage.getItem('adminId')
                 });
 
-                showAlert('alert', '✅ ' + res.message, 'success');
+                showAlert('alert', '' + res.message, 'success');
                 loadPayments();
             } catch (err) {
-                showAlert('alert', '❌ ' + err.message);
+                showAlert('alert', '' + err.message);
             }
         }
 
@@ -674,7 +675,7 @@
             document.getElementById('modalContent').innerHTML = `
                 ${r.registrar_notes || r.cashier_notes ? `
                 <div style="grid-column:1/-1; background:#fff7ed; border-left:4px solid #f97316; border-radius:8px; padding:14px 16px; margin-bottom:12px;">
-                    <strong style="color:#c2410c;">📝 Reviewer Notes</strong>
+                    <strong style="color:#c2410c;">Reviewer Notes</strong>
                     ${r.registrar_notes ? `<p style="margin:6px 0 0; font-size:13px; color:#9a3412;"><strong>Registrar:</strong> ${r.registrar_notes}</p>` : ''}
                     ${r.cashier_notes ? `<p style="margin:6px 0 0; font-size:13px; color:#9a3412;"><strong>Cashier:</strong> ${r.cashier_notes}</p>` : ''}
                 </div>` : ''}
@@ -705,7 +706,7 @@
                     </div>
                 </div>
                 <div id="paymentHistorySection" style="grid-column: span 2; margin-top: 20px;">
-                    <h4 style="margin-bottom:10px; font-size:14px; border-bottom:1px solid #eee; padding-bottom:5px;">📜 Payment History</h4>
+                    <h4 style="margin-bottom:10px; font-size:14px; border-bottom:1px solid #eee; padding-bottom:5px;">Payment History</h4>
                     <div id="historyTableContainer" style="max-height: 200px; overflow-y: auto;">
                         <p style="text-align:center; color:#999; font-size:12px;">Loading history...</p>
                     </div>
@@ -810,7 +811,7 @@
             setLoading('submitPaymentBtn', true, 'Saving...');
             try {
                 const res = await apiPost('api/registrar.php?action=add_payment', payload);
-                showAlert('alert', '✅ ' + res.message, 'success');
+                showAlert('alert', '' + res.message, 'success');
                 closeUpdateModal();
                 loadPayments();
             } catch (err) {
@@ -884,7 +885,7 @@
                 cashierReportData = await apiGet('api/reports.php?' + params.toString());
                 renderReportTable(cashierReportData);
             } catch (err) {
-                tbody.innerHTML = `<tr><td colspan="9" style="text-align:center;color:#dc2626;padding:40px;">❌ Error: ${err.message}</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="9" style="text-align:center;color:#dc2626;padding:40px;">Error: ${err.message}</td></tr>`;
             }
         }
 
@@ -905,7 +906,7 @@
                     <td style="font-weight:600;">${formatCurrency(r.total_amount || 0)}</td>
                     <td style="color:#16a34a; font-weight:600;">${formatCurrency(r.total_paid || 0)}</td>
                     <td style="color:${parseFloat(r.balance || 0) <= 0 ? '#16a34a' : '#dc2626'}; font-weight:700;">
-                        ${parseFloat(r.balance || 0) <= 0 ? '✅ Paid' : formatCurrency(r.balance || 0)}
+                        ${parseFloat(r.balance || 0) <= 0 ? 'Paid' : formatCurrency(r.balance || 0)}
                     </td>
                     <td>${getStatusBadge(r.status)}</td>
                 </tr>
@@ -974,7 +975,7 @@
                 const students = await apiGet('api/registrar.php?action=archived_students');
                 renderArchivedStudentsCashier(students);
             } catch (err) {
-                tbody.innerHTML = `<tr><td colspan="8" style="text-align:center;color:#dc2626;padding:40px;">❌ Error: ${err.message}</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="8" style="text-align:center;color:#dc2626;padding:40px;">Error: ${err.message}</td></tr>`;
             }
         }
 
@@ -996,7 +997,7 @@
                     <td>${getStatusBadge(s.status)}</td>
                     <td>
                         <div class="dash-action-group">
-                            <button class="btn-view" onclick="viewPayment(${s.enrollment_id})">👁 View</button>
+                            <button class="btn-view" onclick="viewPayment(${s.enrollment_id})">View</button>
                         </div>
                     </td>
                 </tr>
@@ -1018,6 +1019,7 @@
 
         // Load payment data when the page opens
         loadPayments();
+        lucide.createIcons();
     </script>
 </body>
 

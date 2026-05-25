@@ -6,6 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Registrar Dashboard — Enrollment System</title>
     <link rel="stylesheet" href="style.css?v=1.1">
+    <script src="https://unpkg.com/lucide@latest"></script>
     <style>
         /* Registrar-specific styles */
         .search-bar {
@@ -50,34 +51,34 @@
     <!-- SIDEBAR -->
     <aside class="dash-sidebar" id="dashSidebar">
         <img src="logo.png" alt="Logo" class="dash-sidebar-logo" onerror="this.style.display='none';document.getElementById('sidebarLogoFallback').style.display='block';">
-        <span id="sidebarLogoFallback" style="display:none;font-size:24px;margin-bottom:28px;">🏫</span>
+        <span id="sidebarLogoFallback" style="display:none;font-size:16px;font-weight:bold;margin-bottom:28px;color:var(--white);">BSSMAI</span>
 
         <div class="dash-nav-items">
             <button class="dash-nav-item active" id="nav-students" onclick="switchTab('students')">
-                <span class="dash-nav-icon">📋</span>
+                <span class="dash-nav-icon"><i data-lucide="clipboard-list"></i></span>
                 <span class="dash-nav-label">Applications</span>
             </button>
             <button class="dash-nav-item" id="nav-enrolled" onclick="switchTab('enrolled')">
-                <span class="dash-nav-icon">✅</span>
+                <span class="dash-nav-icon"><i data-lucide="user-check"></i></span>
                 <span class="dash-nav-label">Enrolled</span>
             </button>
             <button class="dash-nav-item" id="nav-archive" onclick="switchTab('archive')">
-                <span class="dash-nav-icon">🗂️</span>
+                <span class="dash-nav-icon"><i data-lucide="archive"></i></span>
                 <span class="dash-nav-label">Archive</span>
             </button>
             <button class="dash-nav-item" id="nav-reports" onclick="switchTab('reports')">
-                <span class="dash-nav-icon">📊</span>
+                <span class="dash-nav-icon"><i data-lucide="bar-chart-3"></i></span>
                 <span class="dash-nav-label">Reports</span>
             </button>
         </div>
 
         <div class="dash-sidebar-bottom">
             <a href="index.html" class="dash-nav-item">
-                <span class="dash-nav-icon">🏠</span>
+                <span class="dash-nav-icon"><i data-lucide="home"></i></span>
                 <span class="dash-nav-label">Home</span>
             </a>
             <button class="dash-nav-item" onclick="logout()" style="color:#f87171;">
-                <span class="dash-nav-icon">🚪</span>
+                <span class="dash-nav-icon"><i data-lucide="log-out"></i></span>
                 <span class="dash-nav-label">Logout</span>
             </button>
         </div>
@@ -109,27 +110,27 @@
                 <!-- Stats -->
                 <div class="dash-stats">
                     <div class="dash-stat-card">
-                        <div class="dash-stat-icon-wrap blue">📋</div>
+                        <div class="dash-stat-icon-wrap blue"><i data-lucide="clipboard-list"></i></div>
                         <div class="dash-stat-body"><span class="dash-stat-label">Total Applications</span><span class="dash-stat-value" id="totalCount">0</span></div>
                     </div>
                     <div class="dash-stat-card">
-                        <div class="dash-stat-icon-wrap yellow">📝</div>
+                        <div class="dash-stat-icon-wrap yellow"><i data-lucide="clock"></i></div>
                         <div class="dash-stat-body"><span class="dash-stat-label">Pending</span><span class="dash-stat-value" id="pendingCount">0</span></div>
                     </div>
                     <div class="dash-stat-card">
-                        <div class="dash-stat-icon-wrap purple">👀</div>
+                        <div class="dash-stat-icon-wrap purple"><i data-lucide="credit-card"></i></div>
                         <div class="dash-stat-body"><span class="dash-stat-label">For Payment Review</span><span class="dash-stat-value" id="paymentReviewCount">0</span></div>
                     </div>
                     <div class="dash-stat-card">
-                        <div class="dash-stat-icon-wrap purple">🔍</div>
+                        <div class="dash-stat-icon-wrap purple"><i data-lucide="file-check"></i></div>
                         <div class="dash-stat-body"><span class="dash-stat-label">For App Review</span><span class="dash-stat-value" id="appReviewCount">0</span></div>
                     </div>
                     <div class="dash-stat-card">
-                        <div class="dash-stat-icon-wrap orange">🚫</div>
+                        <div class="dash-stat-icon-wrap orange"><i data-lucide="user-minus"></i></div>
                         <div class="dash-stat-body"><span class="dash-stat-label">Dropped</span><span class="dash-stat-value" id="droppedCount">0</span></div>
                     </div>
                     <div class="dash-stat-card">
-                        <div class="dash-stat-icon-wrap red">❌</div>
+                        <div class="dash-stat-icon-wrap red"><i data-lucide="user-x"></i></div>
                         <div class="dash-stat-body"><span class="dash-stat-label">Declined</span><span class="dash-stat-value" id="declinedCount">0</span></div>
                     </div>
                 </div>
@@ -184,11 +185,11 @@
                 <div id="enrolledAlert" class="alert"></div>
                 <div class="dash-stats" style="margin-bottom:24px;">
                     <div class="dash-stat-card">
-                        <div class="dash-stat-icon-wrap green">✅</div>
+                        <div class="dash-stat-icon-wrap green"><i data-lucide="graduation-cap"></i></div>
                         <div class="dash-stat-body"><span class="dash-stat-label">Currently Enrolled</span><span class="dash-stat-value" id="enrolledMasterCount">0</span></div>
                     </div>
                     <div class="dash-stat-card">
-                        <div class="dash-stat-icon-wrap red">🔴</div>
+                        <div class="dash-stat-icon-wrap red"><i data-lucide="file-warning"></i></div>
                         <div class="dash-stat-body"><span class="dash-stat-label">Documents Pending</span><span class="dash-stat-value" id="enrolledPendingDocsCount">0</span></div>
                     </div>
                 </div>
@@ -196,7 +197,7 @@
                     <div class="dash-table-header">
                         <span class="dash-table-title">Enrolled Masterlist</span>
                         <div class="dash-filter-row">
-                            <input type="text" id="enrolledSearchInput" placeholder="🔍 Search name..." oninput="filterEnrolledStudents()">
+                            <input type="text" id="enrolledSearchInput" placeholder="Search name..." oninput="filterEnrolledStudents()">
                         </div>
                     </div>
                     <div class="dash-table-scroll">
@@ -280,17 +281,17 @@
                                     <option value="Dropped">Dropped</option>
                                 </select>
                             </div>
-                            <div style="display: flex; flex-direction: column; gap: 4px; flex: 1; min-width: 150px;">
+                            <div style="display: flex; flex-direction: column; gap: 4px; min-width: 160px; flex: 0 0 auto;">
                                 <label style="font-size: 11px; font-weight: 700; color: var(--gray-500); text-transform: uppercase;">Start Date</label>
-                                <input type="date" id="reportStartDate" style="width: 100%; height: 38px; border: 1.5px solid var(--gray-300); border-radius: 8px; padding: 8px;">
+                                <input type="date" id="reportStartDate" style="width: 100%; height: 38px; border: 1.5px solid var(--gray-300); border-radius: 8px; padding: 8px; box-sizing: border-box;">
                             </div>
-                            <div style="display: flex; flex-direction: column; gap: 4px; flex: 1; min-width: 150px;">
+                            <div style="display: flex; flex-direction: column; gap: 4px; min-width: 160px; flex: 0 0 auto;">
                                 <label style="font-size: 11px; font-weight: 700; color: var(--gray-500); text-transform: uppercase;">End Date</label>
-                                <input type="date" id="reportEndDate" style="width: 100%; height: 38px; border: 1.5px solid var(--gray-300); border-radius: 8px; padding: 8px;">
+                                <input type="date" id="reportEndDate" style="width: 100%; height: 38px; border: 1.5px solid var(--gray-300); border-radius: 8px; padding: 8px; box-sizing: border-box;">
                             </div>
-                            <div style="display: flex; gap: 8px; min-width: 200px; height: 38px;">
-                                <button class="btn btn-primary" onclick="generateRegistrarReport()" style="padding: 0 16px; font-size: 13px; flex: 1; height: 100%;">🔍 Preview</button>
-                                <button class="btn btn-success" onclick="exportRegistrarReport()" style="padding: 0 16px; font-size: 13px; flex: 1; height: 100%; background: #16a34a; color: white;">📥 Export CSV</button>
+                            <div style="display: flex; gap: 8px; min-width: 200px; align-items: flex-end;">
+                                <button class="btn btn-primary" onclick="generateRegistrarReport()" style="padding: 0 16px; font-size: 13px; flex: 1; height: 38px;">Preview</button>
+                                <button class="btn btn-success" onclick="exportRegistrarReport()" style="padding: 0 16px; font-size: 13px; flex: 1; height: 38px; background: #16a34a; color: white;">Export CSV</button>
                             </div>
                         </div>
                     </div>
@@ -327,7 +328,7 @@
     <div class="modal-overlay" id="modalOverlay" onclick="closeModal()">
         <div class="modal" onclick="event.stopPropagation()">
             <button class="modal-close" onclick="closeModal()">✕</button>
-            <h3 id="modalTitle">🧒 Student Full Details</h3>
+            <h3 id="modalTitle">Student Full Details</h3>
             <div id="modalContent" class="info-grid"></div>
             <div style="margin-top:24px; text-align:right;">
                 <button class="btn btn-outline" onclick="closeModal()">Close</button>
@@ -339,7 +340,7 @@
     <div class="modal-overlay" id="editModalOverlay" onclick="closeEditModal()">
         <div class="modal" style="max-width:700px;" onclick="event.stopPropagation()">
             <button class="modal-close" onclick="closeEditModal()">✕</button>
-            <h3>✏️ Edit Student Information</h3>
+            <h3>Edit Student Information</h3>
             <p style="font-size:13px;color:var(--gray-500);margin-bottom:16px;">Update the student or parent details
                 below. Only changed fields will be saved.</p>
             <form id="editStudentForm" onsubmit="submitEdit(event)">
@@ -467,7 +468,7 @@
                 <div style="display:flex;gap:12px;justify-content:flex-end;">
                     <button type="button" class="btn btn-outline" onclick="closeEditModal()">Cancel</button>
                     <button type="submit" class="btn"
-                        style="background:var(--maroon-dark);color:#fff;padding:10px 28px;">💾 Save Changes</button>
+                        style="background:var(--maroon-dark);color:#fff;padding:10px 28px;">Save Changes</button>
                 </div>
             </form>
         </div>
@@ -577,7 +578,7 @@
                 const enrolled = allStudents.filter(s => s.status === 'Enrolled' || s.status === 'Enrolled (Doc. Pending)');
                 renderEnrolledStudents(enrolled);
             } catch (err) {
-                showAlert('alert', '❌ Failed to load students: ' + err.message);
+                showAlert('alert', 'Failed to load students: ' + err.message);
             }
         }
 
@@ -618,34 +619,34 @@
                     <td>${formatStudentName(s)}</td>
                     <td>${s.grade_level}</td>
                     <td>${formatParentName(s.parent_first_name, s.parent_last_name, s.parent_middle_name)}</td>
-                    <td>${s.parent_mobile || '—'}${s.parent_telephone ? '<br><small style="color:var(--gray-500)">☎ ' + s.parent_telephone + '</small>' : ''}</td>
+                    <td>${s.parent_mobile || '—'}${s.parent_telephone ? '<br><small style="color:var(--gray-500)">Tel: ' + s.parent_telephone + '</small>' : ''}</td>
                     <td style="white-space:nowrap;">${formatDate(s.applied_at)}</td>
                     <td>
                         ${getStatusBadge(s.status)}
-                        ${s.documents_pending == 1 ? '<span class="doc-pending-badge">🔴 Doc. Pending</span>' : ''}
+                        ${s.documents_pending == 1 ? '<span class="doc-pending-badge">Doc. Pending</span>' : ''}
                     </td>
                     <td>
                         <div class="dash-action-group" style="flex-wrap:wrap;">
-                            <button class="btn-view" onclick="viewStudent(${s.enrollment_id})">👁 View</button>
-                            <button class="btn-view" style="border-color:#1e40af; color:#1e40af;" onclick="openEditModal(${s.enrollment_id})">✏️ Edit</button>
+                            <button class="btn-view" onclick="viewStudent(${s.enrollment_id})">View</button>
+                            <button class="btn-view" style="border-color:#1e40af; color:#1e40af;" onclick="openEditModal(${s.enrollment_id})">Edit</button>
                             
                             ${(() => {
                                 if (s.registrar_status === 'pending') {
                                     return `
-                                        <button class="btn-view" style="background:#dcfce7; border-color:#16a34a; color:#166534;" onclick="reviewApplication(${s.enrollment_id}, 'approved')">✅ Approve</button>
-                                        <button class="btn-view" style="background:#fef9c3; border-color:#ca8a04; color:#854d0e;" onclick="reviewApplication(${s.enrollment_id}, 'approved_dtf')">📋 Appr. DTF</button>
-                                        <button class="btn-view" style="background:#fee2e2; border-color:#dc2626; color:#991b1b;" onclick="reviewApplication(${s.enrollment_id}, 'declined')">❌ Decline</button>
-                                        <button class="btn-view" style="background:#f5f3ff; border-color:#9333ea; color:#7e22ce;" onclick="archiveStudent(${s.student_id})">🗂️ Archive</button>
+                                        <button class="btn-view" style="background:#dcfce7; border-color:#16a34a; color:#166534;" onclick="reviewApplication(${s.enrollment_id}, 'approved')">Approve</button>
+                                        <button class="btn-view" style="background:#fef9c3; border-color:#ca8a04; color:#854d0e;" onclick="reviewApplication(${s.enrollment_id}, 'approved_dtf')">Appr. DTF</button>
+                                        <button class="btn-view" style="background:#fee2e2; border-color:#dc2626; color:#991b1b;" onclick="reviewApplication(${s.enrollment_id}, 'declined')">Decline</button>
+                                        <button class="btn-view" style="background:#f5f3ff; border-color:#9333ea; color:#7e22ce;" onclick="archiveStudent(${s.student_id})">Archive</button>
                                     `;
                                 } else if (s.registrar_status === 'approved' && s.status !== 'Dropped') {
                                     return `
-                                        <button class="btn-view" style="background:#fee2e2; border-color:#dc2626; color:#991b1b;" onclick="reviewApplication(${s.enrollment_id}, 'dropped')">🚫 Drop Student</button>
-                                        <button class="btn-view" style="background:#f5f3ff; border-color:#9333ea; color:#7e22ce;" onclick="archiveStudent(${s.student_id})">🗂️ Archive</button>
+                                        <button class="btn-view" style="background:#fee2e2; border-color:#dc2626; color:#991b1b;" onclick="reviewApplication(${s.enrollment_id}, 'dropped')">Drop Student</button>
+                                        <button class="btn-view" style="background:#f5f3ff; border-color:#9333ea; color:#7e22ce;" onclick="archiveStudent(${s.student_id})">Archive</button>
                                     `;
                                 } else if (s.status === 'Dropped') {
                                     return `
                                         <button class="btn-view" style="background:#dcfce7; border-color:#16a34a; color:#166534;" onclick="undoDrop(${s.enrollment_id})">↩ Undo Drop</button>
-                                        <button class="btn-view" style="background:#f5f3ff; border-color:#9333ea; color:#7e22ce;" onclick="archiveStudent(${s.student_id})">🗂️ Archive</button>
+                                        <button class="btn-view" style="background:#f5f3ff; border-color:#9333ea; color:#7e22ce;" onclick="archiveStudent(${s.student_id})">Archive</button>
                                     `;
                                 }
                                 return '';
@@ -716,18 +717,18 @@
                     <td>${formatStudentName(s)}</td>
                     <td>${s.grade_level}</td>
                     <td>${formatParentName(s.parent_first_name, s.parent_last_name, s.parent_middle_name)}</td>
-                    <td>${s.parent_mobile || '—'}${s.parent_telephone ? '<br><small style="color:var(--gray-500)">☎ ' + s.parent_telephone + '</small>' : ''}</td>
+                    <td>${s.parent_mobile || '—'}${s.parent_telephone ? '<br><small style="color:var(--gray-500)">Tel: ' + s.parent_telephone + '</small>' : ''}</td>
                     <td style="white-space:nowrap;">${formatDate(s.applied_at)}</td>
                     <td>
                         ${getStatusBadge(s.status)}
-                        ${s.documents_pending == 1 ? '<span class="doc-pending-badge">🔴 Doc. Pending</span>' : ''}
+                        ${s.documents_pending == 1 ? '<span class="doc-pending-badge">Doc. Pending</span>' : ''}
                     </td>
                     <td>
                         <div class="dash-action-group" style="flex-wrap:wrap;">
-                            <button class="btn-view" onclick="viewStudent(${s.enrollment_id})">👁 View</button>
-                            <button class="btn-view" style="border-color:#1e40af; color:#1e40af;" onclick="openEditModal(${s.enrollment_id})">✏️ Edit</button>
-                            <button class="btn-view" style="background:#fee2e2; border-color:#dc2626; color:#991b1b;" onclick="reviewApplication(${s.enrollment_id}, 'dropped')">🚫 Drop Student</button>
-                            <button class="btn-view" style="background:#f5f3ff; border-color:#9333ea; color:#7e22ce;" onclick="archiveStudent(${s.student_id})">🗂️ Archive</button>
+                            <button class="btn-view" onclick="viewStudent(${s.enrollment_id})">View</button>
+                            <button class="btn-view" style="border-color:#1e40af; color:#1e40af;" onclick="openEditModal(${s.enrollment_id})">Edit</button>
+                            <button class="btn-view" style="background:#fee2e2; border-color:#dc2626; color:#991b1b;" onclick="reviewApplication(${s.enrollment_id}, 'dropped')">Drop Student</button>
+                            <button class="btn-view" style="background:#f5f3ff; border-color:#9333ea; color:#7e22ce;" onclick="archiveStudent(${s.student_id})">Archive</button>
                         </div>
                     </td>
                 </tr>
@@ -786,15 +787,15 @@
                 });
                 let msg = '✅ ' + result.message + ` New status: ${result.new_status}`;
                 if (result.email_sent) {
-                    msg += ' | 📧 Email notification sent!';
+                    msg += ' | Email notification sent!';
                 } else if (result.email_msg && !result.email_msg.includes('not applicable')) {
-                    msg += ' | ⚠️ Email not sent: ' + result.email_msg;
+                    msg += ' | Note: Email not sent: ' + result.email_msg;
                 }
                 showAlert(alertId, msg, 'success');
                 hideAlert(otherAlertId);
                 loadStudents();
             } catch (err) {
-                showAlert(alertId, '❌ ' + err.message);
+                showAlert(alertId, '' + err.message);
                 hideAlert(otherAlertId);
             }
         }
@@ -805,17 +806,17 @@
         async function viewStudent(id) {
             try {
                 const s = await apiGet(`api/registrar.php?action=detail&id=${id}`);
-                document.getElementById('modalTitle').textContent = '🧒 Student Full Details';
+                document.getElementById('modalTitle').textContent = 'Student Full Details';
                 document.getElementById('modalContent').innerHTML = `
                     ${s.documents_pending == 1 ? `
                     <div style="grid-column:1/-1; background:#fef2f2; border-left:4px solid #dc2626; border-radius:8px; padding:14px 16px; margin-bottom:8px;">
-                        <strong style="color:#dc2626;">🔴 Documents Pending</strong>
+                        <strong style="color:#dc2626;">Documents Pending</strong>
                         <p style="margin:6px 0 0; font-size:13px; color:#7f1d1d;">This student was approved with Document to Follow. Please upload the missing document(s) below to clear this flag.</p>
                     </div>` : ''}
 
                     ${s.registrar_notes || s.cashier_notes ? `
                     <div style="grid-column:1/-1; background:#fff7ed; border-left:4px solid #f97316; border-radius:8px; padding:14px 16px; margin-bottom:12px;">
-                        <strong style="color:#c2410c;">📝 Reviewer Notes</strong>
+                        <strong style="color:#c2410c;">Reviewer Notes</strong>
                         ${s.registrar_notes ? `<p style="margin:6px 0 0; font-size:13px; color:#9a3412;"><strong>Registrar:</strong> ${s.registrar_notes}</p>` : ''}
                         ${s.cashier_notes ? `<p style="margin:6px 0 0; font-size:13px; color:#9a3412;"><strong>Cashier:</strong> ${s.cashier_notes}</p>` : ''}
                     </div>` : ''}
@@ -853,9 +854,9 @@
                     <div class="info-item" style="grid-column:1/-1;">
                         <label>PSA Birth Certificate</label>
                         <span>${s.psa_birth_cert
-                        ? `<a href="${s.psa_birth_cert}" target="_blank" style="color:var(--blue-dark);font-weight:600;text-decoration:underline;">📄 View</a>
+                        ? `<a href="${s.psa_birth_cert}" target="_blank" style="color:var(--blue-dark);font-weight:600;text-decoration:underline;">View</a>
                                <img src="${s.psa_birth_cert}" style="display:block;margin-top:6px;max-width:100%;max-height:180px;border-radius:6px;" onerror="this.style.display='none'">`
-                        : '<span style="color:#dc2626">❌ Not uploaded</span>'}</span>
+                        : '<span style="color:#dc2626">Not uploaded</span>'}</span>
                         <div style="margin-top:8px;">
                             <input type="file" id="upload_psa_${s.enrollment_id}" accept="image/*,.pdf" style="font-size:12px;">
                             <button onclick="uploadDocument(${s.enrollment_id}, ${s.student_id}, 'psa', 'upload_psa_${s.enrollment_id}')" style="margin-left:8px;padding:4px 12px;font-size:12px;background:var(--maroon-dark);color:#fff;border:none;border-radius:6px;cursor:pointer;">⬆ Upload PSA</button>
@@ -865,9 +866,9 @@
                     <div class="info-item" style="grid-column:1/-1;">
                         <label>SF10 (New Students) or Previous Report Card</label>
                         <span>${s.sf10_document
-                        ? `<a href="${s.sf10_document}" target="_blank" style="color:var(--blue-dark);font-weight:600;text-decoration:underline;">📄 View</a>
+                        ? `<a href="${s.sf10_document}" target="_blank" style="color:var(--blue-dark);font-weight:600;text-decoration:underline;">View</a>
                                <img src="${s.sf10_document}" style="display:block;margin-top:6px;max-width:100%;max-height:180px;border-radius:6px;" onerror="this.style.display='none'">`
-                        : '<span style="color:#dc2626">❌ Not uploaded</span>'}</span>
+                        : '<span style="color:#dc2626">Not uploaded</span>'}</span>
                         <div style="margin-top:8px;">
                             <input type="file" id="upload_sf10_${s.enrollment_id}" accept="image/*,.pdf" style="font-size:12px;">
                             <button onclick="uploadDocument(${s.enrollment_id}, ${s.student_id}, 'sf10', 'upload_sf10_${s.enrollment_id}')" style="margin-left:8px;padding:4px 12px;font-size:12px;background:var(--maroon-dark);color:#fff;border:none;border-radius:6px;cursor:pointer;">⬆ Upload SF10</button>
@@ -878,8 +879,8 @@
                         <label>2×2 Picture</label>
                         <span>${s.picture_2x2
                         ? `<img src="${s.picture_2x2}" style="width:100px;height:100px;object-fit:cover;border-radius:8px;border:1px solid var(--gray-300);" onerror="this.style.display='none'">
-                               <a href="${s.picture_2x2}" target="_blank" style="display:block;font-size:12px;color:var(--blue-dark);text-decoration:underline;margin-top:4px;">🖼 View Full</a>`
-                        : '<span style="color:#dc2626">❌ Not uploaded</span>'}</span>
+                               <a href="${s.picture_2x2}" target="_blank" style="display:block;font-size:12px;color:var(--blue-dark);text-decoration:underline;margin-top:4px;">View Full</a>`
+                        : '<span style="color:#dc2626">Not uploaded</span>'}</span>
                         <div style="margin-top:8px;">
                             <input type="file" id="upload_pic_${s.enrollment_id}" accept="image/*" style="font-size:12px;">
                             <button onclick="uploadDocument(${s.enrollment_id}, ${s.student_id}, 'picture', 'upload_pic_${s.enrollment_id}')" style="margin-left:8px;padding:4px 12px;font-size:12px;background:var(--maroon-dark);color:#fff;border:none;border-radius:6px;cursor:pointer;">⬆ Upload Picture</button>
@@ -894,11 +895,11 @@
                             <span>
                                 ${cf.field_type === 'file' 
                                     ? (cf.field_value 
-                                        ? `<a href="${cf.field_value}" target="_blank" style="color:var(--blue-dark);font-weight:600;text-decoration:underline;">📄 View File</a>
+                                        ? `<a href="${cf.field_value}" target="_blank" style="color:var(--blue-dark);font-weight:600;text-decoration:underline;">View File</a>
                                            ${cf.field_value.match(/\.(jpeg|jpg|gif|png)$/i) 
                                                 ? `<img src="${cf.field_value}" style="display:block;margin-top:6px;max-width:100%;max-height:180px;border-radius:6px;" onerror="this.style.display='none'">`
                                                 : ''}`
-                                        : '<span style="color:#dc2626">❌ Not uploaded</span>')
+                                        : '<span style="color:#dc2626">Not uploaded</span>')
                                     : (cf.field_value || '—')}
                             </span>
                         </div>
@@ -914,7 +915,7 @@
                 document.getElementById('modalOverlay').classList.add('active');
                 document.body.classList.add('modal-open');
             } catch (err) {
-                showAlert('alert', '❌ Could not load student details.');
+                showAlert('alert', 'Could not load student details.');
             }
         }
 
@@ -940,11 +941,11 @@
                 const res = await fetch('api/registrar.php?action=upload_document', { method: 'POST', body: formData });
                 const result = await res.json();
                 if (result.error) throw new Error(result.error);
-                showAlert('alert', '✅ ' + result.message, 'success');
+                showAlert('alert', '' + result.message, 'success');
                 closeModal();
                 loadStudents();
             } catch (err) {
-                showAlert('alert', '❌ Upload failed: ' + err.message);
+                showAlert('alert', 'Upload failed: ' + err.message);
             }
         }
 
@@ -981,7 +982,7 @@
                 document.getElementById('editModalOverlay').classList.add('active');
                 document.body.classList.add('modal-open');
             } catch (err) {
-                showAlert('alert', '❌ Could not load student for editing.');
+                showAlert('alert', 'Could not load student for editing.');
             }
         }
 
@@ -995,11 +996,11 @@
                 const res = await fetch('api/registrar.php?action=update_student', { method: 'POST', body: formData });
                 const result = await res.json();
                 if (result.error) throw new Error(result.error);
-                showAlert('alert', '✅ ' + result.message, 'success');
+                showAlert('alert', '' + result.message, 'success');
                 closeEditModal();
                 loadStudents();
             } catch (err) {
-                showAlert('alert', '❌ ' + err.message);
+                showAlert('alert', '' + err.message);
             }
         }
 
@@ -1052,10 +1053,10 @@
                     admin_id: sessionStorage.getItem('adminId')
                 });
 
-                showAlert('alert', '✅ ' + res.message, 'success');
+                showAlert('alert', '' + res.message, 'success');
                 loadStudents();
             } catch (err) {
-                showAlert('alert', '❌ ' + err.message);
+                showAlert('alert', '' + err.message);
             }
         }
 
@@ -1081,11 +1082,11 @@
                     admin_id: sessionStorage.getItem('adminId')
                 });
 
-                showAlert(alertId, '✅ ' + res.message, 'success');
+                showAlert(alertId, '' + res.message, 'success');
                 hideAlert(otherAlertId);
                 loadStudents();
             } catch (err) {
-                showAlert(alertId, '❌ ' + err.message);
+                showAlert(alertId, '' + err.message);
                 hideAlert(otherAlertId);
             }
         }
@@ -1109,11 +1110,11 @@
                     admin_id: sessionStorage.getItem('adminId')
                 });
 
-                showAlert('alert', '✅ ' + res.message, 'success');
+                showAlert('alert', '' + res.message, 'success');
                 loadArchivedStudents();
                 loadStudents();
             } catch (err) {
-                showAlert('alert', '❌ ' + err.message);
+                showAlert('alert', '' + err.message);
             }
         }
 
@@ -1128,7 +1129,7 @@
                 const students = await apiGet('api/registrar.php?action=archived_students');
                 renderArchivedStudentsTable(students);
             } catch (err) {
-                tbody.innerHTML = `<tr><td colspan="9" style="text-align:center;color:#dc2626;padding:40px;">❌ Error: ${err.message}</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="9" style="text-align:center;color:#dc2626;padding:40px;">Error: ${err.message}</td></tr>`;
             }
         }
 
@@ -1153,7 +1154,7 @@
                     <td>${getStatusBadge(s.status)}</td>
                     <td>
                         <div class="dash-action-group" style="flex-wrap:wrap;">
-                            <button class="btn-view" onclick="viewStudent(${s.enrollment_id})">👁 View</button>
+                            <button class="btn-view" onclick="viewStudent(${s.enrollment_id})">View</button>
                             <button class="btn-view" style="background:#dcfce7; border-color:#16a34a; color:#166534;" onclick="restoreStudent(${s.student_id})">↩️ Restore</button>
                         </div>
                     </td>
@@ -1206,7 +1207,7 @@
                 registrarReportData = await apiGet('api/reports.php?' + params.toString());
                 renderReportTable(registrarReportData);
             } catch (err) {
-                tbody.innerHTML = `<tr><td colspan="8" style="text-align:center;color:#dc2626;padding:40px;">❌ Error: ${err.message}</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="8" style="text-align:center;color:#dc2626;padding:40px;">Error: ${err.message}</td></tr>`;
             }
         }
 
@@ -1285,6 +1286,7 @@
         }
 
         loadStudents();
+        lucide.createIcons();
     </script>
 </body>
 

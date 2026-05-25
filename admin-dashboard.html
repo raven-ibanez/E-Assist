@@ -6,6 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Dashboard — Enrollment System</title>
     <link rel="stylesheet" href="style.css">
+    <script src="https://unpkg.com/lucide@latest"></script>
     <style>
         /* Legacy tab compat kept for JS */
         .tab-nav {
@@ -293,62 +294,62 @@
         <aside class="dash-sidebar" id="dashSidebar">
             <img src="logo.png" alt="Logo" class="dash-sidebar-logo"
                 onerror="this.style.display='none';document.getElementById('sidebarLogoFallback').style.display='block';">
-            <span id="sidebarLogoFallback" style="display:none;font-size:24px;margin-bottom:28px;">🎓</span>
+            <span id="sidebarLogoFallback" style="display:none;font-size:16px;font-weight:bold;margin-bottom:28px;color:var(--white);">BSSMAI</span>
 
             <div class="dash-nav-items">
                 <button class="dash-nav-item active" id="nav-enrollments" onclick="switchTab('enrollments')">
-                    <span class="dash-nav-icon">📋</span>
+                    <span class="dash-nav-icon"><i data-lucide="clipboard-list"></i></span>
                     <span class="dash-nav-label">Applications</span>
                 </button>
                 <button class="dash-nav-item" id="nav-payments" onclick="switchTab('payments')">
-                    <span class="dash-nav-icon">💳</span>
+                    <span class="dash-nav-icon"><i data-lucide="credit-card"></i></span>
                     <span class="dash-nav-label">Payments</span>
                 </button>
                 <button class="dash-nav-item" id="nav-enrolled" onclick="switchTab('enrolled')">
-                    <span class="dash-nav-icon">✅</span>
+                    <span class="dash-nav-icon"><i data-lucide="user-check"></i></span>
                     <span class="dash-nav-label">Enrolled</span>
                 </button>
                 <button class="dash-nav-item" id="nav-employees" onclick="switchTab('employees')">
-                    <span class="dash-nav-icon">👥</span>
+                    <span class="dash-nav-icon"><i data-lucide="users"></i></span>
                     <span class="dash-nav-label">Employees</span>
                 </button>
                 <button class="dash-nav-item" id="nav-archive-emp" onclick="switchTab('archive-emp')">
-                    <span class="dash-nav-icon">🗂️</span>
+                    <span class="dash-nav-icon"><i data-lucide="archive"></i></span>
                     <span class="dash-nav-label">Archive (Employee)</span>
                 </button>
                 <button class="dash-nav-item" id="nav-deleted-emp" onclick="switchTab('deleted-emp')">
-                    <span class="dash-nav-icon">🗑️</span>
+                    <span class="dash-nav-icon"><i data-lucide="trash-2"></i></span>
                     <span class="dash-nav-label">Delete (Employee)</span>
                 </button>
                 <button class="dash-nav-item" id="nav-archived-students" onclick="switchTab('archived-students')">
-                    <span class="dash-nav-icon">🗂️</span>
+                    <span class="dash-nav-icon"><i data-lucide="archive"></i></span>
                     <span class="dash-nav-label">Archive (Students)</span>
                 </button>
                 <button class="dash-nav-item" id="nav-deleted-students" onclick="switchTab('deleted-students')">
-                    <span class="dash-nav-icon">🗑️</span>
+                    <span class="dash-nav-icon"><i data-lucide="trash-2"></i></span>
                     <span class="dash-nav-label">Delete (Students)</span>
                 </button>
                 <button class="dash-nav-item" id="nav-logs" onclick="switchTab('logs')">
-                    <span class="dash-nav-icon">📜</span>
+                    <span class="dash-nav-icon"><i data-lucide="scroll"></i></span>
                     <span class="dash-nav-label">Logs</span>
                 </button>
                 <button class="dash-nav-item" id="nav-maintenance" onclick="switchTab('maintenance')">
-                    <span class="dash-nav-icon">🔧</span>
+                    <span class="dash-nav-icon"><i data-lucide="settings"></i></span>
                     <span class="dash-nav-label">Maintenance</span>
                 </button>
                 <button class="dash-nav-item" id="nav-reports" onclick="switchTab('reports')">
-                    <span class="dash-nav-icon">📊</span>
+                    <span class="dash-nav-icon"><i data-lucide="bar-chart-3"></i></span>
                     <span class="dash-nav-label">Reports</span>
                 </button>
             </div>
 
             <div class="dash-sidebar-bottom">
                 <a href="index.html" class="dash-nav-item">
-                    <span class="dash-nav-icon">🏠</span>
+                    <span class="dash-nav-icon"><i data-lucide="home"></i></span>
                     <span class="dash-nav-label">Home</span>
                 </a>
                 <button class="dash-nav-item" onclick="logout()" style="color:#f87171;">
-                    <span class="dash-nav-icon">🚪</span>
+                    <span class="dash-nav-icon"><i data-lucide="log-out"></i></span>
                     <span class="dash-nav-label">Logout</span>
                 </button>
             </div>
@@ -377,32 +378,32 @@
                 <div class="tab-content active" id="tab-enrollments">
                     <div class="dash-stats">
                         <div class="dash-stat-card">
-                            <div class="dash-stat-icon-wrap blue">📋</div>
+                            <div class="dash-stat-icon-wrap blue"><i data-lucide="clipboard-list"></i></div>
                             <div class="dash-stat-body"><span class="dash-stat-label">Total Applications</span><span
                                     class="dash-stat-value" id="enrollTotalCount">0</span></div>
                         </div>
                         <div class="dash-stat-card">
-                            <div class="dash-stat-icon-wrap yellow">📝</div>
+                            <div class="dash-stat-icon-wrap yellow"><i data-lucide="clock"></i></div>
                             <div class="dash-stat-body"><span class="dash-stat-label">Pending</span><span
                                     class="dash-stat-value" id="enrollPendingCount">0</span></div>
                         </div>
                         <div class="dash-stat-card">
-                            <div class="dash-stat-icon-wrap purple">👀</div>
+                            <div class="dash-stat-icon-wrap purple"><i data-lucide="credit-card"></i></div>
                             <div class="dash-stat-body"><span class="dash-stat-label">For Payment Review</span><span
                                     class="dash-stat-value" id="enrollPaymentCount">0</span></div>
                         </div>
                         <div class="dash-stat-card">
-                            <div class="dash-stat-icon-wrap purple">🔍</div>
+                            <div class="dash-stat-icon-wrap purple"><i data-lucide="file-check"></i></div>
                             <div class="dash-stat-body"><span class="dash-stat-label">For App Review</span><span
                                     class="dash-stat-value" id="enrollAppCount">0</span></div>
                         </div>
                         <div class="dash-stat-card">
-                            <div class="dash-stat-icon-wrap orange">🚫</div>
+                            <div class="dash-stat-icon-wrap orange"><i data-lucide="user-minus"></i></div>
                             <div class="dash-stat-body"><span class="dash-stat-label">Dropped</span><span
                                     class="dash-stat-value" id="enrollDroppedCount">0</span></div>
                         </div>
                         <div class="dash-stat-card">
-                            <div class="dash-stat-icon-wrap red">❌</div>
+                            <div class="dash-stat-icon-wrap red"><i data-lucide="user-x"></i></div>
                             <div class="dash-stat-body"><span class="dash-stat-label">Declined</span><span
                                     class="dash-stat-value" id="enrollDeclinedCount">0</span></div>
                         </div>
@@ -414,7 +415,7 @@
                         <div class="dash-table-header">
                             <span class="dash-table-title">Active Applications &amp; Dropped Records</span>
                             <div class="dash-filter-row">
-                                <input type="text" id="enrollSearchInput" placeholder="🔍 Search name..."
+                                <input type="text" id="enrollSearchInput" placeholder="Search name..."
                                     oninput="filterStudents()">
                                 <select id="enrollFilterStatus" onchange="filterStudents()">
                                     <option value="All">All Status</option>
@@ -456,12 +457,12 @@
                     <div id="enrolledAlert" class="alert"></div>
                     <div class="dash-stats" style="margin-bottom:24px;">
                         <div class="dash-stat-card">
-                            <div class="dash-stat-icon-wrap green">✅</div>
+                            <div class="dash-stat-icon-wrap green"><i data-lucide="graduation-cap"></i></div>
                             <div class="dash-stat-body"><span class="dash-stat-label">Currently Enrolled</span><span
                                     class="dash-stat-value" id="enrolledMasterCount">0</span></div>
                         </div>
                         <div class="dash-stat-card">
-                            <div class="dash-stat-icon-wrap red">🔴</div>
+                            <div class="dash-stat-icon-wrap red"><i data-lucide="file-warning"></i></div>
                             <div class="dash-stat-body"><span class="dash-stat-label">Documents Pending</span><span
                                     class="dash-stat-value" id="enrolledPendingDocsCount">0</span></div>
                         </div>
@@ -470,7 +471,7 @@
                         <div class="dash-table-header">
                             <span class="dash-table-title">Enrolled Masterlist</span>
                             <div class="dash-filter-row">
-                                <input type="text" id="enrolledSearchInput" placeholder="🔍 Search name..."
+                                <input type="text" id="enrolledSearchInput" placeholder="Search name..."
                                     oninput="filterEnrolledStudents()">
                             </div>
                         </div>
@@ -503,32 +504,32 @@
                     <div id="payAlert" class="alert"></div>
                     <div class="dash-stats" id="paymentStats" style="margin-bottom:24px;">
                         <div class="dash-stat-card">
-                            <div class="dash-stat-icon-wrap blue">💳</div>
+                            <div class="dash-stat-icon-wrap blue"><i data-lucide="database"></i></div>
                             <div class="dash-stat-body"><span class="dash-stat-label">Total Records</span><span
                                     class="dash-stat-value" id="payTotalCount">0</span></div>
                         </div>
                         <div class="dash-stat-card">
-                            <div class="dash-stat-icon-wrap green">✅</div>
+                            <div class="dash-stat-icon-wrap green"><i data-lucide="user-check"></i></div>
                             <div class="dash-stat-body"><span class="dash-stat-label">Enrolled</span><span
                                     class="dash-stat-value" id="payEnrolledCount">0</span></div>
                         </div>
                         <div class="dash-stat-card">
-                            <div class="dash-stat-icon-wrap purple">💸</div>
+                            <div class="dash-stat-icon-wrap purple"><i data-lucide="dollar-sign"></i></div>
                             <div class="dash-stat-body"><span class="dash-stat-label">Refunded</span><span
                                     class="dash-stat-value" id="payRefundedCount">0</span></div>
                         </div>
                         <div class="dash-stat-card">
-                            <div class="dash-stat-icon-wrap blue">📱</div>
+                            <div class="dash-stat-icon-wrap blue"><i data-lucide="smartphone"></i></div>
                             <div class="dash-stat-body"><span class="dash-stat-label">GCash</span><span
                                     class="dash-stat-value" id="payGcashCount">0</span></div>
                         </div>
                         <div class="dash-stat-card">
-                            <div class="dash-stat-icon-wrap green">💵</div>
+                            <div class="dash-stat-icon-wrap green"><i data-lucide="banknote"></i></div>
                             <div class="dash-stat-body"><span class="dash-stat-label">Cash</span><span
                                     class="dash-stat-value" id="payCashCount">0</span></div>
                         </div>
                         <div class="dash-stat-card">
-                            <div class="dash-stat-icon-wrap yellow">🏦</div>
+                            <div class="dash-stat-icon-wrap yellow"><i data-lucide="landmark"></i></div>
                             <div class="dash-stat-body"><span class="dash-stat-label">Bank Transfer</span><span
                                     class="dash-stat-value" id="payBankCount">0</span></div>
                         </div>
@@ -537,7 +538,7 @@
                         <div class="dash-table-header">
                             <span class="dash-table-title">Payment Records</span>
                             <div class="dash-filter-row">
-                                <input type="text" id="paySearchInput" placeholder="🔍 Search ref..."
+                                <input type="text" id="paySearchInput" placeholder="Search reference..."
                                     oninput="filterPayments()">
                                 <select id="filterPaymentMethod" onchange="filterPayments()">
                                     <option value="All">All Methods</option>
@@ -588,7 +589,7 @@
                         <div class="dash-table-header">
                             <span class="dash-table-title">Employee Accounts</span>
                             <div class="dash-filter-row">
-                                <input type="text" id="empSearchInput" placeholder="🔍 Search user..."
+                                <input type="text" id="empSearchInput" placeholder="Search user..."
                                     oninput="filterEmployees()">
                                 <select id="empFilterRole" onchange="filterEmployees()">
                                     <option value="All">All Roles</option>
@@ -659,7 +660,7 @@
                         <div class="dash-table-header">
                             <span class="dash-table-title">System Transaction &amp; Change Logs</span>
                             <div class="dash-filter-row">
-                                <input type="text" id="logsSearchInput" placeholder="🔍 Search logs..."
+                                <input type="text" id="logsSearchInput" placeholder="Search logs..."
                                     oninput="filterLogs()">
                                 <select id="logsFilterAction" onchange="filterLogs()">
                                     <option value="All">All Actions</option>
@@ -671,7 +672,7 @@
                                 <input type="date" id="logsStartDate" onchange="filterLogs()" title="Start Date">
                                 <input type="date" id="logsEndDate" onchange="filterLogs()" title="End Date">
                                 <button class="btn" onclick="exportLogs()"
-                                    style="height:38px; background:#16a34a; color:white; border:none; border-radius:8px; padding:0 16px; font-weight:600; cursor:pointer; display:inline-flex; align-items:center; gap:8px;">📥
+                                    style="height:38px; background:#16a34a; color:white; border:none; border-radius:8px; padding:0 16px; font-weight:600; cursor:pointer; display:inline-flex; align-items:center; gap:8px;">Export Logs
                                     Export Excel</button>
                             </div>
                         </div>
@@ -706,46 +707,46 @@
                             <div class="maint-sidebar-title">Data Categories</div>
                             <button class="maint-cat-btn active" data-table="payment_methods"
                                 onclick="selectCategory('payment_methods', this)">
-                                <span class="maint-cat-icon">💳</span>
+                                <span class="maint-cat-icon"><i data-lucide="credit-card"></i></span>
                                 <span class="maint-cat-label">Payment Methods</span>
                             </button>
                             <button class="maint-cat-btn" data-table="payment_modes"
                                 onclick="selectCategory('payment_modes', this)">
-                                <span class="maint-cat-icon">📋</span>
+                                <span class="maint-cat-icon"><i data-lucide="calendar"></i></span>
                                 <span class="maint-cat-label">Payment Modes</span>
                             </button>
                             <button class="maint-cat-btn" data-table="grade_levels"
                                 onclick="selectCategory('grade_levels', this)">
-                                <span class="maint-cat-icon">📚</span>
+                                <span class="maint-cat-icon"><i data-lucide="graduation-cap"></i></span>
                                 <span class="maint-cat-label">Grade Levels</span>
                             </button>
                             <button class="maint-cat-btn" data-table="school_years"
                                 onclick="selectCategory('school_years', this)">
-                                <span class="maint-cat-icon">📅</span>
+                                <span class="maint-cat-icon"><i data-lucide="calendar-days"></i></span>
                                 <span class="maint-cat-label">School Years</span>
                             </button>
                             <button class="maint-cat-btn" data-table="sessions"
                                 onclick="selectCategory('sessions', this)">
-                                <span class="maint-cat-icon">🕐</span>
+                                <span class="maint-cat-icon"><i data-lucide="clock"></i></span>
                                 <span class="maint-cat-label">Sessions</span>
                             </button>
                             <button class="maint-cat-btn" data-table="relations"
                                 onclick="selectCategory('relations', this)">
-                                <span class="maint-cat-icon">👨‍👩‍👧</span>
+                                <span class="maint-cat-icon"><i data-lucide="users"></i></span>
                                 <span class="maint-cat-label">Parent Relations</span>
                             </button>
                             <button class="maint-cat-btn" data-table="income_ranges"
                                 onclick="selectCategory('income_ranges', this)">
-                                <span class="maint-cat-icon">💰</span>
+                                <span class="maint-cat-icon"><i data-lucide="dollar-sign"></i></span>
                                 <span class="maint-cat-label">Income Ranges</span>
                             </button>
                             <button class="maint-cat-btn" data-table="roles" onclick="selectCategory('roles', this)">
-                                <span class="maint-cat-icon">🏷️</span>
+                                <span class="maint-cat-icon"><i data-lucide="shield"></i></span>
                                 <span class="maint-cat-label">Employee Roles</span>
                             </button>
                             <button class="maint-cat-btn" data-table="form_fields"
                                 onclick="selectCategory('form_fields', this)">
-                                <span class="maint-cat-icon">📝</span>
+                                <span class="maint-cat-icon"><i data-lucide="list-todo"></i></span>
                                 <span class="maint-cat-label">Enrollment Form Fields</span>
                             </button>
                         </div>
@@ -762,7 +763,7 @@
                                     New</button>
                             </div>
                             <div class="maint-info-bar" id="maintInfoBar">
-                                <span>⚠️ Items that are currently in use by existing records cannot be deleted.</span>
+                                <span>Note: Items that are currently in use by existing records cannot be deleted.</span>
                             </div>
                             <div class="dash-table-scroll">
                                 <table class="dash-table" id="maintTable">
@@ -792,7 +793,7 @@
                         <div class="dash-table-header">
                             <span class="dash-table-title">Archived Employee Accounts</span>
                             <div class="dash-filter-row">
-                                <input type="text" id="archiveEmpSearchInput" placeholder="🔍 Search user..."
+                                <input type="text" id="archiveEmpSearchInput" placeholder="Search user..."
                                     oninput="filterArchivedEmployees()">
                                 <select id="archiveEmpFilterRole" onchange="filterArchivedEmployees()">
                                     <option value="All">All Roles</option>
@@ -831,7 +832,7 @@
                         <div class="dash-table-header">
                             <span class="dash-table-title">Deleted Employee Accounts</span>
                             <div class="dash-filter-row">
-                                <input type="text" id="deletedEmpSearchInput" placeholder="🔍 Search user..."
+                                <input type="text" id="deletedEmpSearchInput" placeholder="Search user..."
                                     oninput="filterDeletedEmployees()">
                                 <select id="deletedEmpFilterRole" onchange="filterDeletedEmployees()">
                                     <option value="All">All Roles</option>
@@ -871,7 +872,7 @@
                             <span class="dash-table-title">Archived Student Records</span>
                             <div class="dash-filter-row">
                                 <input type="text" id="archivedStudentsSearchInput"
-                                    placeholder="🔍 Search archived by name or ID..."
+                                    placeholder="Search archived by name or ID..."
                                     oninput="filterArchivedStudentsAdmin()">
                             </div>
                         </div>
@@ -908,7 +909,7 @@
                             <span class="dash-table-title">Deleted Student Records</span>
                             <div class="dash-filter-row">
                                 <input type="text" id="deletedStudentsSearchInput"
-                                    placeholder="🔍 Search deleted by name or ID..."
+                                    placeholder="Search deleted by name or ID..."
                                     oninput="filterDeletedStudentsAdmin()">
                             </div>
                         </div>
@@ -1017,28 +1018,24 @@
                                 </div>
 
                                 <!-- Shared Date Filters -->
-                                <div style="display: flex; flex-direction: column; gap: 4px; width: 150px;">
+                                <div style="display: flex; flex-direction: column; gap: 4px; min-width: 160px; flex: 0 0 auto;">
                                     <label
-                                        style="font-size: 11px; font-weight: 700; color: var(--gray-500); text-transform: uppercase;">Start
-                                        Date</label>
+                                        style="font-size: 11px; font-weight: 700; color: var(--gray-500); text-transform: uppercase;">Start Date</label>
                                     <input type="date" id="adminReportStartDate"
-                                        style="width: 100%; height: 38px; border: 1.5px solid var(--gray-300); border-radius: 8px; padding: 8px; background: white;">
+                                        style="width: 100%; height: 38px; border: 1.5px solid var(--gray-300); border-radius: 8px; padding: 8px; background: white; box-sizing: border-box;">
                                 </div>
-                                <div style="display: flex; flex-direction: column; gap: 4px; width: 150px;">
+                                <div style="display: flex; flex-direction: column; gap: 4px; min-width: 160px; flex: 0 0 auto;">
                                     <label
-                                        style="font-size: 11px; font-weight: 700; color: var(--gray-500); text-transform: uppercase;">End
-                                        Date</label>
+                                        style="font-size: 11px; font-weight: 700; color: var(--gray-500); text-transform: uppercase;">End Date</label>
                                     <input type="date" id="adminReportEndDate"
-                                        style="width: 100%; height: 38px; border: 1.5px solid var(--gray-300); border-radius: 8px; padding: 8px; background: white;">
+                                        style="width: 100%; height: 38px; border: 1.5px solid var(--gray-300); border-radius: 8px; padding: 8px; background: white; box-sizing: border-box;">
                                 </div>
 
-                                <div style="display: flex; gap: 8px; min-width: 200px; height: 38px;">
+                                <div style="display: flex; gap: 8px; min-width: 200px; align-items: flex-end;">
                                     <button class="btn btn-primary" onclick="generateAdminReport()"
-                                        style="padding: 0 16px; font-size: 13px; flex: 1; height: 100%;">🔍
-                                        Preview</button>
+                                        style="padding: 0 16px; font-size: 13px; flex: 1; height: 38px;">Preview</button>
                                     <button class="btn btn-success" onclick="exportAdminReport()"
-                                        style="padding: 0 16px; font-size: 13px; flex: 1; height: 100%; background: #16a34a; color: white;">📥
-                                        Export CSV</button>
+                                        style="padding: 0 16px; font-size: 13px; flex: 1; height: 38px; background: #16a34a; color: white;">Export CSV</button>
                                 </div>
                             </div>
                         </div>
@@ -1071,7 +1068,7 @@
     <div class="modal-overlay" id="modalOverlay" onclick="closeModal()">
         <div class="modal" onclick="event.stopPropagation()">
             <button class="modal-close" onclick="closeModal()">✕</button>
-            <h3 id="modalTitle">🧒 Student Full Details</h3>
+            <h3 id="modalTitle">Student Full Details</h3>
             <div id="modalContent" class="info-grid"></div>
             <div style="margin-top:24px; text-align:right;">
                 <button class="btn btn-outline" onclick="closeModal()">Close</button>
@@ -1083,7 +1080,7 @@
     <div class="modal-overlay" id="maintModalOverlay" onclick="closeMaintModal()">
         <div class="modal" onclick="event.stopPropagation()" style="max-width: 500px;">
             <button class="modal-close" onclick="closeMaintModal()">✕</button>
-            <h3 id="maintModalTitle">🔧 Add Record</h3>
+            <h3 id="maintModalTitle">Add Record</h3>
             <div id="maintModalBody" style="margin-top: 16px;"></div>
             <div style="margin-top:20px; display:flex; gap:10px; justify-content:flex-end;">
                 <button class="btn btn-outline" onclick="closeMaintModal()">Cancel</button>
@@ -1192,7 +1189,7 @@
                 const enrolled = allStudents.filter(s => s.status === 'Enrolled' || s.status === 'Enrolled (Doc. Pending)');
                 renderEnrolledStudents(enrolled);
             } catch (err) {
-                showAlert('enrollAlert', '❌ Failed to load students: ' + err.message);
+                showAlert('enrollAlert', 'Failed to load students: ' + err.message);
             }
         }
 
@@ -1225,13 +1222,13 @@
                     <td style="white-space:nowrap;">${formatDate(s.applied_at)}</td>
                     <td>
                         ${getStatusBadge(s.status)}
-                        ${s.documents_pending == 1 ? '<span class="doc-pending-badge">🔴 Doc. Pending</span>' : ''}
+                        ${s.documents_pending == 1 ? '<span class="doc-pending-badge">Doc. Pending</span>' : ''}
                     </td>
                     <td>
                         <div class="dash-action-group">
-                            <button class="btn-view" onclick="viewStudent(${s.enrollment_id})">👁 View</button>
-                            <button class="btn-view" style="background:#f5f3ff; border-color:#9333ea; color:#7e22ce; margin-left:6px;" onclick="archiveStudentAdmin(${s.student_id})">🗂️ Archive</button>
-                            <button class="btn-view" style="background:#fef2f2; border-color:#dc2626; color:#b91c1c; margin-left:6px;" onclick="deleteStudentAdmin(${s.student_id})">🗑️ Delete</button>
+                            <button class="btn-view" onclick="viewStudent(${s.enrollment_id})">View</button>
+                            <button class="btn-view" style="background:#f5f3ff; border-color:#9333ea; color:#7e22ce; margin-left:6px;" onclick="archiveStudentAdmin(${s.student_id})">Archive</button>
+                            <button class="btn-view" style="background:#fef2f2; border-color:#dc2626; color:#b91c1c; margin-left:6px;" onclick="deleteStudentAdmin(${s.student_id})">Delete</button>
                             ${s.status === 'Dropped' ? `
                             <div class="dot-menu-wrapper">
                                 <button class="btn-dots" onclick="toggleDotMenu('dm-s-${s.enrollment_id}')">⋮</button>
@@ -1300,9 +1297,9 @@
                     <td>${getStatusBadge(s.status)}</td>
                     <td>
                         <div class="dash-action-group">
-                            <button class="btn-view" onclick="viewStudent(${s.enrollment_id})">👁 View</button>
-                            <button class="btn-view" style="background:#f5f3ff; border-color:#9333ea; color:#7e22ce; margin-left:6px;" onclick="archiveStudentAdmin(${s.student_id})">🗂️ Archive</button>
-                            <button class="btn-view" style="background:#fef2f2; border-color:#dc2626; color:#b91c1c; margin-left:6px;" onclick="deleteStudentAdmin(${s.student_id})">🗑️ Delete</button>
+                            <button class="btn-view" onclick="viewStudent(${s.enrollment_id})">View</button>
+                            <button class="btn-view" style="background:#f5f3ff; border-color:#9333ea; color:#7e22ce; margin-left:6px;" onclick="archiveStudentAdmin(${s.student_id})">Archive</button>
+                            <button class="btn-view" style="background:#fef2f2; border-color:#dc2626; color:#b91c1c; margin-left:6px;" onclick="deleteStudentAdmin(${s.student_id})">Delete</button>
                         </div>
                     </td>
                 </tr>
@@ -1312,17 +1309,17 @@
         async function viewStudent(id) {
             try {
                 const s = await apiGet(`api/registrar.php?action=detail&id=${id}`);
-                document.getElementById('modalTitle').textContent = '🧒 Student Full Details';
+                document.getElementById('modalTitle').textContent = 'Student Full Details';
                 document.getElementById('modalContent').innerHTML = `
                     ${s.documents_pending == 1 ? `
                     <div style="grid-column:1/-1; background:#fef2f2; border-left:4px solid #dc2626; border-radius:8px; padding:14px 16px; margin-bottom:8px;">
-                        <strong style="color:#dc2626;">🔴 Documents Pending</strong>
+                        <strong style="color:#dc2626;">Documents Pending</strong>
                         <p style="margin:6px 0 0; font-size:13px; color:#7f1d1d;">This student has missing documents. The Registrar is responsible for uploading missing files to clear this flag.</p>
                     </div>` : ''}
 
                     ${s.registrar_notes || s.cashier_notes ? `
                     <div style="grid-column:1/-1; background:#fff7ed; border-left:4px solid #f97316; border-radius:8px; padding:14px 16px; margin-bottom:12px;">
-                        <strong style="color:#c2410c;">📝 Reviewer Notes</strong>
+                        <strong style="color:#c2410c;">Reviewer Notes</strong>
                         ${s.registrar_notes ? `<p style="margin:6px 0 0; font-size:13px; color:#9a3412;"><strong>Registrar:</strong> ${s.registrar_notes}</p>` : ''}
                         ${s.cashier_notes ? `<p style="margin:6px 0 0; font-size:13px; color:#9a3412;"><strong>Cashier:</strong> ${s.cashier_notes}</p>` : ''}
                     </div>` : ''}
@@ -1358,23 +1355,23 @@
                     <div class="info-item" style="grid-column:1/-1;">
                         <label>PSA Birth Certificate</label>
                         <span>${s.psa_birth_cert
-                        ? `<a href="${s.psa_birth_cert}" target="_blank" style="color:var(--blue-dark);font-weight:600;text-decoration:underline;">📄 View Document</a>
+                        ? `<a href="${s.psa_birth_cert}" target="_blank" style="color:var(--blue-dark);font-weight:600;text-decoration:underline;">View Document</a>
                                <div style="margin-top:8px;"><img src="${s.psa_birth_cert}" style="max-width:100%;max-height:200px;border-radius:8px;border:1px solid var(--gray-300);cursor:pointer;" onclick="window.open('${s.psa_birth_cert}','_blank')" onerror="this.style.display='none'"></div>`
-                        : '<span style="color:#dc2626">❌ Not uploaded</span>'}</span>
+                        : '<span style="color:#dc2626">Not uploaded</span>'}</span>
                     </div>
                     <div class="info-item" style="grid-column:1/-1;">
                         <label>SF10 / Form 137</label>
                         <span>${s.sf10_document
-                        ? `<a href="${s.sf10_document}" target="_blank" style="color:var(--blue-dark);font-weight:600;text-decoration:underline;">📄 View Document</a>
+                        ? `<a href="${s.sf10_document}" target="_blank" style="color:var(--blue-dark);font-weight:600;text-decoration:underline;">View Document</a>
                                <div style="margin-top:8px;"><img src="${s.sf10_document}" style="max-width:100%;max-height:200px;border-radius:8px;border:1px solid var(--gray-300);cursor:pointer;" onclick="window.open('${s.sf10_document}','_blank')" onerror="this.style.display='none'"></div>`
-                        : '<span style="color:#dc2626">❌ Not uploaded</span>'}</span>
+                        : '<span style="color:#dc2626">Not uploaded</span>'}</span>
                     </div>
                     <div class="info-item" style="grid-column:1/-1;">
                         <label>2×2 Picture</label>
                         <span>${s.picture_2x2
                         ? `<div style="margin-top:8px;"><img src="${s.picture_2x2}" style="width:100px;height:100px;object-fit:cover;border-radius:8px;border:1px solid var(--gray-300);cursor:pointer;" onclick="window.open('${s.picture_2x2}','_blank')" onerror="this.style.display='none'"></div>
-                               <a href="${s.picture_2x2}" target="_blank" style="color:var(--blue-dark);font-weight:600;text-decoration:underline;font-size:12px;">🖼 View Full Image</a>`
-                        : '<span style="color:#dc2626">❌ Not uploaded</span>'}</span>
+                               <a href="${s.picture_2x2}" target="_blank" style="color:var(--blue-dark);font-weight:600;text-decoration:underline;font-size:12px;">View Full Image</a>`
+                        : '<span style="color:#dc2626">Not uploaded</span>'}</span>
                     </div>
 
                     ${s.custom_fields && s.custom_fields.length > 0 ? `
@@ -1385,11 +1382,11 @@
                             <span>
                                 ${cf.field_type === 'file'
                                 ? (cf.field_value
-                                    ? `<a href="${cf.field_value}" target="_blank" style="color:var(--blue-dark);font-weight:600;text-decoration:underline;">📄 View File</a>
+                                    ? `<a href="${cf.field_value}" target="_blank" style="color:var(--blue-dark);font-weight:600;text-decoration:underline;">View File</a>
                                            ${cf.field_value.match(/\.(jpeg|jpg|gif|png)$/i)
                                         ? `<img src="${cf.field_value}" style="display:block;margin-top:6px;max-width:100%;max-height:180px;border-radius:6px;" onerror="this.style.display='none'">`
                                         : ''}`
-                                    : '<span style="color:#dc2626">❌ Not uploaded</span>')
+                                    : '<span style="color:#dc2626">Not uploaded</span>')
                                 : (cf.field_value || '—')}
                             </span>
                         </div>
@@ -1405,7 +1402,7 @@
                 document.getElementById('modalOverlay').classList.add('active');
                 document.body.classList.add('modal-open');
             } catch (err) {
-                showAlert('enrollAlert', '❌ Could not load student details.');
+                showAlert('enrollAlert', 'Could not load student details.');
             }
         }
 
@@ -1415,11 +1412,11 @@
         async function viewPaymentDetail(id) {
             try {
                 const s = await apiGet(`api/registrar.php?action=detail&id=${id}`);
-                document.getElementById('modalTitle').textContent = '💳 Payment Details';
+                document.getElementById('modalTitle').textContent = 'Payment Details';
                 document.getElementById('modalContent').innerHTML = `
                     ${s.registrar_notes || s.cashier_notes ? `
                     <div style="grid-column:1/-1; background:#fff7ed; border-left:4px solid #f97316; border-radius:8px; padding:14px 16px; margin-bottom:12px;">
-                        <strong style="color:#c2410c;">📝 Reviewer Notes</strong>
+                        <strong style="color:#c2410c;">Reviewer Notes</strong>
                         ${s.registrar_notes ? `<p style="margin:6px 0 0; font-size:13px; color:#9a3412;"><strong>Registrar:</strong> ${s.registrar_notes}</p>` : ''}
                         ${s.cashier_notes ? `<p style="margin:6px 0 0; font-size:13px; color:#9a3412;"><strong>Cashier:</strong> ${s.cashier_notes}</p>` : ''}
                     </div>` : ''}
@@ -1451,7 +1448,7 @@
                     </div>
 
                     <div id="adminPaymentHistory" style="grid-column: span 2; margin-top: 20px;">
-                        <h4 style="margin-bottom:10px; font-size:14px; border-bottom:1px solid #eee; padding-bottom:5px;">📜 Payment History</h4>
+                        <h4 style="margin-bottom:10px; font-size:14px; border-bottom:1px solid #eee; padding-bottom:5px;">Payment History</h4>
                         <div id="adminHistoryContainer" style="max-height: 200px; overflow-y: auto;">
                             <p style="text-align:center; color:#999; font-size:12px;">Loading history...</p>
                         </div>
@@ -1467,7 +1464,7 @@
                 document.body.classList.add('modal-open');
                 loadAdminPaymentHistory(s.payment_id);
             } catch (err) {
-                showAlert('payAlert', '❌ Could not load payment details.');
+                showAlert('payAlert', 'Could not load payment details.');
             }
         }
 
@@ -1542,7 +1539,7 @@
 
                 renderPayments(allPayments);
             } catch (err) {
-                showAlert('payAlert', '❌ Failed to load payments: ' + err.message);
+                showAlert('payAlert', 'Failed to load payments: ' + err.message);
             }
         }
 
@@ -1564,10 +1561,10 @@
                     admin_id: sessionStorage.getItem('adminId')
                 });
 
-                showAlert('payAlert', '✅ ' + res.message, 'success');
+                showAlert('payAlert', '' + res.message, 'success');
                 loadPayments();
             } catch (err) {
-                showAlert('payAlert', '❌ ' + err.message);
+                showAlert('payAlert', '' + err.message);
             }
         }
 
@@ -1596,13 +1593,13 @@
                     <td style="font-weight:600;">${formatCurrency(p.total_amount || 0)}</td>
                     <td style="color:#16a34a; font-weight:600;">${formatCurrency(p.total_paid || 0)}</td>
                     <td style="color:${isPaid ? '#16a34a' : '#dc2626'}; font-weight:700;">
-                        ${isPaid ? '✅ Paid' : formatCurrency(balance)}
+                        ${isPaid ? 'Paid' : formatCurrency(balance)}
                     </td>
                     <td>${getStatusBadge(p.status)}</td>
                     <td>
                         <button class="btn" style="padding:4px 10px; border:1px solid var(--maroon-dark); color:var(--maroon-dark); background:transparent; border-radius:6px; font-size:11px;"
                                 onclick="viewPaymentDetail(${p.enrollment_id})">
-                            💳 View Payment
+                            View Payment
                         </button>
                         ${p.status === 'Refunded' ? `
                         <button class="btn" style="padding:4px 10px; border:1px solid #16a34a; color:#16a34a; background:transparent; border-radius:6px; font-size:11px; margin-top: 4px; width: 100%;"
@@ -1646,13 +1643,13 @@
                 allEmployees = await apiGet('api/registrar.php?action=employees');
                 renderEmployees(allEmployees);
             } catch (err) {
-                showAlert('empAlert', '❌ Failed to load employees: ' + err.message);
+                showAlert('empAlert', 'Failed to load employees: ' + err.message);
             }
         }
 
         function getRoleIcon(role) {
-            const icons = { admin: '⚙️', registrar: '📋', cashier: '💰' };
-            return icons[role] || '👤';
+            const icons = { admin: 'shield', registrar: 'clipboard-list', cashier: 'banknote' };
+            return icons[role] || 'user';
         }
 
         function renderEmployees(employees) {
@@ -1667,7 +1664,7 @@
                     <tr style="opacity: ${isActive ? 1 : 0.6}; transition: all 0.3s ease;">
                         <td>
                             <div style="display:flex; align-items:center; gap:10px;">
-                                <div class="employee-avatar avatar-${e.role}" style="width:32px; height:32px; font-size:14px; border-radius:50%; display:flex; align-items:center; justify-content:center; flex-shrink:0;">${getRoleIcon(e.role)}</div>
+                                <div class="dash-emp-avatar ${e.role}" style="width:32px; height:32px; font-size:14px;"><i data-lucide="${getRoleIcon(e.role)}" style="width:16px; height:16px;"></i></div>
                                 <strong>${e.employee_name || 'No Name'}</strong>
                             </div>
                         </td>
@@ -1677,24 +1674,26 @@
                             <span style="font-size: 11px; color: ${isActive ? '#16a34a' : '#dc2626'}; font-weight: 700;">
                                 ${isActive ? '● ACTIVE' : '○ INACTIVE'}
                             </span>
-                        </td>
-                        <td>
-                            <button class="btn" style="padding:6px 12px; font-size:11px; border:1px solid ${isActive ? '#dc2626' : '#16a34a'}; color: ${isActive ? '#dc2626' : '#16a34a'}; background:transparent; border-radius:6px; cursor:pointer; font-weight:600; margin-right:4px;"
+                                    <button class="btn" style="padding:6px 12px; font-size:11px; border:1px solid ${isActive ? '#dc2626' : '#16a34a'}; color: ${isActive ? '#dc2626' : '#16a34a'}; background:transparent; border-radius:6px; cursor:pointer; font-weight:600; margin-right:4px; display:inline-flex; align-items:center; gap:4px;"
                                     onclick="toggleEmployeeStatus(${e.id}, '${e.username}', ${e.is_active})">
+                                <i data-lucide="${isActive ? 'user-x' : 'user-check'}" style="width:12px; height:12px;"></i>
                                 ${isActive ? 'Deactivate' : 'Activate'}
                             </button>
-                            <button class="btn" style="padding:6px 12px; font-size:11px; border:1px solid #9333ea; color:#7e22ce; background:#f5f3ff; border-radius:6px; cursor:pointer; font-weight:600;"
+                            <button class="btn" style="padding:6px 12px; font-size:11px; border:1px solid #9333ea; color:#7e22ce; background:#f5f3ff; border-radius:6px; cursor:pointer; font-weight:600; margin-right:4px; display:inline-flex; align-items:center; gap:4px;"
                                     onclick="archiveEmployee(${e.id}, '${e.username}')">
-                                🗂️ Archive
+                                <i data-lucide="archive" style="width:12px; height:12px;"></i>
+                                Archive
                             </button>
-                            <button class="btn" style="padding:6px 12px; font-size:11px; border:1px solid #dc2626; color:#b91c1c; background:#fef2f2; border-radius:6px; cursor:pointer; font-weight:600;"
+                            <button class="btn" style="padding:6px 12px; font-size:11px; border:1px solid #dc2626; color:#b91c1c; background:#fef2f2; border-radius:6px; cursor:pointer; font-weight:600; display:inline-flex; align-items:center; gap:4px;"
                                     onclick="deleteEmployee(${e.id}, '${e.username}')">
-                                    🗑️ Delete
+                                <i data-lucide="trash-2" style="width:12px; height:12px;"></i>
+                                Delete
                             </button>
                         </td>
                     </tr>
                 `;
             }).join('');
+            if (typeof lucide !== 'undefined') lucide.createIcons();
         }
 
         function filterEmployees() {
@@ -1757,12 +1756,12 @@
             const confirm_password = document.getElementById('newConfirmPassword').value;
 
             if (!employee_name || !username || !role_id || !password || !confirm_password) {
-                showAlert('empAlert', '❌ Please fill in all fields.');
+                showAlert('empAlert', 'Please fill in all fields.');
                 return;
             }
 
             if (password !== confirm_password) {
-                showAlert('empAlert', '❌ Password and Confirm Password do not match.');
+                showAlert('empAlert', 'Password and Confirm Password do not match.');
                 return;
             }
 
@@ -1775,7 +1774,7 @@
                     confirm_password,
                     admin_id: sessionStorage.getItem('adminId')
                 });
-                showAlert('empAlert', '✅ ' + result.message, 'success');
+                showAlert('empAlert', '' + result.message, 'success');
                 document.getElementById('newEmployeeName').value = '';
                 document.getElementById('newUsername').value = '';
                 document.getElementById('newRole').value = '';
@@ -1785,7 +1784,7 @@
                 allEmployees = [];
                 loadEmployees();
             } catch (err) {
-                showAlert('empAlert', '❌ ' + err.message);
+                showAlert('empAlert', '' + err.message);
             }
         }
 
@@ -1795,7 +1794,7 @@
             // Prevent self-deactivation
             const loggedInUser = sessionStorage.getItem('registrarUser');
             if (action === 'deactivate' && username === loggedInUser) {
-                showAlert('empAlert', '❌ You cannot deactivate your own account.');
+                showAlert('empAlert', 'You cannot deactivate your own account.');
                 return;
             }
 
@@ -1813,10 +1812,10 @@
             try {
                 const adminId = sessionStorage.getItem('adminId');
                 const result = await apiGet(`api/registrar.php?action=toggle_employee_status&id=${id}&admin_id=${adminId}`);
-                showAlert('empAlert', '✅ ' + result.message, 'success');
+                showAlert('empAlert', '' + result.message, 'success');
                 loadEmployees();
             } catch (err) {
-                showAlert('empAlert', '❌ ' + err.message);
+                showAlert('empAlert', '' + err.message);
             }
         }
 
@@ -1835,7 +1834,7 @@
                 allArchivedEmployees = await apiGet('api/registrar.php?action=archived_employees');
                 renderArchivedEmployees(allArchivedEmployees);
             } catch (err) {
-                tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;color:#dc2626;padding:40px;">❌ Error: ${err.message}</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;color:#dc2626;padding:40px;">Error: ${err.message}</td></tr>`;
             }
         }
 
@@ -1857,11 +1856,11 @@
                             ${e.role.charAt(0).toUpperCase() + e.role.slice(1)}
                         </span>
                     </td>
-                    <td>${e.is_active == 1 ? '✅ Active' : '○ Inactive'}</td>
+                    <td>${e.is_active == 1 ? '✅ Active' : 'Inactive'}</td>
                     <td>
                         <div class="dash-action-group" style="flex-wrap:wrap;">
                             <button class="btn-view" style="background:#dcfce7; border-color:#16a34a; color:#166534;" onclick="restoreEmployee(${e.id}, '${e.username}')">↩️ Restore</button>
-                            <button class="btn-view" style="background:#fef2f2; border-color:#dc2626; color:#b91c1c; margin-left:6px;" onclick="permanentlyDeleteEmployee(${e.id}, '${e.username}', 'archiveEmpAlert')">🗑️ Permanent Delete</button>
+                            <button class="btn-view" style="background:#fef2f2; border-color:#dc2626; color:#b91c1c; margin-left:6px;" onclick="permanentlyDeleteEmployee(${e.id}, '${e.username}', 'archiveEmpAlert')">Permanent Delete</button>
                         </div>
                     </td>
                 </tr>
@@ -1910,10 +1909,10 @@
                     admin_id: sessionStorage.getItem('adminId')
                 });
 
-                showAlert('empAlert', '✅ ' + res.message, 'success');
+                showAlert('empAlert', '' + res.message, 'success');
                 loadEmployees();
             } catch (err) {
-                showAlert('empAlert', '❌ ' + err.message);
+                showAlert('empAlert', '' + err.message);
             }
         }
 
@@ -1935,11 +1934,11 @@
                     admin_id: sessionStorage.getItem('adminId')
                 });
 
-                showAlert('archiveEmpAlert', '✅ ' + res.message, 'success');
+                showAlert('archiveEmpAlert', '' + res.message, 'success');
                 loadArchivedEmployees();
                 loadEmployees();
             } catch (err) {
-                showAlert('archiveEmpAlert', '❌ ' + err.message);
+                showAlert('archiveEmpAlert', '' + err.message);
             }
         }
 
@@ -1962,11 +1961,11 @@
                     admin_id: sessionStorage.getItem('adminId')
                 });
 
-                showAlert('empAlert', '✅ ' + res.message, 'success');
+                showAlert('empAlert', '' + res.message, 'success');
                 loadEmployees();
 
             } catch (err) {
-                showAlert('empAlert', '❌ ' + err.message);
+                showAlert('empAlert', '' + err.message);
             }
         }
 
@@ -1981,7 +1980,7 @@
                 const employees = await apiGet('api/registrar.php?action=deleted_employees');
                 renderDeletedEmployees(employees);
             } catch (err) {
-                tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;color:#dc2626;padding:40px;">❌ Error: ${err.message}</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;color:#dc2626;padding:40px;">Error: ${err.message}</td></tr>`;
             }
         }
 
@@ -1997,11 +1996,11 @@
                     <td><strong style="font-family:'Courier New',monospace;">${e.username}</strong></td>
                     <td>${e.employee_name || '—'}</td>
                     <td><span class="role-tag role-${e.role.toLowerCase()}">${e.role}</span></td>
-                    <td>${e.is_active == 1 ? '✅ Active' : '○ Inactive'}</td>
+                    <td>${e.is_active == 1 ? '✅ Active' : 'Inactive'}</td>
                     <td>
                         <div class="dash-action-group">
                             <button class="btn-view" style="background:#dcfce7; border-color:#16a34a; color:#166534;" onclick="restoreEmployeeFromDeleted(${e.id}, '${e.username}')">↩️ Restore</button>
-                            <button class="btn-view" style="background:#fef2f2; border-color:#dc2626; color:#b91c1c; margin-left:6px;" onclick="permanentlyDeleteEmployee(${e.id}, '${e.username}', 'deletedEmpAlert')">🗑️ Permanent Delete</button>
+                            <button class="btn-view" style="background:#fef2f2; border-color:#dc2626; color:#b91c1c; margin-left:6px;" onclick="permanentlyDeleteEmployee(${e.id}, '${e.username}', 'deletedEmpAlert')">Permanent Delete</button>
                         </div>
                     </td>
                 </tr>
@@ -2037,12 +2036,12 @@
             if (!confirmResult.isConfirmed) return;
             try {
                 const res = await apiPost('api/registrar.php?action=restore_employee_from_deleted', { id, admin_id: sessionStorage.getItem('adminId') });
-                showAlert('deletedEmpAlert', '✅ ' + res.message, 'success');
+                showAlert('deletedEmpAlert', '' + res.message, 'success');
                 loadDeletedEmployees();
                 loadArchivedEmployees();
                 loadEmployees();
             } catch (err) {
-                showAlert('deletedEmpAlert', '❌ ' + err.message);
+                showAlert('deletedEmpAlert', '' + err.message);
             }
         }
 
@@ -2074,7 +2073,7 @@
                     admin_id: sessionStorage.getItem('adminId')
                 });
 
-                showAlert(sourceAlert, '✅ ' + res.message, 'success');
+                showAlert(sourceAlert, '' + res.message, 'success');
                 if (sourceAlert === 'archiveEmpAlert') {
                     loadArchivedEmployees();
                 } else if (sourceAlert === 'deletedEmpAlert') {
@@ -2082,7 +2081,7 @@
                 }
                 loadEmployees();
             } catch (err) {
-                showAlert(sourceAlert, '❌ ' + err.message);
+                showAlert(sourceAlert, '' + err.message);
             }
         }
 
@@ -2106,11 +2105,11 @@
 
             try {
                 const res = await apiPost('api/registrar.php?action=delete_student', { student_id: studentId, admin_id: sessionStorage.getItem('adminId') });
-                showAlert(alertId, '✅ ' + res.message, 'success');
+                showAlert(alertId, '' + res.message, 'success');
                 hideAlert(otherAlertId);
                 loadStudents();
             } catch (err) {
-                showAlert(alertId, '❌ ' + err.message);
+                showAlert(alertId, '' + err.message);
                 hideAlert(otherAlertId);
             }
         }
@@ -2123,7 +2122,7 @@
                 const students = await apiGet('api/registrar.php?action=deleted_students');
                 renderDeletedStudentsAdmin(students);
             } catch (err) {
-                tbody.innerHTML = `<tr><td colspan="8" style="text-align:center;color:#dc2626;padding:40px;">❌ Error: ${err.message}</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="8" style="text-align:center;color:#dc2626;padding:40px;">Error: ${err.message}</td></tr>`;
             }
         }
 
@@ -2145,9 +2144,9 @@
                     <td>${getStatusBadge(s.status)}</td>
                     <td>
                         <div class="dash-action-group">
-                            <button class="btn-view" onclick="viewStudent(${s.enrollment_id})">👁 View</button>
+                            <button class="btn-view" onclick="viewStudent(${s.enrollment_id})">View</button>
                             <button class="btn-view" style="background:#dcfce7; border-color:#16a34a; color:#166534; margin-left:6px;" onclick="restoreDeletedStudentAdmin(${s.student_id})">↩️ Restore</button>
-                            <button class="btn-view" style="background:#fee2e2; border-color:#dc2626; color:#b91c1c; margin-left:6px;" onclick="permanentlyDeleteDeletedStudentAdmin(${s.student_id})">🗑️ Permanent Delete</button>
+                            <button class="btn-view" style="background:#fee2e2; border-color:#dc2626; color:#b91c1c; margin-left:6px;" onclick="permanentlyDeleteDeletedStudentAdmin(${s.student_id})">Permanent Delete</button>
                         </div>
                     </td>
                 </tr>
@@ -2179,11 +2178,11 @@
             if (!confirmResult.isConfirmed) return;
             try {
                 const res = await apiPost('api/registrar.php?action=restore_student_from_deleted', { student_id: studentId, admin_id: sessionStorage.getItem('adminId') });
-                showAlert('deletedStudentsAlert', '✅ ' + res.message, 'success');
+                showAlert('deletedStudentsAlert', '' + res.message, 'success');
                 loadDeletedStudentsAdmin();
                 loadStudents();
             } catch (err) {
-                showAlert('deletedStudentsAlert', '❌ ' + err.message);
+                showAlert('deletedStudentsAlert', '' + err.message);
             }
         }
 
@@ -2200,11 +2199,11 @@
             if (!confirmResult.isConfirmed) return;
             try {
                 const res = await apiPost('api/registrar.php?action=permanently_delete_student', { student_id: studentId, admin_id: sessionStorage.getItem('adminId') });
-                showAlert('deletedStudentsAlert', '✅ ' + res.message, 'success');
+                showAlert('deletedStudentsAlert', '' + res.message, 'success');
                 loadDeletedStudentsAdmin();
                 loadStudents();
             } catch (err) {
-                showAlert('deletedStudentsAlert', '❌ ' + err.message);
+                showAlert('deletedStudentsAlert', '' + err.message);
             }
         }
 
@@ -2228,11 +2227,11 @@
 
             try {
                 const res = await apiPost('api/registrar.php?action=archive_student', { student_id: studentId, admin_id: sessionStorage.getItem('adminId') });
-                showAlert(alertId, '✅ ' + res.message, 'success');
+                showAlert(alertId, '' + res.message, 'success');
                 hideAlert(otherAlertId);
                 loadStudents();
             } catch (err) {
-                showAlert(alertId, '❌ ' + err.message);
+                showAlert(alertId, '' + err.message);
                 hideAlert(otherAlertId);
             }
         }
@@ -2245,7 +2244,7 @@
                 const students = await apiGet('api/registrar.php?action=archived_students');
                 renderArchivedStudentsAdmin(students);
             } catch (err) {
-                tbody.innerHTML = `<tr><td colspan="8" style="text-align:center;color:#dc2626;padding:40px;">❌ Error: ${err.message}</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="8" style="text-align:center;color:#dc2626;padding:40px;">Error: ${err.message}</td></tr>`;
             }
         }
 
@@ -2267,9 +2266,9 @@
                     <td>${getStatusBadge(s.status)}</td>
                     <td>
                         <div class="dash-action-group">
-                            <button class="btn-view" onclick="viewStudent(${s.enrollment_id})">👁 View</button>
+                            <button class="btn-view" onclick="viewStudent(${s.enrollment_id})">View</button>
                             <button class="btn-view" style="background:#dcfce7; border-color:#16a34a; color:#166534; margin-left:6px;" onclick="restoreArchivedStudentAdmin(${s.student_id})">↩️ Restore</button>
-                            <button class="btn-view" style="background:#fee2e2; border-color:#dc2626; color:#b91c1c; margin-left:6px;" onclick="permanentlyDeleteStudentAdmin(${s.student_id})">🗑️ Permanent Delete</button>
+                            <button class="btn-view" style="background:#fee2e2; border-color:#dc2626; color:#b91c1c; margin-left:6px;" onclick="permanentlyDeleteStudentAdmin(${s.student_id})">Permanent Delete</button>
                         </div>
                     </td>
                 </tr>
@@ -2301,11 +2300,11 @@
             if (!confirmResult.isConfirmed) return;
             try {
                 const res = await apiPost('api/registrar.php?action=restore_student', { student_id: studentId, admin_id: sessionStorage.getItem('adminId') });
-                showAlert('archivedStudentsAlert', '✅ ' + res.message, 'success');
+                showAlert('archivedStudentsAlert', '' + res.message, 'success');
                 loadArchivedStudentsAdmin();
                 loadStudents();
             } catch (err) {
-                showAlert('archivedStudentsAlert', '❌ ' + err.message);
+                showAlert('archivedStudentsAlert', '' + err.message);
             }
         }
 
@@ -2322,11 +2321,11 @@
             if (!confirmResult.isConfirmed) return;
             try {
                 const res = await apiPost('api/registrar.php?action=permanently_delete_student', { student_id: studentId, admin_id: sessionStorage.getItem('adminId') });
-                showAlert('archivedStudentsAlert', '✅ ' + res.message, 'success');
+                showAlert('archivedStudentsAlert', '' + res.message, 'success');
                 loadArchivedStudentsAdmin();
                 loadStudents();
             } catch (err) {
-                showAlert('archivedStudentsAlert', '❌ ' + err.message);
+                showAlert('archivedStudentsAlert', '' + err.message);
             }
         }
 
@@ -2368,12 +2367,12 @@
         async function loadLogs() {
             try {
                 const tbody = document.getElementById('logsTableBody');
-                tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;">⏳ Fetching logs...</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;">Fetching logs...</td></tr>`;
 
                 allLogs = await apiGet('api/registrar.php?action=get_logs');
                 renderLogs(allLogs);
             } catch (err) {
-                showAlert('logsAlert', '❌ Failed to load logs: ' + err.message);
+                showAlert('logsAlert', 'Failed to load logs: ' + err.message);
             }
         }
 
@@ -2498,10 +2497,10 @@
                     admin_id: adminId
                 });
 
-                showAlert('enrollAlert', '✅ ' + res.message, 'success');
+                showAlert('enrollAlert', '' + res.message, 'success');
                 loadStudents(); // Refresh the list
             } catch (err) {
-                showAlert('enrollAlert', '❌ ' + err.message);
+                showAlert('enrollAlert', '' + err.message);
             }
         }
 
@@ -2678,7 +2677,7 @@
                     filterMaintTableByGrade();
                 }
             } catch (err) {
-                showAlert('maintAlert', '❌ Failed to load data: ' + err.message);
+                showAlert('maintAlert', 'Failed to load data: ' + err.message);
             }
         }
 
@@ -2728,8 +2727,8 @@
         function renderMaintenanceTableExtra(row, idx) {
             return `<td>
                 <div class="maint-action-btns">
-                    <button class="icon-btn" onclick="openMaintEditModal(${row.id})" title="Edit">✏️</button>
-                    <button class="icon-btn icon-btn-delete" onclick="deleteMaintRecord(${row.id})" title="Delete">🗑️</button>
+                    <button class="maint-btn-edit" onclick="openMaintEditModal(${row.id})" title="Edit"><i data-lucide="pencil" style="width:14px;height:14px;"></i> Edit</button>
+                    <button class="maint-btn-delete" onclick="deleteMaintRecord(${row.id})" title="Delete"><i data-lucide="trash-2" style="width:14px;height:14px;"></i> Delete</button>
                 </div>
             </td>`;
         }
@@ -2739,10 +2738,10 @@
                 const res = await apiPost('api/maintenance.php?action=toggle_active', {
                     table, id, admin_id: sessionStorage.getItem('adminId')
                 });
-                showAlert('maintAlert', '✅ ' + res.message, 'success');
+                showAlert('maintAlert', '' + res.message, 'success');
                 loadMaintenanceData();
             } catch (err) {
-                showAlert('maintAlert', '❌ ' + err.message);
+                showAlert('maintAlert', '' + err.message);
             }
         }
 
@@ -2803,14 +2802,14 @@
                             <td style="padding:10px 12px;font-weight:600;color:var(--gray-500);">${i + 1}</td>
                             <td style="padding:10px 12px;font-weight:500;">${escapeHtml(f.field_label)}<br><small style="color:var(--gray-500);font-size:11px;">${escapeHtml(f.field_name)}</small></td>
                             <td style="padding:10px 12px;"><span style="background:var(--gray-100);padding:3px 8px;border-radius:12px;font-size:12px;">${f.field_type}</span></td>
-                            <td style="padding:10px 12px;">${f.is_required ? '<span style="color:#16a34a;font-weight:600;">✅ Yes</span>' : '<span style="color:#6b7280;">No</span>'}</td>
+                            <td style="padding:10px 12px;">${f.is_required ? '<span style="color:#16a34a;font-weight:600;">Yes</span>' : '<span style="color:#6b7280;">No</span>'}</td>
                             <td style="padding:10px 12px;">
-                                <button onclick="toggleFormFieldActive(${f.id})" style="padding:3px 10px;border-radius:12px;font-size:12px;cursor:pointer;border:1px solid ${f.is_active ? '#16a34a' : '#9ca3af'};background:${f.is_active ? '#dcfce7' : '#f3f4f6'};color:${f.is_active ? '#166534' : '#6b7280'};">${f.is_active ? '✅ Active' : '○ Inactive'}</button>
+                                <button onclick="toggleFormFieldActive(${f.id})" style="padding:3px 10px;border-radius:12px;font-size:12px;cursor:pointer;border:1px solid ${f.is_active ? '#16a34a' : '#9ca3af'};background:${f.is_active ? '#dcfce7' : '#f3f4f6'};color:${f.is_active ? '#166534' : '#6b7280'};">${f.is_active ? '✅ Active' : 'Inactive'}</button>
                             </td>
                             <td style="padding:10px 12px;">
                                 <div class="maint-action-btns">
-                                    <button type="button" class="icon-btn" onclick="openFormFieldModal(${f.id})" title="Edit">✏️</button>
-                                    <button type="button" class="icon-btn icon-btn-delete" onclick="deleteFormField(${f.id})" title="Delete">🗑️</button>
+                                    <button type="button" class="maint-btn-edit" onclick="openFormFieldModal(${f.id})" title="Edit"><i data-lucide="pencil" style="width:14px;height:14px;"></i> Edit</button>
+                                    <button type="button" class="maint-btn-delete" onclick="deleteFormField(${f.id})" title="Delete"><i data-lucide="trash-2" style="width:14px;height:14px;"></i> Delete</button>
                                 </div>
                             </td>
                         </tr>
@@ -2819,6 +2818,7 @@
             } catch (err) {
                 panel.innerHTML = `<tr><td colspan="6" style="text-align:center;color:#dc2626;">${err.message}</td></tr>`;
             }
+            if (typeof lucide !== 'undefined') lucide.createIcons();
         }
 
         function switchFormFieldStep(step) {
@@ -2831,9 +2831,9 @@
                 const res = await apiPost('api/maintenance.php?action=toggle_active', {
                     table: 'form_fields', id, admin_id: sessionStorage.getItem('adminId')
                 });
-                showAlert('maintAlert', '✅ ' + res.message, 'success');
+                showAlert('maintAlert', '' + res.message, 'success');
                 renderFormFieldsPanel();
-            } catch (err) { showAlert('maintAlert', '❌ ' + err.message); }
+            } catch (err) { showAlert('maintAlert', '' + err.message); }
         }
 
         async function deleteFormField(id) {
@@ -2851,9 +2851,9 @@
                 const res = await apiPost('api/maintenance.php?action=delete_form_field', {
                     id, admin_id: sessionStorage.getItem('adminId')
                 });
-                showAlert('maintAlert', '✅ ' + res.message, 'success');
+                showAlert('maintAlert', '' + res.message, 'success');
                 renderFormFieldsPanel();
-            } catch (err) { showAlert('maintAlert', '❌ ' + err.message); }
+            } catch (err) { showAlert('maintAlert', '' + err.message); }
         }
 
         // ============================================================
@@ -2868,7 +2868,7 @@
                 try { formFieldOptions = JSON.parse(record.field_options); } catch (e) { formFieldOptions = []; }
             }
 
-            document.getElementById('maintModalTitle').textContent = id ? '✏️ Edit Custom Field' : '➕ Add Custom Field';
+            document.getElementById('maintModalTitle').textContent = id ? 'Edit Custom Field' : 'Add Custom Field';
             document.getElementById('maintModalSaveBtn').onclick = saveFormField;
 
             const label = record ? record.field_label : '';
@@ -2986,8 +2986,8 @@
             const ph = document.getElementById('ff_placeholder').value.trim();
             const hint = document.getElementById('ff_hint').value.trim();
 
-            if (!label || !fname) { showAlert('maintAlert', '❌ Field Label is required.'); return; }
-            if (type === 'select' && formFieldOptions.length === 0) { showAlert('maintAlert', '❌ Dropdown fields need at least one option.'); return; }
+            if (!label || !fname) { showAlert('maintAlert', 'Field Label is required.'); return; }
+            if (type === 'select' && formFieldOptions.length === 0) { showAlert('maintAlert', 'Dropdown fields need at least one option.'); return; }
 
             const payload = {
                 step, field_label: label, field_name: fname, field_type: type,
@@ -2999,11 +2999,11 @@
             const action = formFieldEditId ? 'update_form_field' : 'add_form_field';
             try {
                 const res = await apiPost(`api/maintenance.php?action=${action}`, payload);
-                showAlert('maintAlert', '✅ ' + res.message, 'success');
+                showAlert('maintAlert', '' + res.message, 'success');
                 closeMaintModal();
                 formFieldsCurrentStep = step;
                 renderFormFieldsPanel();
-            } catch (err) { showAlert('maintAlert', '❌ ' + err.message); }
+            } catch (err) { showAlert('maintAlert', '' + err.message); }
         }
 
         function renderMaintenanceTable() {
@@ -3090,6 +3090,7 @@
                     return `${rowHtml}<tr data-grade-id="${row.grade_level_id || ''}">${cells}</tr>`;
                 }).join('');
                 updateGradeColumnVisibility();
+                if (typeof lucide !== 'undefined') lucide.createIcons();
                 return;
             }
 
@@ -3119,7 +3120,7 @@
                         const isCurrent = row[field] == 1;
                         cells += `<td>
                             <button class="maint-status-toggle ${isCurrent ? 'active' : ''}" onclick="toggleSchoolYearCurrent(${row.id})">
-                                ${isCurrent ? '✅ Current' : '○ Set Active'}
+                                ${isCurrent ? 'Current' : 'Set Active'}
                             </button>
                         </td>`;
                     } else if (field === 'is_active') {
@@ -3149,6 +3150,7 @@
                 const rowClass = maintCurrentTable === 'school_years' && row.is_current == 1 ? 'maint-current-row' : '';
                 return `<tr${rowAttr}${rowClass ? ' class="' + rowClass + '"' : ''}>${cells}</tr>`;
             }).join('');
+            if (typeof lucide !== 'undefined') lucide.createIcons();
         }
 
         function escapeHtml(str) {
@@ -3160,7 +3162,7 @@
         // --- MODAL: Add ---
         async function openMaintAddModal() {
             maintEditId = null;
-            document.getElementById('maintModalTitle').textContent = '🔧 Add New Record';
+            document.getElementById('maintModalTitle').textContent = 'Add New Record';
             await fetchGradeLevelsOnce();
             renderMaintForm({});
             document.getElementById('maintModalOverlay').classList.add('active');
@@ -3172,7 +3174,7 @@
             const record = maintCurrentData.find(r => r.id == id);
             if (!record) return;
             maintEditId = id;
-            document.getElementById('maintModalTitle').textContent = '✏️ Edit Record';
+            document.getElementById('maintModalTitle').textContent = 'Edit Record';
             await fetchGradeLevelsOnce();
             renderMaintForm(record);
             document.getElementById('maintModalOverlay').classList.add('active');
@@ -3300,11 +3302,11 @@
                 const action = isEdit ? 'update' : 'add';
                 const res = await apiPost(`api/maintenance.php?action=${action}`, payload);
 
-                showAlert('maintAlert', '✅ ' + res.message, 'success');
+                showAlert('maintAlert', '' + res.message, 'success');
                 closeMaintModal();
                 loadMaintenanceData();
             } catch (err) {
-                showAlert('maintAlert', '❌ ' + err.message);
+                showAlert('maintAlert', '' + err.message);
             }
         }
 
@@ -3330,10 +3332,10 @@
                     admin_id: sessionStorage.getItem('adminId')
                 });
 
-                showAlert('maintAlert', '✅ ' + res.message, 'success');
+                showAlert('maintAlert', '' + res.message, 'success');
                 loadMaintenanceData();
             } catch (err) {
-                showAlert('maintAlert', '❌ ' + err.message);
+                showAlert('maintAlert', '' + err.message);
             }
         }
 
@@ -3355,10 +3357,10 @@
                     admin_id: sessionStorage.getItem('adminId')
                 });
 
-                showAlert('maintAlert', '✅ ' + res.message, 'success');
+                showAlert('maintAlert', '' + res.message, 'success');
                 loadMaintenanceData();
             } catch (err) {
-                showAlert('maintAlert', '❌ ' + err.message);
+                showAlert('maintAlert', '' + err.message);
             }
         }
 
@@ -3533,7 +3535,7 @@
                 adminReportData = await apiGet('api/reports.php?' + params.toString());
                 renderAdminReportTable(adminReportData);
             } catch (err) {
-                tbody.innerHTML = `<tr><td colspan="${adminReportType === 'registrar' ? 8 : 9}" style="text-align:center;color:#dc2626;padding:40px;">❌ Error: ${err.message}</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="${adminReportType === 'registrar' ? 8 : 9}" style="text-align:center;color:#dc2626;padding:40px;">Error: ${err.message}</td></tr>`;
             }
         }
 
@@ -3568,7 +3570,7 @@
                         <td style="font-weight:600;">${formatCurrency(r.total_amount || 0)}</td>
                         <td style="color:#16a34a; font-weight:600;">${formatCurrency(r.total_paid || 0)}</td>
                         <td style="color:${parseFloat(r.balance || 0) <= 0 ? '#16a34a' : '#dc2626'}; font-weight:700;">
-                            ${parseFloat(r.balance || 0) <= 0 ? '✅ Paid' : formatCurrency(r.balance || 0)}
+                            ${parseFloat(r.balance || 0) <= 0 ? 'Paid' : formatCurrency(r.balance || 0)}
                         </td>
                         <td>${getStatusBadge(r.status)}</td>
                     </tr>
@@ -3652,6 +3654,7 @@
         }
 
         // Load roles if employees is selected
+        lucide.createIcons();
     </script>
 </body>
 

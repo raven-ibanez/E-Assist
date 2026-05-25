@@ -3830,3 +3830,28 @@ textarea:focus {
     color: var(--maroon-dark);
 }
 
+/* --- Lucide Icons Sizing and Styling --- */
+.dash-nav-icon svg,
+.dash-sidebar-bottom svg {
+    width: 18px;
+    height: 18px;
+    stroke-width: 2px;
+    display: inline-block;
+    vertical-align: middle;
+}
+
+.dash-stat-icon-wrap svg {
+    width: 22px;
+    height: 22px;
+    stroke-width: 2px;
+    display: inline-block;
+    vertical-align: middle;
+}
+
+.maint-cat-icon svg {
+    width: 18px;
+    height: 18px;
+    stroke-width: 2px;
+    display: inline-block;
+    vertical-align: middle;
+}
