@@ -27,10 +27,22 @@
 
         <!-- Step Tracker -->
         <div class="step-tracker">
-            <div class="step-item completed"><div class="step-number">1</div><div class="step-label">Student</div></div>
-            <div class="step-item completed"><div class="step-number">2</div><div class="step-label">Parent</div></div>
-            <div class="step-item completed"><div class="step-number">3</div><div class="step-label">Docs</div></div>
-            <div class="step-item active"><div class="step-number">4</div><div class="step-label">Payment</div></div>
+            <div class="step-item completed">
+                <div class="step-number">1</div>
+                <div class="step-label">Student</div>
+            </div>
+            <div class="step-item completed">
+                <div class="step-number">2</div>
+                <div class="step-label">Parent</div>
+            </div>
+            <div class="step-item completed">
+                <div class="step-number">3</div>
+                <div class="step-label">Academic History</div>
+            </div>
+            <div class="step-item active">
+                <div class="step-number">4</div>
+                <div class="step-label">Payment</div>
+            </div>
         </div>
 
         <div id="alert" class="alert" style="max-width: 800px; margin: 0 auto 20px;"></div>
@@ -39,27 +51,38 @@
         <div class="biodata-card">
             <form id="step4Form">
                 <div class="form-section">
-                    <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom: 20px;">
+                    <div
+                        style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom: 20px;">
                         <div>
                             <h3>4. Payment & Document Uploads</h3>
-                            <p style="font-size: 13px; color: #666;">Step 4 of 4: Pay the tuition and upload your documents.</p>
+                            <p style="font-size: 13px; color: #666;">Step 4 of 4: Pay the tuition and upload your
+                                documents.</p>
                         </div>
-                        <div style="background:var(--maroon-dark); color:white; padding:15px; border-radius:8px; text-align:right; min-width: 200px;">
-                            <div style="font-size:11px; opacity:0.8; text-transform:uppercase; margin-bottom: 4px;">Fees Summary</div>
-                            <div style="display: flex; justify-content: space-between; font-size: 13px; margin-bottom: 2px;">
+                        <div
+                            style="background:var(--maroon-dark); color:white; padding:15px; border-radius:8px; text-align:right; min-width: 200px;">
+                            <div style="font-size:11px; opacity:0.8; text-transform:uppercase; margin-bottom: 4px;">Fees
+                                Summary</div>
+                            <div
+                                style="display: flex; justify-content: space-between; font-size: 13px; margin-bottom: 2px;">
                                 <span>Total Tuition:</span> <span id="display-tuition">₱0</span>
                             </div>
-                            <div style="display: flex; justify-content: space-between; font-size: 13px; margin-bottom: 2px;">
+                            <div
+                                style="display: flex; justify-content: space-between; font-size: 13px; margin-bottom: 2px;">
                                 <span>Books Fee:</span> <span id="display-books">₱0</span>
                             </div>
-                            <div style="display: flex; justify-content: space-between; font-size: 13px; margin-bottom: 6px; border-top: 1px solid rgba(255,255,255,0.1); padding-top:4px;">
+                            <div
+                                style="display: flex; justify-content: space-between; font-size: 13px; margin-bottom: 6px; border-top: 1px solid rgba(255,255,255,0.1); padding-top:4px;">
                                 <span>Full Total:</span> <span id="display-total" style="font-weight:700;">₱0</span>
                             </div>
-                            <div style="border-top: 1px solid rgba(255,255,255,0.3); margin-top: 6px; padding-top: 6px; display: flex; justify-content: space-between; font-size: 16px; font-weight: 900; color: #fbbf24;">
+                            <div
+                                style="border-top: 1px solid rgba(255,255,255,0.3); margin-top: 6px; padding-top: 6px; display: flex; justify-content: space-between; font-size: 16px; font-weight: 900; color: #fbbf24;">
                                 <span>Pay Now:</span> <span id="display-initial">₱0</span>
                             </div>
-                            <div id="installment-info" style="font-size:10px; opacity:0.8; margin-top: 10px; font-style: italic; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 6px; text-align: center;display:none;"></div>
-                            <div style="font-size:10px; opacity:0.8; margin-top: 4px; font-style: italic; text-align: center;">
+                            <div id="installment-info"
+                                style="font-size:10px; opacity:0.8; margin-top: 10px; font-style: italic; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 6px; text-align: center;display:none;">
+                            </div>
+                            <div
+                                style="font-size:10px; opacity:0.8; margin-top: 4px; font-style: italic; text-align: center;">
                                 * Tuition includes other fees but does NOT include uniforms.
                             </div>
                         </div>
@@ -72,7 +95,8 @@
                     </div>
 
                     <!-- Info box for installment plan details -->
-                    <div id="mode-info-box" style="display:none; background:#fef3c7; border-left:4px solid #f59e0b; border-radius:8px; padding:12px 16px; margin-bottom: 16px;">
+                    <div id="mode-info-box"
+                        style="display:none; background:#fef3c7; border-left:4px solid #f59e0b; border-radius:8px; padding:12px 16px; margin-bottom: 16px;">
                         <p id="mode-info-text" style="margin:0; font-size:13px; color:#92400e; font-weight:600;"></p>
                     </div>
 
@@ -84,10 +108,12 @@
                     <input type="hidden" id="hidden_payment_mode_id" name="payment_mode_id" value="">
 
                     <!-- Payment Method -->
-                    <label style="display: block; margin-bottom: 12px; font-weight: 700;">Select Payment Method *</label>
+                    <label style="display: block; margin-bottom: 12px; font-weight: 700;">Select Payment Method
+                        *</label>
                     <div class="payment-options" id="payment-methods-container" style="margin-bottom: 20px;"></div>
 
-                    <div id="payment-instruction" class="payment-instructions" style="display: none; border-radius: 8px;">
+                    <div id="payment-instruction" class="payment-instructions"
+                        style="display: none; border-radius: 8px;">
                         <div id="transfer-details">
                             <p style="margin-bottom:5px;">Please send your payment to:</p>
                             <strong style="font-size:20px; color:var(--maroon-dark);">—</strong>
@@ -97,7 +123,8 @@
 
                     <div class="form-group" id="reference-group">
                         <label for="reference_number">Reference Number / Transaction ID</label>
-                        <input type="text" id="reference_number" name="reference_number" placeholder="Enter Reference" required>
+                        <input type="text" id="reference_number" name="reference_number" placeholder="Enter Reference"
+                            required>
                     </div>
 
                     <!-- Standard Document Uploads -->
@@ -105,17 +132,20 @@
                     <div class="form-row">
                         <div class="form-group">
                             <label for="psa_birth_cert">PSA Birth Certificate</label>
-                            <input type="file" id="psa_birth_cert" name="psa_birth_cert" accept="image/png, image/jpeg, image/webp">
+                            <input type="file" id="psa_birth_cert" name="psa_birth_cert"
+                                accept="image/png, image/jpeg, image/webp">
                             <small style="color: #666; font-size: 11px;">Optional (To follow)</small>
                         </div>
                         <div class="form-group">
                             <label for="sf10_document">SF10 (New Students) or Previous Report Card</label>
-                            <input type="file" id="sf10_document" name="sf10_document" accept="image/png, image/jpeg, image/webp">
+                            <input type="file" id="sf10_document" name="sf10_document"
+                                accept="image/png, image/jpeg, image/webp">
                             <small style="color: #666; font-size: 11px;">Optional (To follow)</small>
                         </div>
                         <div class="form-group">
                             <label for="picture_2x2">2x2 Picture *</label>
-                            <input type="file" id="picture_2x2" name="picture_2x2" accept="image/png, image/jpeg, image/webp" required>
+                            <input type="file" id="picture_2x2" name="picture_2x2"
+                                accept="image/png, image/jpeg, image/webp" required>
                             <small style="color: #666; font-size: 11px;">Required</small>
                         </div>
                     </div>
@@ -128,8 +158,10 @@
                 </div>
 
                 <div class="step-actions">
-                    <button type="button" class="btn btn-prev" onclick="window.location.href='enroll-docs.html'">Back</button>
-                    <button type="submit" id="submitBtn" class="btn btn-submit-maroon" style="padding: 14px 40px; border-radius: 8px;">Submit Application</button>
+                    <button type="button" class="btn btn-prev"
+                        onclick="window.location.href='enroll-docs.html'">Back</button>
+                    <button type="submit" id="submitBtn" class="btn btn-submit-maroon"
+                        style="padding: 14px 40px; border-radius: 8px;">Submit Application</button>
                 </div>
             </form>
         </div>
@@ -163,7 +195,7 @@
                     const card = document.createElement('div');
                     card.className = 'payment-card';
                     card.id = `card-${m.name.replace(/\s+/g, '-')}`;
-                    card.onclick = function() { selectPayment(m.name, this); };
+                    card.onclick = function () { selectPayment(m.name, this); };
 
                     const radio = document.createElement('input');
                     radio.type = 'radio';
@@ -210,7 +242,7 @@
                     const card = document.createElement('div');
                     card.className = 'mode-card' + (index === 0 ? ' selected' : '');
                     card.id = `mode-${m.id}`;
-                    card.onclick = function() { selectMode(m, this); };
+                    card.onclick = function () { selectMode(m, this); };
 
                     const radio = document.createElement('input');
                     radio.type = 'radio';
@@ -238,7 +270,7 @@
                         document.getElementById('hidden_months_count').value = m.installment_count || '';
                     }
                 });
-            } catch(err) { console.warn('Failed to load payment modes', err); }
+            } catch (err) { console.warn('Failed to load payment modes', err); }
         }
 
         function selectMode(modeObj, el) {
@@ -254,7 +286,7 @@
             const infoBox = document.getElementById('mode-info-box');
             const infoText = document.getElementById('mode-info-text');
             if (modeObj.installment_count && modeObj.installment_count > 0) {
-                infoText.textContent = `📅 ${modeObj.name}: ${modeObj.installment_count} installment${modeObj.installment_count > 1 ? 's' : ''} of ₱${parseFloat(modeObj.installment_amount || 0).toLocaleString('en-PH', {minimumFractionDigits:2})} each.`;
+                infoText.textContent = `📅 ${modeObj.name}: ${modeObj.installment_count} installment${modeObj.installment_count > 1 ? 's' : ''} of ₱${parseFloat(modeObj.installment_amount || 0).toLocaleString('en-PH', { minimumFractionDigits: 2 })} each.`;
                 infoBox.style.display = 'block';
             } else {
                 infoBox.style.display = 'none';
@@ -277,14 +309,14 @@
                     sessionStorage.setItem('enroll_data', JSON.stringify(d));
                     calculateFees();
                 }
-            } catch(e) { console.warn(e); }
+            } catch (e) { console.warn(e); }
         }
 
         function calculateFees() {
             if (!selectedModeObj) return;
 
             const tuition = parseFloat(selectedModeObj.tuition_fee) || 0;
-            const books   = parseFloat(selectedModeObj.books_fee) || 0;
+            const books = parseFloat(selectedModeObj.books_fee) || 0;
 
             let initialTuition = tuition; // default to full
 
@@ -294,19 +326,19 @@
 
             const initialPayment = initialTuition + books;
 
-            document.getElementById('display-tuition').textContent  = '₱' + tuition.toLocaleString('en-PH', {minimumFractionDigits:2});
-            document.getElementById('display-books').textContent    = '₱' + books.toLocaleString('en-PH', {minimumFractionDigits:2});
-            document.getElementById('display-total').textContent    = '₱' + (tuition + books).toLocaleString('en-PH', {minimumFractionDigits:2});
-            document.getElementById('display-initial').textContent  = '₱' + initialPayment.toLocaleString('en-PH', {minimumFractionDigits:2});
+            document.getElementById('display-tuition').textContent = '₱' + tuition.toLocaleString('en-PH', { minimumFractionDigits: 2 });
+            document.getElementById('display-books').textContent = '₱' + books.toLocaleString('en-PH', { minimumFractionDigits: 2 });
+            document.getElementById('display-total').textContent = '₱' + (tuition + books).toLocaleString('en-PH', { minimumFractionDigits: 2 });
+            document.getElementById('display-initial').textContent = '₱' + initialPayment.toLocaleString('en-PH', { minimumFractionDigits: 2 });
 
-            document.getElementById('hidden_tuition_fee').value    = tuition;
-            document.getElementById('hidden_books_fee').value      = books;
+            document.getElementById('hidden_tuition_fee').value = tuition;
+            document.getElementById('hidden_books_fee').value = books;
             document.getElementById('hidden_initial_payment').value = initialPayment;
 
             // Update installment info panel
             const infoDiv = document.getElementById('installment-info');
             if (selectedModeObj.installment_count > 0) {
-                infoDiv.textContent = `${selectedModeObj.name}: ₱${initialTuition.toLocaleString('en-PH', {minimumFractionDigits:2})} × ${selectedModeObj.installment_count} installments`;
+                infoDiv.textContent = `${selectedModeObj.name}: ₱${initialTuition.toLocaleString('en-PH', { minimumFractionDigits: 2 })} × ${selectedModeObj.installment_count} installments`;
                 infoDiv.style.display = 'block';
             } else {
                 infoDiv.style.display = 'none';
@@ -331,7 +363,7 @@
 
             function esc(str) {
                 if (!str) return '';
-                return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+                return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
             }
 
             if (name.toLowerCase() === 'cash') {
@@ -377,7 +409,7 @@
                             html += `<textarea name="custom_field_${f.id}" ${req} ${ph} style="width:100%;min-height:80px;">${savedVal}</textarea>`;
                         } else if (f.field_type === 'select') {
                             html += `<select name="custom_field_${f.id}" ${req}><option value="">-- Select --</option>`;
-                            (f.field_options || []).forEach(opt => { html += `<option value="${opt}" ${savedVal===opt?'selected':''}>${opt}</option>`; });
+                            (f.field_options || []).forEach(opt => { html += `<option value="${opt}" ${savedVal === opt ? 'selected' : ''}>${opt}</option>`; });
                             html += '</select>';
                         } else {
                             html += `<input type="${f.field_type}" name="custom_field_${f.id}" value="${savedVal}" ${req} ${ph} style="width:100%;">`;
@@ -411,7 +443,7 @@
                     html += '</div>';
                     fileContainer.innerHTML = html;
                 }
-            } catch(e) { console.warn('Custom fields error:', e); }
+            } catch (e) { console.warn('Custom fields error:', e); }
         }
 
         // =============================================
@@ -449,13 +481,13 @@
                 const result = await apiPostForm('api/register.php', finalFormData);
 
                 const paymentMethodName = document.querySelector('.payment-card.selected .payment-name')?.textContent || '';
-                const paymentModeName   = document.querySelector('input[name="payment_mode"]:checked')?.value || '';
-                const referenceNum      = document.getElementById('reference_number')?.value || 'N/A';
-                const totalText         = document.getElementById('display-total')?.textContent || '';
-                const initialText       = document.getElementById('display-initial')?.textContent || '';
-                const tuitionText       = document.getElementById('display-tuition')?.textContent || '';
-                const booksText         = document.getElementById('display-books')?.textContent || '';
-                const gradeLevel        = currentGradeName || '';
+                const paymentModeName = document.querySelector('input[name="payment_mode"]:checked')?.value || '';
+                const referenceNum = document.getElementById('reference_number')?.value || 'N/A';
+                const totalText = document.getElementById('display-total')?.textContent || '';
+                const initialText = document.getElementById('display-initial')?.textContent || '';
+                const tuitionText = document.getElementById('display-tuition')?.textContent || '';
+                const booksText = document.getElementById('display-books')?.textContent || '';
+                const gradeLevel = currentGradeName || '';
 
                 sessionStorage.removeItem('enroll_data');
                 const params = new URLSearchParams({

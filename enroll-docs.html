@@ -1,30 +1,47 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Step 3: Academic History — BSSMAI</title>
     <link rel="stylesheet" href="style.css">
 </head>
+
 <body class="biodata-page">
     <div class="page">
         <div class="biodata-header">
             <a href="enroll-parent.html" class="biodata-back-link">
-                <svg viewBox="0 0 24 24"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg>
+                <svg viewBox="0 0 24 24">
+                    <path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z" />
+                </svg>
                 Back to Parent Info
             </a>
             <div class="biodata-logo">
-                <img src="logo.png" alt="BSSMAI Logo" style="width:100%;height:100%;object-fit:contain;border-radius:50%;">
+                <img src="logo.png" alt="BSSMAI Logo"
+                    style="width:100%;height:100%;object-fit:contain;border-radius:50%;">
             </div>
             <h1>ENROLLMENT FORM</h1>
             <p>Academic History</p>
         </div>
 
         <div class="step-tracker">
-            <div class="step-item completed"><div class="step-number">1</div><div class="step-label">Student</div></div>
-            <div class="step-item completed"><div class="step-number">2</div><div class="step-label">Parent</div></div>
-            <div class="step-item active"><div class="step-number">3</div><div class="step-label">Docs</div></div>
-            <div class="step-item"><div class="step-number">4</div><div class="step-label">Payment</div></div>
+            <div class="step-item completed">
+                <div class="step-number">1</div>
+                <div class="step-label">Student</div>
+            </div>
+            <div class="step-item completed">
+                <div class="step-number">2</div>
+                <div class="step-label">Parent</div>
+            </div>
+            <div class="step-item active">
+                <div class="step-number">3</div>
+                <div class="step-label">Academic History</div>
+            </div>
+            <div class="step-item">
+                <div class="step-number">4</div>
+                <div class="step-label">Payment</div>
+            </div>
         </div>
 
         <div class="biodata-card">
@@ -35,12 +52,14 @@
 
                     <div class="form-group">
                         <label for="previous_school">Previous School Attended (If transferee)</label>
-                        <input type="text" id="previous_school" name="previous_school" placeholder="Full name of previous school">
+                        <input type="text" id="previous_school" name="previous_school"
+                            placeholder="Full name of previous school">
                     </div>
 
                     <div class="form-info-box">
                         <span>📋</span>
-                        <p>Note: You will be asked to upload scans/photos of your PSA, SF10 (New Students) or Previous Report Card, and a 2x2 picture on the final step.</p>
+                        <p>Note: You will be asked to upload scans/photos of your PSA, SF10 (New Students) or Previous
+                            Report Card, and a 2x2 picture on the final step.</p>
                     </div>
 
                     <!-- Custom fields for Step 3 (non-file shown here; file types collected in Step 4) -->
@@ -48,7 +67,8 @@
                 </div>
 
                 <div class="step-actions">
-                    <button type="button" class="btn btn-prev" onclick="window.location.href='enroll-parent.html'">Back</button>
+                    <button type="button" class="btn btn-prev"
+                        onclick="window.location.href='enroll-parent.html'">Back</button>
                     <button type="submit" class="btn btn-next">Next: Tuition & Payment</button>
                 </div>
             </form>
@@ -92,7 +112,7 @@
                         html += `<textarea name="custom_field_${f.id}" ${req} ${ph} data-custom-field="1" style="width:100%;min-height:80px;">${savedVal}</textarea>`;
                     } else if (f.field_type === 'select') {
                         html += `<select name="custom_field_${f.id}" ${req} data-custom-field="1"><option value="">-- Select --</option>`;
-                        (f.field_options || []).forEach(opt => { html += `<option value="${opt}" ${savedVal===opt?'selected':''}>${opt}</option>`; });
+                        (f.field_options || []).forEach(opt => { html += `<option value="${opt}" ${savedVal === opt ? 'selected' : ''}>${opt}</option>`; });
                         html += '</select>';
                     } else {
                         html += `<input type="${f.field_type}" name="custom_field_${f.id}" value="${savedVal}" ${req} ${ph} data-custom-field="1" style="width:100%;">`;
@@ -102,9 +122,10 @@
                 });
                 html += '</div>';
                 container.innerHTML = html;
-            } catch(e) { console.warn('Custom fields error:', e); }
+            } catch (e) { console.warn('Custom fields error:', e); }
         }
         loadCustomFields();
     </script>
 </body>
+
 </html>

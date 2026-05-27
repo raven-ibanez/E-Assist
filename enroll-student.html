@@ -1,20 +1,25 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Step 1: Student Information — BSSMAI</title>
     <link rel="stylesheet" href="style.css">
 </head>
+
 <body class="biodata-page">
     <div class="page">
         <div class="biodata-header">
             <a href="index.html" class="biodata-back-link">
-                <svg viewBox="0 0 24 24"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg>
+                <svg viewBox="0 0 24 24">
+                    <path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z" />
+                </svg>
                 Back to Home
             </a>
             <div class="biodata-logo">
-                <img src="logo.png" alt="BSSMAI Logo" style="width:100%;height:100%;object-fit:contain;border-radius:50%;">
+                <img src="logo.png" alt="BSSMAI Logo"
+                    style="width:100%;height:100%;object-fit:contain;border-radius:50%;">
             </div>
             <h1>ENROLLMENT FORM</h1>
             <p>Nursery to Grade 6</p>
@@ -32,7 +37,7 @@
             </div>
             <div class="step-item">
                 <div class="step-number">3</div>
-                <div class="step-label">Docs</div>
+                <div class="step-label">Academic History</div>
             </div>
             <div class="step-item">
                 <div class="step-number">4</div>
@@ -118,7 +123,8 @@
                     <div class="form-row">
                         <div class="form-group" style="flex:2;">
                             <label for="house_no_street">House No. / Street *</label>
-                            <input type="text" id="house_no_street" name="house_no_street" placeholder="Unit/House No., Street Name" required>
+                            <input type="text" id="house_no_street" name="house_no_street"
+                                placeholder="Unit/House No., Street Name" required>
                         </div>
                         <div class="form-group">
                             <label for="barangay">Barangay *</label>
@@ -141,7 +147,8 @@
                 <div id="custom-fields-step1"></div>
 
                 <div class="step-actions">
-                    <button type="button" class="btn btn-cancel" onclick="window.location.href='index.html'">Cancel</button>
+                    <button type="button" class="btn btn-cancel"
+                        onclick="window.location.href='index.html'">Cancel</button>
                     <button type="submit" class="btn btn-next">Next: Parent Information</button>
                 </div>
             </form>
@@ -199,11 +206,11 @@
             const gradeName = e.target.options[e.target.selectedIndex].text;
             const schedSelect = document.getElementById('session_id');
             const note = document.getElementById('schedule_note');
-            
+
             schedSelect.innerHTML = '';
             schedSelect.disabled = false;
             note.style.display = 'none';
-            
+
             if (!gradeId) {
                 schedSelect.innerHTML = `<option value="">-- Select Grade Level First --</option>`;
                 schedSelect.disabled = true;
@@ -273,7 +280,7 @@
                         html += `<select name="custom_field_${f.id}" ${req} data-custom-field="1">`;
                         html += `<option value="">-- Select --</option>`;
                         (f.field_options || []).forEach(opt => {
-                            html += `<option value="${opt}" ${savedVal===opt?'selected':''}>${opt}</option>`;
+                            html += `<option value="${opt}" ${savedVal === opt ? 'selected' : ''}>${opt}</option>`;
                         });
                         html += `</select>`;
                     } else if (f.field_type === 'file') {
@@ -286,9 +293,10 @@
                 });
                 html += '</div>';
                 container.innerHTML = html;
-            } catch(e) { console.warn('Custom fields error:', e); }
+            } catch (e) { console.warn('Custom fields error:', e); }
         }
         loadCustomFields();
     </script>
 </body>
+
 </html>

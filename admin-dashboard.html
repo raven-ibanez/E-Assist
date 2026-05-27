@@ -3398,6 +3398,11 @@
 
                 showAlert('maintAlert', '' + res.message, 'success');
                 closeMaintModal();
+                if (maintCurrentTable === 'grade_levels') {
+                    allGradeLevels = [];
+                    gradeLevelsLoaded = false;
+                    loadGradeLevelFilters();
+                }
                 loadMaintenanceData();
             } catch (err) {
                 showAlert('maintAlert', '' + err.message);
@@ -3427,6 +3432,11 @@
                 });
 
                 showAlert('maintAlert', '' + res.message, 'success');
+                if (maintCurrentTable === 'grade_levels') {
+                    allGradeLevels = [];
+                    gradeLevelsLoaded = false;
+                    loadGradeLevelFilters();
+                }
                 loadMaintenanceData();
             } catch (err) {
                 showAlert('maintAlert', '' + err.message);

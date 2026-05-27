@@ -36,7 +36,7 @@
             </div>
             <div class="step-item">
                 <div class="step-number">3</div>
-                <div class="step-label">Docs</div>
+                <div class="step-label">Academic History</div>
             </div>
             <div class="step-item">
                 <div class="step-number">4</div>
@@ -209,7 +209,7 @@
                         html += `<textarea name="custom_field_${f.id}" ${req} ${ph} data-custom-field="1" style="width:100%;min-height:80px;">${savedVal}</textarea>`;
                     } else if (f.field_type === 'select') {
                         html += `<select name="custom_field_${f.id}" ${req} data-custom-field="1"><option value="">-- Select --</option>`;
-                        (f.field_options || []).forEach(opt => { html += `<option value="${opt}" ${savedVal===opt?'selected':''}>${opt}</option>`; });
+                        (f.field_options || []).forEach(opt => { html += `<option value="${opt}" ${savedVal === opt ? 'selected' : ''}>${opt}</option>`; });
                         html += '</select>';
                     } else if (f.field_type === 'file') {
                         html += `<p style="font-size:12px;color:var(--gray-500);">(File upload will be available on Step 4)</p>`;
@@ -221,7 +221,7 @@
                 });
                 html += '</div>';
                 container.innerHTML = html;
-            } catch(e) { console.warn('Custom fields error:', e); }
+            } catch (e) { console.warn('Custom fields error:', e); }
         }
         loadCustomFields();
     </script>
