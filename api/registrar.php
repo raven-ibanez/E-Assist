@@ -747,7 +747,7 @@ if ($action === 'upload_document') {
 // =============================================================
 if ($action === 'employees') {
     $result = $conn->query("
-        SELECT a.id, a.username, a.employee_name, a.is_active, a.status, r.name AS role 
+        SELECT a.id, a.username, CONCAT_WS(' ', a.first_name, a.middle_name, a.last_name) AS employee_name, a.is_active, a.status, r.name AS role 
         FROM admin a
         JOIN roles r ON a.role_id = r.id
         WHERE a.status = 'active'
@@ -769,7 +769,7 @@ if ($action === 'employees') {
 // =============================================================
 if ($action === 'archived_employees') {
     $result = $conn->query("
-        SELECT a.id, a.username, a.employee_name, a.is_active, a.status, r.name AS role 
+        SELECT a.id, a.username, CONCAT_WS(' ', a.first_name, a.middle_name, a.last_name) AS employee_name, a.is_active, a.status, r.name AS role 
         FROM admin a
         JOIN roles r ON a.role_id = r.id
         WHERE a.status = 'archived'
@@ -792,7 +792,9 @@ if ($action === 'add_employee') {
     $username      = $data['username'] ?? '';
     $password      = $data['password'] ?? '';
     $confirm_pass  = $data['confirm_password'] ?? '';
-    $employee_name = $data['employee_name'] ?? '';
+    $first_name    = $data['first_name'] ?? '';
+    $last_name     = $data['last_name'] ?? '';
+    $middle_name   = $data['middle_name'] ?? null;
     $role_id       = $data['role_id'] ?? '';
 
     // Validate input
@@ -800,9 +802,9 @@ if ($action === 'add_employee') {
         sendJSON(['error' => 'Username, password, and role are required.'], 400);
     }
 
-    // Validate employee name (required)
-    if (!$employee_name || trim($employee_name) === '') {
-        sendJSON(['error' => 'Employee name is required.'], 400);
+    // Validate employee name (first and last name required)
+    if (!$first_name || trim($first_name) === '' || !$last_name || trim($last_name) === '') {
+        sendJSON(['error' => 'Employee first name and last name are required.'], 400);
     }
 
     // Validate confirm password matches
@@ -822,12 +824,13 @@ if ($action === 'add_employee') {
     $hashedPassword = password_hash($password, PASSWORD_DEFAULT);
 
     // Insert the new employee (no employee limit)
-    $stmt = $conn->prepare("INSERT INTO admin (username, password, employee_name, role_id, is_active) VALUES (?, ?, ?, ?, 1)");
-    $stmt->bind_param("sssi", $username, $hashedPassword, $employee_name, $role_id);
+    $stmt = $conn->prepare("INSERT INTO admin (username, password, first_name, last_name, middle_name, role_id, is_active) VALUES (?, ?, ?, ?, ?, ?, 1)");
+    $stmt->bind_param("sssssi", $username, $hashedPassword, $first_name, $last_name, $middle_name, $role_id);
     $stmt->execute();
 
     // Log the action (if admin_id is provided)
     $admin_id = $data['admin_id'] ?? null;
+    $employee_name = trim($first_name . ' ' . ($middle_name ? $middle_name . ' ' : '') . $last_name);
     if ($admin_id) {
         logAction($admin_id, "Account Created", $conn->insert_id, $username, "Created new employee account: $username ($employee_name)");
     }
@@ -1517,7 +1520,7 @@ if ($action === 'deleted_students') {
 // =============================================================
 if ($action === 'deleted_employees') {
     $result = $conn->query("
-        SELECT a.id, a.username, a.employee_name, a.is_active, a.status, r.name AS role 
+        SELECT a.id, a.username, CONCAT_WS(' ', a.first_name, a.middle_name, a.last_name) AS employee_name, a.is_active, a.status, r.name AS role 
         FROM admin a
         JOIN roles r ON a.role_id = r.id
         WHERE a.status = 'deleted'

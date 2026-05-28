@@ -225,7 +225,7 @@ CREATE TABLE IF NOT EXISTS enrollments (
 -- ============================================================
 CREATE TABLE IF NOT EXISTS payments (
     id                INT AUTO_INCREMENT PRIMARY KEY,
-    enrollment_id      INT NOT NULL,
+    enrollment_id      INT NOT NULL UNIQUE,            -- 1-to-1: each enrollment has exactly one payment
     payment_method_id  INT NOT NULL,
     payment_mode      ENUM('Full', 'Monthly') NOT NULL DEFAULT 'Monthly',
     months_count      INT DEFAULT NULL,             -- For Monthly mode: usually 10 months
@@ -278,7 +278,9 @@ CREATE TABLE IF NOT EXISTS admin (
     id            INT AUTO_INCREMENT PRIMARY KEY,
     username      VARCHAR(50) NOT NULL UNIQUE,
     password      VARCHAR(255) NOT NULL,               -- bcrypt hash
-    employee_name VARCHAR(100) NOT NULL DEFAULT '',     -- Full name of the employee
+    first_name    VARCHAR(100) NOT NULL DEFAULT '',     -- Employee first name
+    last_name     VARCHAR(100) NOT NULL DEFAULT '',     -- Employee last name
+    middle_name   VARCHAR(100) DEFAULT NULL,            -- Employee middle name (optional)
     role_id       INT NOT NULL DEFAULT 2,              -- Links to "roles" table (default: registrar)
     is_active     TINYINT(1) NOT NULL DEFAULT 1,       -- 1 = active, 0 = deactivated
     status        ENUM('active', 'archived', 'deleted') NOT NULL DEFAULT 'active', -- Record status
@@ -288,10 +290,10 @@ CREATE TABLE IF NOT EXISTS admin (
 -- Default employee accounts (passwords are bcrypt hashes, case-sensitive)
 -- Generated with: password_hash('plaintext', PASSWORD_DEFAULT)
 -- Plaintext => admin=admin123, registrar=registrar123, cashier=cashier123
-INSERT IGNORE INTO admin (username, password, employee_name, role_id, is_active) VALUES
-    ('admin',     '$2y$10$t.PZskHjxJEAPVlNFmgS8uFz3ywhVIyKILEgyOLNShY1QyeRpwoNC', 'System Administrator', 1, 1),
-    ('registrar', '$2y$10$d.UDomEf9f2yxWlEmEiZGefPkqIGypqTsXx./ev89vwpgZsLWB2RC', 'Default Registrar', 2, 1),
-    ('cashier',   '$2y$10$Wmk0h.er4bfoI7jd.3ipzenn42.2CTXFnoowtTahhJfFwtY8GPZlW', 'Default Cashier', 3, 1);
+INSERT IGNORE INTO admin (username, password, first_name, last_name, middle_name, role_id, is_active) VALUES
+    ('admin',     '$2y$10$t.PZskHjxJEAPVlNFmgS8uFz3ywhVIyKILEgyOLNShY1QyeRpwoNC', 'System', 'Administrator', NULL, 1, 1),
+    ('registrar', '$2y$10$d.UDomEf9f2yxWlEmEiZGefPkqIGypqTsXx./ev89vwpgZsLWB2RC', 'Default', 'Registrar', NULL, 2, 1),
+    ('cashier',   '$2y$10$Wmk0h.er4bfoI7jd.3ipzenn42.2CTXFnoowtTahhJfFwtY8GPZlW', 'Default', 'Cashier', NULL, 3, 1);
 -- IMPORTANT: Passwords are bcrypt hashed and case-sensitive.
 -- To reset a password, delete the row and re-insert, or run:
 --   UPDATE admin SET password = '$new_hash' WHERE username = 'xxx';
